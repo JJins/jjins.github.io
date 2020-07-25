@@ -1,1 +1,28 @@
-<html><t1><center>他与她相爱</center></t1></html>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>ljs-lyt.com</title>
+    <style type="text/css">
+        html, body {
+            margin: 0;
+            border: 0;
+            padding: 0;
+            position: absolute;
+        }</style>
+</head>
+<body>
+<h2>ljs-lyt.com</h2>
+<p>2020年5月21日至今已<span id="day0">N</span>天。</p>
+<p>2020年6月4日至今已<span id="day1">N</span>天。</p>
+<script type="application/javascript">
+    let day0 = document.getElementById("day0");
+    let day1 = document.getElementById("day1");
+    const currentDate = new Date();
+    const date0 = new Date(2020, 4, 21);
+    const date1 = new Date(2020, 5, 4);
+    day0.textContent = Math.floor((currentDate - date0) / 86400 / 1000).toString();
+    day1.textContent = Math.floor((currentDate - date1) / 86400 / 1000).toString();
+</script>
+</body>
+</html>
