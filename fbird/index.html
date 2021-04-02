@@ -6,8 +6,20 @@
     <title>Unity WebGL Player | Flappy Bird</title>
     <link rel="shortcut icon" href="TemplateData/favicon.ico">
     <link rel="stylesheet" href="TemplateData/style.css">
+    
+    <script type="text/javascript">
+      function Reset()
+      {
+          var canvas = document.getElementById("#canvas");//获取#canvas
+          var h=  document.documentElement.clientHeight;//获取body可见区域高度
+          var w =  document.documentElement.clientWidth;//获取body可见区域高度
+          var scale = 1080/1920;
+          if (w/h > scale) {canvas.height=h;canvas.width=h*scale;}
+          if (w/h < scale) {canvas.height=w/scale;canvas.width=w;}
+      }
+    </script>
   </head>
-  <body>
+  <body onload="Reset()" onresize="Reset()">
     <div id="unity-container" class="unity-desktop">
       <canvas id="unity-canvas"></canvas>
       <div id="unity-loading-bar">
@@ -19,11 +31,11 @@
       <div id="unity-mobile-warning">
         WebGL builds are not supported on mobile devices.
       </div>
-      <div id="unity-footer">
+<!--       <div id="unity-footer">
         <div id="unity-webgl-logo"></div>
         <div id="unity-fullscreen-button"></div>
         <div id="unity-build-title">Flappy Bird</div>
-      </div>
+      </div> -->
     </div>
     <script>
       var buildUrl = "Build";
