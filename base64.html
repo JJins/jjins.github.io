@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<head><meta charset="UTF-8"><title>BASE64</title>
+<script>
+    window.onload = function(){
+        document.getElementById("btnA2B").onclick = function(){
+            document.getElementById("textarea").value = window.btoa(unescape(encodeURIComponent(document.getElementById("textarea").value)));
+        };
+
+        document.getElementById("btnB2A").onclick = function(){
+            document.getElementById("textarea").value = decodeURIComponent(escape(window.atob(document.getElementById("textarea").value)));
+        };
+    };
+</script></head>
+<body>
+  <textarea id="textarea" style="height: 215px; width: 350px;"></textarea><br/>
+  <input type="button" value="编码" id="btnA2B" />
+  <input type="button" value="解码" id="btnB2A" />
+</body>
