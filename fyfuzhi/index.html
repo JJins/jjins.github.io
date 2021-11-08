@@ -1,0 +1,34 @@
+<html>
+
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1 user-scalable=0">
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js"></script>
+<script type="text/javascript">
+$(function(){$("button").click(function(){
+
+  $("textarea").val("正在加载");
+
+  $.ajax({
+    url:"https://cdn.jsdelivr.net/gh/JJins/torncity-zhcn-translate/torn-trans-zhcn.user.js",
+    dataType:"text",
+    async:false,
+    cache:false,
+    success:function(result){
+      $("textarea").val(result);
+    }
+  });
+
+  document.querySelector('textarea').select();
+  document.execCommand('Copy');
+  alert("已复制好，可贴粘。");
+
+});});
+</script>
+</head>
+
+<body>
+
+<textarea></textarea>
+<button>点击复制</button>
+</body>
