@@ -1,35 +1,50 @@
-<html>
-
+<!DOCTYPE html>
+<html lang="zh-CN">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1 user-scalable=0">
+<meta name="viewport" content="width=device-width, initial-scale=1 user-scalable=0"/>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js"></script>
+
 <script type="text/javascript">
-$(function(){$("button").click(function(){
+$(function(){
 
-  $("textarea").val("正在加载");
-
-  $.ajax({
-    url:"https://cdn.jsdelivr.net/gh/JJins/torncity-zhcn-translate@main/torn-trans-zhcn.user.js",
-    dataType:"text",
-    async:false,
+$.ajax({
+    url:`https://cdn.jsdelivr.net/gh/JJins/torncity-zhcn-translate/torn-trans-zhcn.user.js`,
+    //url:"https://gitee.com/wanyi007/torncity-zhcn-translate/raw/dev/torn-trans-zhcn.user.js",
+    //dataType:"text",
+    async:true,
     cache:false,
     success:function(result){
       $("textarea").val(result);
-    }
-  });
+$("button").removeAttr("disabled");
+document.getElementById('text').innerText = "加载完成，可复制";
+    },
+    error:function(XMLHttpRequest, textStatus, errorThrown){
+document.getElementById('text').innerText = '出错了：'+XMLHttpRequest.status+ textStatus;
+    },
+  })
 
-  document.querySelector('textarea').select();
-  document.execCommand('Copy');
-  alert("已复制好，可贴粘。");
+$("button").click(function(){
+document.querySelector('textarea').select();
+document.execCommand('Copy')
+document.getElementById('text').innerText = "已复制，可粘贴";
+document.querySelector('textarea').blur();
+})
 
-});});
+});
 </script>
-<title>翻译插件快捷复制</title>
+<style type="text/css">html,body,p{margin:0;padding:0;}
+p{font-size:16px;text-align:center;padding:2em 0;}
+textarea {position: absolute;top: 0;left: 0;opacity: 0;z-index: -10;}
+button {-webkit-appearance: none;display:block;border-radius:0;width:100%;padding:2em 0;margin:0;background-color:#32CD32;color:white;font-size:16px;}
+button[disabled] {background-color:grey;}
+a{display:block;padding:1.5em 0;text-align:center;}
+</style>
 </head>
 
 <body>
-
+<p id="text">请稍后，正在加载...</p>
 <textarea></textarea>
-<button>点击复制</button>
+<button disabled>点击复制</button>
+<a>备用链接</a>
 </body>
