@@ -10,14 +10,16 @@ $(function(){
 
 $.ajax({
     url:`https://cdn.jsdelivr.net/gh/JJins/torncity-zhcn-translate/torn-trans-zhcn.user.js`,
-    //url:"https://gitee.com/wanyi007/torncity-zhcn-translate/raw/dev/torn-trans-zhcn.user.js",
-    //dataType:"text",
+    dataType:"text",
     async:true,
     cache:false,
     success:function(result){
       $("textarea").val(result);
+const iStart=37;
+const dtimeStr = result.slice(iStart,iStart+12);
+const last = {year:dtimeStr.slice(0,4),month:dtimeStr.slice(4,6),day:dtimeStr.slice(6,8),h:dtimeStr.slice(8,10),m:dtimeStr.slice(10),}
 $("button").removeAttr("disabled");
-document.getElementById('text').innerText = "加载完成，可复制";
+document.getElementById('text').innerText = `加载完成，更新时间${last.year}年${last.month}月${last.day}日${last.h}:${last.m}`;
     },
     error:function(XMLHttpRequest, textStatus, errorThrown){
 document.getElementById('text').innerText = '出错了：'+XMLHttpRequest.status+ textStatus;
@@ -30,13 +32,16 @@ document.execCommand('Copy')
 document.getElementById('text').innerText = "已复制，可粘贴";
 document.querySelector('textarea').blur();
 })
+$("#refresh").click(function(){
+location.reload();
+})
 
 });
 </script>
 <style type="text/css">html,body,p{margin:0;padding:0;}
 p{font-size:16px;text-align:center;padding:2em 0;}
 textarea {position: absolute;top: 0;left: 0;opacity: 0;z-index: -10;}
-button {-webkit-appearance: none;display:block;border-radius:0;width:100%;padding:2em 0;margin:0;background-color:#32CD32;color:white;font-size:16px;}
+button {-webkit-appearance: none;display:block;border-radius:0;border:0;width:100%;padding:2em 0;margin:0;background-color:#32CD32;color:white;font-size:16px;}
 button[disabled] {background-color:grey;}
 a{display:block;padding:1.5em 0;text-align:center;}
 </style>
@@ -47,4 +52,5 @@ a{display:block;padding:1.5em 0;text-align:center;}
 <textarea></textarea>
 <button disabled>点击复制</button>
 <a>备用链接</a>
+<a id="refresh">刷新页面</a>
 </body>
