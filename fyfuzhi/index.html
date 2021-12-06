@@ -4,7 +4,7 @@
   <meta charset="UTF-8" /> 
   <meta name="viewport" content="width=device-width, initial-scale=1 user-scalable=0" /> 
   <script type="text/javascript">
-window.onload = () = >{
+window.onload = () =>{
 
     const giteeRaw = 'https://gitee.com/wanyi007/torncity-zhcn-translate/raw/dev/torn-trans-zhcn.user.js';
     const jsdelivr = 'https://cdn.jsdelivr.net/gh/JJins/torncity-zhcn-translate/torn-trans-zhcn.user.js';
@@ -16,7 +16,7 @@ window.onload = () = >{
     fetch(jsdelivr, {
         cache: 'no-cache'
     }).
-    catch(e = >console.error(e)).then(data = >data.text()).then(text = >{
+    catch(e =>console.error(e)).then(data =>data.text()).then(text =>{
         $textarea.value = text;
         const iStart = 37;
         const dtimeStr = text.slice(iStart, iStart + 12);
@@ -27,28 +27,18 @@ window.onload = () = >{
             h: dtimeStr.slice(8, 10),
             m: dtimeStr.slice(10)
         };
-        $text.innerText = `加载完成，更新时间$ {
-            last.year
-        }年$ {
-            last.month
-        }月$ {
-            last.day
-        }日$ {
-            last.h
-        }: $ {
-            last.m
-        }`;
+        $text.innerText = `加载完成，更新时间${last.year}年${last.month}月${last.day}日${last.h}:${last.m}`;
         $btn.removeAttribute("disabled");
     });
 
-    $btn.onclick = () = >{
+    $btn.onclick = () =>{
         $textarea.select();
         document.execCommand('Copy');
         $text.innerText = "已复制，可粘贴";
         $textarea.blur();
     };
 
-    $refresh.onclick = () = >{
+    $refresh.onclick = () =>{
         location.reload();
     };
 
