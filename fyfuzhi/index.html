@@ -1,56 +1,72 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1 user-scalable=0"/>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/jquery@3.2.1/dist/jquery.min.js"></script>
+ <head> 
+  <meta charset="UTF-8" /> 
+  <meta name="viewport" content="width=device-width, initial-scale=1 user-scalable=0" /> 
+  <script type="text/javascript">
+window.onload = () = >{
 
-<script type="text/javascript">
-$(function(){
+    const giteeRaw = 'https://gitee.com/wanyi007/torncity-zhcn-translate/raw/dev/torn-trans-zhcn.user.js';
+    const jsdelivr = 'https://cdn.jsdelivr.net/gh/JJins/torncity-zhcn-translate/torn-trans-zhcn.user.js';
+    const $textarea = document.querySelector("textarea");
+    const $text = document.getElementById('text');
+    const $btn = document.querySelector("button");
+    const $refresh = document.getElementById('refresh');
 
-$.ajax({
-    url:`https://cdn.jsdelivr.net/gh/JJins/torncity-zhcn-translate/torn-trans-zhcn.user.js`,
-    dataType:"text",
-    async:true,
-    cache:false,
-    success:function(result){
-      $("textarea").val(result);
-const iStart=37;
-const dtimeStr = result.slice(iStart,iStart+12);
-const last = {year:dtimeStr.slice(0,4),month:dtimeStr.slice(4,6),day:dtimeStr.slice(6,8),h:dtimeStr.slice(8,10),m:dtimeStr.slice(10),}
-$("button").removeAttr("disabled");
-document.getElementById('text').innerText = `加载完成，更新时间${last.year}年${last.month}月${last.day}日${last.h}:${last.m}`;
-    },
-    error:function(XMLHttpRequest, textStatus, errorThrown){
-document.getElementById('text').innerText = '出错了：'+XMLHttpRequest.status+ textStatus;
-    },
-  })
+    fetch(jsdelivr, {
+        cache: 'no-cache'
+    }).
+    catch(e = >console.error(e)).then(data = >data.text()).then(text = >{
+        $textarea.value = text;
+        const iStart = 37;
+        const dtimeStr = text.slice(iStart, iStart + 12);
+        const last = {
+            year: dtimeStr.slice(0, 4),
+            month: dtimeStr.slice(4, 6),
+            day: dtimeStr.slice(6, 8),
+            h: dtimeStr.slice(8, 10),
+            m: dtimeStr.slice(10)
+        };
+        $text.innerText = `加载完成，更新时间$ {
+            last.year
+        }年$ {
+            last.month
+        }月$ {
+            last.day
+        }日$ {
+            last.h
+        }: $ {
+            last.m
+        }`;
+        $btn.removeAttribute("disabled");
+    });
 
-$("button").click(function(){
-document.querySelector('textarea').select();
-document.execCommand('Copy')
-document.getElementById('text').innerText = "已复制，可粘贴";
-document.querySelector('textarea').blur();
-})
-$("#refresh").click(function(){
-location.reload();
-})
+    $btn.onclick = () = >{
+        $textarea.select();
+        document.execCommand('Copy');
+        $text.innerText = "已复制，可粘贴";
+        $textarea.blur();
+    };
 
-});
-</script>
-<style type="text/css">html,body,p{margin:0;padding:0;}
+    $refresh.onclick = () = >{
+        location.reload();
+    };
+
+};
+</script> 
+  <style type="text/css">html,body,p{margin:0;padding:0;}
 p{font-size:16px;text-align:center;padding:2em 0;}
 textarea {position: absolute;top: 0;left: 0;opacity: 0;z-index: -10;}
 button {-webkit-appearance: none;display:block;border-radius:0;border:0;width:100%;padding:2em 0;margin:0;background-color:#32CD32;color:white;font-size:16px;}
 button[disabled] {background-color:grey;}
 a{display:block;padding:1.5em 0;text-align:center;}
-</style>
-</head>
-
-<body>
-<p id="text">请稍后，正在加载...</p>
-<textarea></textarea>
-<button disabled>点击复制</button>
-<a>备用链接</a>
-<a id="refresh">刷新页面</a>
-</body>
+</style> 
+ </head> 
+ <body> 
+  <p id="text">请稍后，正在加载...</p> 
+  <textarea></textarea> 
+  <button disabled="">点击复制</button> 
+  <a>备用链接</a> 
+  <a id="refresh">刷新页面</a>  
+ </body>
+</html>
