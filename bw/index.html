@@ -1,1 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width,user-scalable=no,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0"
+          name="viewport">
+    <title>冰蛙复制</title>
+    <script>
+        window.onload = () => {
+            const load = document.querySelector('#load')
+            load.disabled = true;
+            const copy = document.querySelector('#copy')
+            copy.disabled = true;
+            const cont = document.querySelector('#container p')
+            let conf;
+            let scriptCont;
 
+            fetch('conf.json')
+                .then(response => response.json())
+                .then(data => {
+                    conf = data.conf;
+                    cont.innerHTML = `当前可复制最新版本为${conf[0].ver}`;
+                    cont.innerHTML += `<br/>文件名：${conf[0].name}`;
+                    load.disabled = false;
+                })
+            load.onclick = () => {
+                if (!conf) return;
+                load.disabled = true;
+                fetch(conf[0].name)
+                    .then(response => response.text())
+                    .then(e => {
+                        scriptCont = e.replace('https://www.torn.com/*.php*', 'https://www.torn.com/*');
+                        copy.disabled = false;
+                        load.disabled = false;
+                    })
+            };
+            copy.onclick = () => {
+                if (!scriptCont) return;
+                const clipboardObj = navigator.clipboard;
+                if (!clipboardObj) {
+                    alert('复制出错');
+                    return;
+                }
+                clipboardObj.writeText(scriptCont);
+                alert('复制成功');
+            };
+        };
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            border: 0;
+        }
+
+        button {
+            background-color: black;
+            color: white;
+        }
+
+        button[disabled] {
+            background-color: gray;
+        }
+    </style>
+</head>
+<body>
+<div id="container"><p>正在加载配置文件</p></div>
+<div>
+    <button id="load">加载脚本</button>
+</div>
+<div>
+    <button id="copy">复制脚本</button>
+</div>
+</body>
+</html>
