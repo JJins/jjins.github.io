@@ -10,23 +10,24 @@
             const container = document.querySelector('.container p');
             const btn = document.querySelector('.container button');
             window.addEventListener("message", (e) => {
+                console.log(e.data);
                 origin.origin = e.origin;
                 origin.source = e.source;
-                if (e.data === 'connect') e.source.postMessage('connected', e.origin)
+                if (e.data === 'connect') e.source.postMessage('connected', '*')
             }, false);
             intervalID = window.setInterval(() => {
                 if (origin.origin) {
                     clearInterval(intervalID);
                     intervalID = null;
-                    container.innerHTML = '已连接';
+                    container.innerHTML = '成功与翻译助手建立连接';
                     btn.disabled = false;
                 }
             }, 1000);
             btn.onclick = (e) => {
                 e.target.blur();
-                origin.source.postMessage('测试', origin.origin);
+                origin.source.postMessage('测试', '*');
                 origin.source.focus();
-                window.close();
+                // window.close();
             };
         };
     </script>
@@ -34,7 +35,7 @@
 <body>
 <h1>更新页面</h1>
 <div class="container">
-    <p> </p>
+    <p>正与翻译助手建立连接...</p>
     <button disabled>测试</button>
 </div>
 </body>
