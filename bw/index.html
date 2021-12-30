@@ -12,37 +12,46 @@
             const copy = document.querySelector('#copy')
             copy.disabled = true;
             const cont = document.querySelector('#container p')
-            let conf;
+            const status = document.querySelector('#status')
+            let latest;
             let scriptCont;
+            let replace;
 
             fetch('conf.json')
                 .then(response => response.json())
                 .then(data => {
-                    conf = data.conf;
-                    cont.innerHTML = `当前可复制最新版本为${conf[0].ver}`;
-                    cont.innerHTML += `<br/>文件名：${conf[0].name}`;
+                    latest = data['latest'];
+                    replace = latest[0]['replace'];
+                    status.innerHTML = `配置加载完成`;
+                    cont.innerHTML = `最新版本：${latest[0].ver}`;
+                    cont.innerHTML += `<br/>文件名：${latest[0].name}`;
                     load.disabled = false;
                 })
             load.onclick = () => {
-                if (!conf) return;
+                if (!latest) return;
                 load.disabled = true;
-                fetch(conf[0].name)
+                status.innerHTML = '正在加载脚本文件';
+                fetch(latest[0].name)
                     .then(response => response.text())
-                    .then(e => {
-                        scriptCont = e.replace('https://www.torn.com/*.php*', 'https://www.torn.com/*');
+                    .then(text => {
+                        status.innerHTML = '脚本加载完成';
+                        scriptCont = replace ? text.replace(replace['with'], replace['to']) : text.replace('https://www.torn.com/*.php*', 'https://www.torn.com/*');
                         copy.disabled = false;
                         load.disabled = false;
                     })
             };
             copy.onclick = () => {
                 if (!scriptCont) return;
+                copy.disabled = true;
                 const clipboardObj = navigator.clipboard;
                 if (!clipboardObj) {
-                    alert('复制出错');
+                    status.innerHTML = '脚本复制出错';
+                    copy.disabled = false;
                     return;
                 }
                 clipboardObj.writeText(scriptCont);
-                alert('复制成功');
+                status.innerHTML = '脚本复制完成';
+                copy.disabled = false;
             };
         };
     </script>
@@ -53,9 +62,16 @@
             border: 0;
         }
 
+        body {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
         button {
             background-color: black;
             color: white;
+            width: 100%;
+            padding: 0.6em;
         }
 
         button[disabled] {
@@ -64,7 +80,8 @@
     </style>
 </head>
 <body>
-<div id="container"><p>正在加载配置文件</p></div>
+<div id="container"><p></p></div>
+<div id="status">正在加载配置文件</div>
 <div>
     <button id="load">加载脚本</button>
 </div>

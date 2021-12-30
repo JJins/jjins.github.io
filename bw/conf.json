@@ -1,8 +1,12 @@
 {
-  "conf": [
+  "latest": [
     {
       "ver": "2.9.0",
-      "name": "冰蛙宝鉴_2.9.0.user.js.txt"
+      "name": "冰蛙宝鉴_2.9.0.user.js.txt",
+      "replace": {
+        "with": "https://www.torn.com/*.php*",
+        "to": "https://www.torn.com/*"
+      }
     }
   ]
 }
