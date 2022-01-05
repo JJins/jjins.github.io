@@ -12,7 +12,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
       with:
-        ref: main
+        ref: master
         token: ${{ github.token }}
     - name: Update file from gitee
       run: |
