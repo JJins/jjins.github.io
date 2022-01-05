@@ -20,6 +20,7 @@ jobs:
         rm -f torn-trans-zhcn.user.js
         wget https://gitee.com/wanyi007/torncity-zhcn-translate/raw/dev/torn-trans-zhcn.user.js
         python -m pip install pygame
+        python -m pip install pillow
         cd ../t2i
         python t2i.py
     - name: Commit & Push
