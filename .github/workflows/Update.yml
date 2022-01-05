@@ -14,14 +14,12 @@ jobs:
       with:
         ref: master
         token: ${{ github.token }}
-    - name: Update file from gitee
+    - name: Update JS and version image
       run: |
         cd fyfuzhi
-        ls -a
         rm -f torn-trans-zhcn.user.js
-        ls -a
         wget https://gitee.com/wanyi007/torncity-zhcn-translate/raw/dev/torn-trans-zhcn.user.js
-        ls -a
+        python -V
     - name: Commit & Push
       uses: EndBug/add-and-commit@v7
       with:
