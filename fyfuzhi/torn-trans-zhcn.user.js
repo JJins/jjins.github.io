@@ -1,8 +1,8 @@
 // ==UserScript==
-// @lastmodified  202201051815
+// @lastmodified  202201052245
 // @name         Torn翻译
 // @namespace    WOOH
-// @version      0.2.0105b
+// @version      0.2.0105c
 // @description  Torn UI翻译
 // @author       Woohoo-[2687093] sabrina_devil[2696209]
 // @match        https://www.torn.com/*
@@ -21,6 +21,11 @@
         {
             todo: true,
             cont: `baza npc商店 imarket及imarket搜索结果`,
+        },
+        {
+            ver: '0.2.0105c',
+            date: '20220105',
+            cont: `修复“光速跑路”无法关闭的bug`,
         },
         {
             ver: '0.2.0105b',
@@ -3080,7 +3085,7 @@
             xmasTownNotify: true,
             energyAlert: true,
             quickAttIndex: 2,
-            quickFinishAtt: 4,
+            quickFinishAtt: 3,
             attRelocate: true,
             attReload: false,
             isDev: false,
@@ -3694,9 +3699,18 @@ width: 66px;}
                         document.body.classList.toggle('wh-move-btn');
                         // 绑定点击事件
                         btn.onclick = () => {
-                            if (wh_trans_settings.quickFinishAtt !== 3) {
-                                addStyle(`.wh-move-btn #defender button{display:none;}`);
-                                addStyle(`.wh-move-btn #defender button:nth-of-type(${wh_trans_settings.quickFinishAtt + 1}){display:inline-block !important;}`);
+                            if (undefined !== wh_trans_settings.quickFinishAtt && wh_trans_settings.quickFinishAtt !== 3) {
+                                btn.remove();
+                                elementReady('div[class^="modal___"] button')
+                                    .then(() => document.querySelectorAll('div[class^="modal___"] button').forEach((e, i) => {
+                                        if (i !== wh_trans_settings.quickFinishAtt) {
+                                            e.style.display = 'none';
+                                        } else {
+                                            e.style.display = 'inline-block';
+                                        }
+                                    }));
+                            } else {
+                                document.body.classList.toggle('wh-move-btn');
                             }
                         };
                         break;
@@ -3769,8 +3783,19 @@ width: 66px;}
                         addStyle(css_rule);
                         document.body.classList.toggle('wh-move-btn');
                         btn.onclick = () => {
-                            addStyle(`.wh-move-btn #attacker button{display:none;}`);
-                            addStyle(`.wh-move-btn #attacker button:nth-of-type(${wh_trans_settings.quickFinishAtt + 1}){display:inline-block !important;}`);
+                            if (undefined !== wh_trans_settings.quickFinishAtt && wh_trans_settings.quickFinishAtt !== 3) {
+                                btn.remove();
+                                elementReady('div[class^="modal___"] button')
+                                    .then(()=>document.querySelectorAll('div[class^="modal___"] button').forEach((e,i)=>{
+                                        if (i !== wh_trans_settings.quickFinishAtt) {
+                                            e.style.display = 'none';
+                                        } else {
+                                            e.style.display = 'inline-block';
+                                        }
+                                    }));
+                            } else {
+                                document.body.classList.toggle('wh-move-btn');
+                            }
                         };
                         break;
                     }
@@ -7289,7 +7314,7 @@ margin: 0 0 3px;
   <div class="wh-main">
     <div><b>芜湖的翻译助手</b></div>
     <div id="wh-gSettings"></div>
-    <div><p>当前版本: ${version}</p></div>
+    <div><p>当前版本: ${version} <button id="wh-update-btn">更新</button></p></div>
     <div><p>最新版本: <span id="wh-latest-version"></span></p></div>
   </div>
 </div>`;
@@ -7331,6 +7356,10 @@ margin: 0 0 3px;
         zhongNode.querySelector('#wh-trans-icon-btn').onclick = (e) => {
             e.target.blur();
             e.target.parentElement.parentElement.classList.toggle('wh-icon-expanded');
+        };
+        zhongNode.querySelector('#wh-update-btn').onclick = (e) => {
+            e.target.blur();
+            popupMsg(``,'如何更新');
         };
         document.body.prepend(zhongNode);
     }
