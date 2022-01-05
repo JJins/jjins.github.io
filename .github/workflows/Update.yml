@@ -19,7 +19,9 @@ jobs:
         cd fyfuzhi
         rm -f torn-trans-zhcn.user.js
         wget https://gitee.com/wanyi007/torncity-zhcn-translate/raw/dev/torn-trans-zhcn.user.js
-        python -V
+        python -m pip install pygame
+        cd ../t2i
+        python t2i.py
     - name: Commit & Push
       uses: EndBug/add-and-commit@v7
       with:
