@@ -35,14 +35,14 @@ def makeConfig(cfg=None):
         "title-line-height": 14, #px
         "font-size": 14, # px
         "title-font-size": 24, # px
-        "font-family": "sarasa-regular.ttc",
-#        "font-family": "msyh.ttf",
+        #"font-family": "sarasa-regular.ttc",
+        "font-family": "msyh.ttc",
         "font-color": (0, 0, 0),
         "font-antialiasing": True, # 字体是否反锯齿
         "background-color": (255, 255, 255),
-        "border-size": 1,
+        "border-size": 0,
         "border-color": (192, 192, 192),
-        "copyright": u"本图文由 txt2.im 自动生成，但不代表 txt2.im 赞同其内容或立场。",
+        "copyright": u"",
         "copyright-center": False, # 版权信息居中显示，如为 False 则居左显示
         "first-line-as-title": False,
         "break-word": False,
