@@ -13,6 +13,7 @@ jobs:
       uses: actions/checkout@main
       with:
         ref: main
+        token: ${{ secrets.PAT }}
     - name: Update file from gitee
       run: |
         cd fyfuzhi
