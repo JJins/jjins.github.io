@@ -1,8 +1,8 @@
 // ==UserScript==
-// @lastmodified  202201050051
+// @lastmodified  202201051815
 // @name         Torn翻译
 // @namespace    WOOH
-// @version      0.2.0104a
+// @version      0.2.0105b
 // @description  Torn UI翻译
 // @author       Woohoo-[2687093] sabrina_devil[2696209]
 // @match        https://www.torn.com/*
@@ -15,11 +15,17 @@
     ___window___.WHTRANS = true;
 
     const CC_set = /[\u4e00-\u9fa5]/;
+    const version = '0.2.0105b';
 
     const changelist = [
         {
             todo: true,
             cont: `baza npc商店 imarket及imarket搜索结果`,
+        },
+        {
+            ver: '0.2.0105b',
+            date: '20220105',
+            cont: `增加最新版本图片与更新历史`,
         },
         {
             ver: '0.2.0105a',
@@ -3043,6 +3049,22 @@
             domText: ' 开发者模式',
             dictName: 'isDev',
         },
+        {
+            domType: 'button',
+            domId: 'wh-changeList',
+            domText: '更新历史',
+            clickFunc: () => {
+                let insert = '';
+                changelist.forEach(e => {
+                    if (!e.todo) {
+                        insert += `版本: ${e.ver}<br/>
+时间: ${e.date.slice(0, 4)}年${e.date.slice(4, 6)}月${e.date.slice(6)}日<br/>
+更新: ${e.cont}<br/><br/>`;
+                    }
+                });
+                popupMsg(insert, '更新历史')
+            },
+        },
     ];
     // 左侧标签
     const zhongIconIntervalID = window.setInterval(() => {
@@ -3067,7 +3089,7 @@
     addStyle(`#wh-trans-icon{
   display: inline-block;
   position: fixed;
-  top: calc(50% - 133px);
+  top: calc(50% - 157px);
   left: 0;
   z-index: 20000;
   border: solid 1px #b5b5b5;
@@ -3096,6 +3118,47 @@ padding:16px !important;
 }
 #wh-trans-icon .wh-container{display:none;}
 #wh-trans-icon.wh-icon-expanded .wh-container{display:block;}
+#wh-latest-version{
+display:inline-block;
+background-image:url("https://jjins.github.io/t2i/version.png");
+height:17px;
+width: 66px;}
+#wh-popup{
+    position: fixed;
+    z-index: 9900034;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #808080ba;
+}
+#wh-popup-container{
+    max-width: 600px;
+    margin: 5em auto 0;
+    background: grey;
+    min-height: 200px;
+    box-shadow: 0 0 13px #b4b4b4
+}
+#wh-popup-title p{
+    background: black;
+    color: white;
+    padding: 1em;
+    font-size: 16px;
+}
+#wh-popup-close{
+    float: right;
+    margin: 8px;
+    padding: 5px 8px;
+    border: solid 2px white;
+    color: white;
+    border-radius: 3px;
+}
+#wh-popup-cont{
+    padding: 1em;
+    color: white;
+    max-height: 30em;
+    overflow-y: auto;
+}
 `);
 
     /**
@@ -3584,11 +3647,10 @@ padding:16px !important;
      */
     if (window.location.href.contains(/loader\.php\?sid=attack/)) {
         if (wh_trans_settings.quickAttIndex !== 6) {
-            // const selectedId = ['weapon_main', 'weapon_second', 'weapon_melee', 'weapon_temp', 'weapon_fists', 'weapon_boots']
-            //     [wh_trans_settings.quickAttIndex];
+            const selectedId = ['weapon_main', 'weapon_second', 'weapon_melee', 'weapon_temp', 'weapon_fists', 'weapon_boots']
+                [wh_trans_settings.quickAttIndex];
             elementReady('div[class^="modal___"] button').then(btn => {
                 if (!btn.innerText.toLowerCase().includes('start fight')) return;
-                if (isDev()) console.log('[WH]', btn);
                 // 判断是否存在脚踢
                 const hasKick = !!document.querySelector('#weapon_boots');
                 // modal层
@@ -3737,7 +3799,7 @@ padding:16px !important;
             switch (device) {
                 case 'pc': {
                     elementReady('#defender div[class^="modal___"]').then(elem => {
-                        if (!elem.innerHTML.includes('<button')) {
+                        if (!elem.querySelector('button')) {
                             window.location.reload();
                         }
                     });
@@ -3745,7 +3807,7 @@ padding:16px !important;
                 }
                 case 'mobile': {
                     elementReady('#attacker div[class^="modal___"]').then(elem => {
-                        if (!elem.innerHTML.includes('<button')) {
+                        if (!elem.querySelector('button')) {
                             window.location.reload();
                         }
                     });
@@ -7227,6 +7289,8 @@ margin: 0 0 3px;
   <div class="wh-main">
     <div><b>芜湖的翻译助手</b></div>
     <div id="wh-gSettings"></div>
+    <div><p>当前版本: ${version}</p></div>
+    <div><p>最新版本: <span id="wh-latest-version"></span></p></div>
   </div>
 </div>`;
         const settingNode = zhongNode.querySelector('#wh-gSettings');
@@ -7281,6 +7345,19 @@ margin: 0 0 3px;
     // bool 返回当前是否dev状态
     function isDev() {
         return wh_trans_settings.isDev;
+    }
+
+    // 弹出窗口
+    function popupMsg(innerHTML, title = '芜湖的翻译助手') {
+        const popup = document.createElement('div');
+        popup.id = 'wh-popup';
+        popup.innerHTML =
+            `<div id="wh-popup-container">
+<div id="wh-popup-title"><button id="wh-popup-close">x</button><p>${title}</p></div>
+<div id="wh-popup-cont">${innerHTML}</div>
+</div>`;
+        document.body.append(popup);
+        popup.querySelector('#wh-popup-close').onclick = () => popup.remove();
     }
 
     /**
