@@ -22,6 +22,7 @@ jobs:
         python -m pip install pygame
         python -m pip install pillow
         cd ../t2i
+        rm -f version.png
         python t2i.py
     - name: Commit & Push
       uses: EndBug/add-and-commit@v7
