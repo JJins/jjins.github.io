@@ -23,7 +23,10 @@ jobs:
         python -m pip install pillow
         cd ../t2i
         rm -f version.png
+        ls -a
+        echo "generating png"
         python t2i.py
+        ls -a
     - name: Commit & Push
       uses: EndBug/add-and-commit@v7
       with:
