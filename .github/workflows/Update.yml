@@ -10,10 +10,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
-      uses: actions/checkout@main
+      uses: actions/checkout@v2
       with:
         ref: main
-        token: ${{ secrets.PAT }}
+        token:
     - name: Update file from gitee
       run: |
         cd fyfuzhi
