@@ -281,10 +281,14 @@ def txt2im(txt, outfn, cfg=None, show=False):
 
 
 def test():
-
+    filename = "../fyfuzhi/torn-trans-zhcn.user.js"
+    import linecache
+    result = linecache.getline(filename, 5)
+    result = result.split(' ')[-1].strip()
+    #print(result)
     #c = open("test.txt", "rb").read().decode("utf-8")
     #txt2im(c, "test.png", show=True)
-    txt2im("123", "test.png", show=True)
+    txt2im(result, "test.png", show=True)
 
 
 if __name__ == "__main__":
