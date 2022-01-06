@@ -1,8 +1,8 @@
 // ==UserScript==
-// @lastmodified  202201052245
+// @lastmodified  202201061608
 // @name         Torn翻译
 // @namespace    WOOH
-// @version      0.2.0105c
+// @version      0.2.0106a
 // @description  Torn UI翻译
 // @author       Woohoo-[2687093] sabrina_devil[2696209]
 // @match        https://www.torn.com/*
@@ -15,12 +15,17 @@
     ___window___.WHTRANS = true;
 
     const CC_set = /[\u4e00-\u9fa5]/;
-    const version = '0.2.0105b';
+    const version = '0.2.0106a';
 
     const changelist = [
         {
             todo: true,
             cont: `baza npc商店 imarket及imarket搜索结果`,
+        },
+        {
+            ver: '0.2.0106a',
+            date: '20220106',
+            cont: `增加更新选项，关闭光速跑路功能等待更多的测试结果`,
         },
         {
             ver: '0.2.0105c',
@@ -3027,7 +3032,7 @@
         {
             domType: 'select',
             domId: 'wh-quick-mug',
-            domText: '光速跑路 ',
+            domText: '<del>光速跑路(BUG中)</del> ',
             domSelectOpt: [
                 {
                     domVal: 'leave',
@@ -3078,17 +3083,17 @@
     const wh_trans_settings = localStorage.getItem('wh_trans_settings')
         ? JSON.parse(localStorage.getItem('wh_trans_settings'))
         : {
-            transEnable: false,
-            quickCrime: true,
-            missionHint: true,
-            xmasTownWT: true,
-            xmasTownNotify: true,
-            energyAlert: true,
-            quickAttIndex: 2,
-            quickFinishAtt: 3,
-            attRelocate: true,
-            attReload: false,
-            isDev: false,
+            transEnable: false, // 开启翻译
+            quickCrime: true, // 快速犯罪
+            missionHint: true, // 任务助手
+            xmasTownWT: true, // 小镇攻略
+            xmasTownNotify: true, // 小镇提醒
+            energyAlert: true, // 起飞爆e
+            quickAttIndex: 2, // 光速拔刀 6-关闭
+            quickFinishAtt: 3, // 光速跑路 0-leave 1-mug 2-hos 3-关闭
+            attRelocate: true, // 废弃
+            attReload: false, // 攻击自刷新
+            isDev: false, // 开发者模式
         };
     initIcon();
     addStyle(`#wh-trans-icon{
@@ -3140,7 +3145,7 @@ width: 66px;}
 #wh-popup-container{
     max-width: 600px;
     margin: 5em auto 0;
-    background: grey;
+    background: #3c3c3c;
     min-height: 200px;
     box-shadow: 0 0 13px #b4b4b4
 }
@@ -3163,6 +3168,14 @@ width: 66px;}
     color: white;
     max-height: 30em;
     overflow-y: auto;
+}
+#wh-popup-cont p{
+padding:0.25em 0;
+}
+#wh-popup-cont a{color:red;}
+#wh-popup-cont h4{
+margin:0;
+padding: 0.5em 0;
 }
 `);
 
@@ -3651,11 +3664,13 @@ width: 66px;}
      * 攻击页面
      */
     if (window.location.href.contains(/loader\.php\?sid=attack/)) {
+        if (!isDev()) wh_trans_settings.quickFinishAtt = 3;
+        // 光速拔刀
         if (wh_trans_settings.quickAttIndex !== 6) {
             const selectedId = ['weapon_main', 'weapon_second', 'weapon_melee', 'weapon_temp', 'weapon_fists', 'weapon_boots']
                 [wh_trans_settings.quickAttIndex];
             elementReady('div[class^="modal___"] button').then(btn => {
-                if (!btn.innerText.toLowerCase().includes('start fight')) return;
+                if (!(btn.innerText.toLowerCase().includes('start fight') || btn.innerText.toLowerCase().includes('join'))) return;
                 // 判断是否存在脚踢
                 const hasKick = !!document.querySelector('#weapon_boots');
                 // modal层
@@ -3699,16 +3714,16 @@ width: 66px;}
                         document.body.classList.toggle('wh-move-btn');
                         // 绑定点击事件
                         btn.onclick = () => {
-                            if (undefined !== wh_trans_settings.quickFinishAtt && wh_trans_settings.quickFinishAtt !== 3) {
+                            if (wh_trans_settings.quickFinishAtt !== 3) {
                                 btn.remove();
-                                elementReady('div[class^="modal___"] button')
-                                    .then(() => document.querySelectorAll('div[class^="modal___"] button').forEach((e, i) => {
-                                        if (i !== wh_trans_settings.quickFinishAtt) {
-                                            e.style.display = 'none';
-                                        } else {
-                                            e.style.display = 'inline-block';
-                                        }
-                                    }));
+                                // elementReady('div[class^="modal___"] button')
+                                //     .then(() => document.querySelectorAll('div[class^="modal___"] button').forEach((e, i) => {
+                                //         if (i !== wh_trans_settings.quickFinishAtt) {
+                                //             e.style.display = 'none';
+                                //         } else {
+                                //             e.style.display = 'inline-block';
+                                //         }
+                                //     }));
                             } else {
                                 document.body.classList.toggle('wh-move-btn');
                             }
@@ -3783,16 +3798,16 @@ width: 66px;}
                         addStyle(css_rule);
                         document.body.classList.toggle('wh-move-btn');
                         btn.onclick = () => {
-                            if (undefined !== wh_trans_settings.quickFinishAtt && wh_trans_settings.quickFinishAtt !== 3) {
+                            if (wh_trans_settings.quickFinishAtt !== 3) {
                                 btn.remove();
-                                elementReady('div[class^="modal___"] button')
-                                    .then(()=>document.querySelectorAll('div[class^="modal___"] button').forEach((e,i)=>{
-                                        if (i !== wh_trans_settings.quickFinishAtt) {
-                                            e.style.display = 'none';
-                                        } else {
-                                            e.style.display = 'inline-block';
-                                        }
-                                    }));
+                                // elementReady('div[class^="modal___"] button')
+                                //     .then(() => document.querySelectorAll('div[class^="modal___"] button').forEach((e, i) => {
+                                //         if (i !== wh_trans_settings.quickFinishAtt) {
+                                //             e.style.display = 'none';
+                                //         } else {
+                                //             e.style.display = 'inline-block';
+                                //         }
+                                //     }));
                             } else {
                                 document.body.classList.toggle('wh-move-btn');
                             }
@@ -3820,6 +3835,21 @@ width: 66px;}
                 }
             }
         }
+        // 光速跑路
+        if (isDev() && wh_trans_settings.quickFinishAtt !== 3) {
+            const user_btn_select = ['leave', 'mug', 'hosp'][wh_trans_settings.quickFinishAtt];
+            const wrap = document.querySelector('#react-root');
+            console.log('光速跑路选项选中：', user_btn_select)
+            new MutationObserver(() => {
+                const btn_arr = document.querySelectorAll('div[class^="dialogButtons___"] button');
+                if (btn_arr.length > 2) btn_arr.forEach(btn => {
+                    const flag = btn.innerText.toLowerCase().includes(user_btn_select);
+                    console.log('按钮内容：', btn.innerText, '，是否包含选中：', flag);
+                    if (!flag) btn.style.display = 'none';
+                });
+            }).observe(wrap, {subtree: true, attributes: true, childList: true});
+        }
+        // 自刷新
         if (wh_trans_settings.attReload) {
             switch (device) {
                 case 'pc': {
@@ -7359,7 +7389,14 @@ margin: 0 0 3px;
         };
         zhongNode.querySelector('#wh-update-btn').onclick = (e) => {
             e.target.blur();
-            popupMsg(``,'如何更新');
+            const innerHtml = `<h4>电脑</h4>
+<p>通常电脑浏览器装有油猴等用户脚本扩展时可以使用链接安装（自动更新）：<a href="//gitee.com/wanyi007/torncity-zhcn-translate/raw/dev/torn-trans-zhcn.user.js" target="_blank">点此安装</a>。</p>
+<p>这些扩展长这样：<img src="//jjins.github.io/tm.png" alt="tm.png" /><img src="//jjins.github.io/vm.png" alt="vm.png" /></p>
+<p></p>
+<h4>手机</h4>
+<p>安卓KIWI等可以用油猴脚本的浏览器也可以点上面的链接安装👆</p>
+<p>Torn PDA app 或 Alook 用户可打开<a href="//jjins.github.io/fyfuzhi/" target="_blank">这个网页</a>快捷复制粘贴。</p>`;
+            popupMsg(innerHtml, '如何更新');
         };
         document.body.prepend(zhongNode);
     }
