@@ -1,8 +1,8 @@
 // ==UserScript==
-// @lastmodified  202201061608
+// @lastmodified  202201061829
 // @name         Torn翻译
 // @namespace    WOOH
-// @version      0.2.0106a
+// @version      0.2.0106b
 // @description  Torn UI翻译
 // @author       Woohoo-[2687093] sabrina_devil[2696209]
 // @match        https://www.torn.com/*
@@ -15,12 +15,17 @@
     ___window___.WHTRANS = true;
 
     const CC_set = /[\u4e00-\u9fa5]/;
-    const version = '0.2.0106a';
+    const version = '0.2.0106b';
 
     const changelist = [
         {
             todo: true,
             cont: `baza npc商店 imarket及imarket搜索结果`,
+        },
+        {
+            ver: '0.2.0106b',
+            date: '20220106',
+            cont: `修复光速跑路bug`,
         },
         {
             ver: '0.2.0106a',
@@ -3032,7 +3037,7 @@
         {
             domType: 'select',
             domId: 'wh-quick-mug',
-            domText: '<del>光速跑路(BUG中)</del> ',
+            domText: '光速跑路 ',
             domSelectOpt: [
                 {
                     domVal: 'leave',
@@ -3083,17 +3088,28 @@
     const wh_trans_settings = localStorage.getItem('wh_trans_settings')
         ? JSON.parse(localStorage.getItem('wh_trans_settings'))
         : {
-            transEnable: false, // 开启翻译
-            quickCrime: true, // 快速犯罪
-            missionHint: true, // 任务助手
-            xmasTownWT: true, // 小镇攻略
-            xmasTownNotify: true, // 小镇提醒
-            energyAlert: true, // 起飞爆e
-            quickAttIndex: 2, // 光速拔刀 6-关闭
-            quickFinishAtt: 3, // 光速跑路 0-leave 1-mug 2-hos 3-关闭
-            attRelocate: true, // 废弃
-            attReload: false, // 攻击自刷新
-            isDev: false, // 开发者模式
+            // 开启翻译
+            transEnable: false,
+            // 快速犯罪
+            quickCrime: true,
+            // 任务助手
+            missionHint: true,
+            // 小镇攻略
+            xmasTownWT: true,
+            // 小镇提醒
+            xmasTownNotify: true,
+            // 起飞爆e
+            energyAlert: true,
+            // 光速拔刀 6-关闭
+            quickAttIndex: 2,
+            // 光速跑路 0-leave 1-mug 2-hos 3-关闭
+            quickFinishAtt: 3,
+            // 废弃
+            attRelocate: true,
+            // 攻击自刷新
+            attReload: false,
+            // 开发者模式
+            isDev: false,
         };
     initIcon();
     addStyle(`#wh-trans-icon{
@@ -3664,7 +3680,6 @@ padding: 0.5em 0;
      * 攻击页面
      */
     if (window.location.href.contains(/loader\.php\?sid=attack/)) {
-        if (!isDev()) wh_trans_settings.quickFinishAtt = 3;
         // 光速拔刀
         if (wh_trans_settings.quickAttIndex !== 6) {
             const selectedId = ['weapon_main', 'weapon_second', 'weapon_melee', 'weapon_temp', 'weapon_fists', 'weapon_boots']
@@ -3716,14 +3731,6 @@ padding: 0.5em 0;
                         btn.onclick = () => {
                             if (wh_trans_settings.quickFinishAtt !== 3) {
                                 btn.remove();
-                                // elementReady('div[class^="modal___"] button')
-                                //     .then(() => document.querySelectorAll('div[class^="modal___"] button').forEach((e, i) => {
-                                //         if (i !== wh_trans_settings.quickFinishAtt) {
-                                //             e.style.display = 'none';
-                                //         } else {
-                                //             e.style.display = 'inline-block';
-                                //         }
-                                //     }));
                             } else {
                                 document.body.classList.toggle('wh-move-btn');
                             }
@@ -3800,14 +3807,6 @@ padding: 0.5em 0;
                         btn.onclick = () => {
                             if (wh_trans_settings.quickFinishAtt !== 3) {
                                 btn.remove();
-                                // elementReady('div[class^="modal___"] button')
-                                //     .then(() => document.querySelectorAll('div[class^="modal___"] button').forEach((e, i) => {
-                                //         if (i !== wh_trans_settings.quickFinishAtt) {
-                                //             e.style.display = 'none';
-                                //         } else {
-                                //             e.style.display = 'inline-block';
-                                //         }
-                                //     }));
                             } else {
                                 document.body.classList.toggle('wh-move-btn');
                             }
@@ -3836,15 +3835,15 @@ padding: 0.5em 0;
             }
         }
         // 光速跑路
-        if (isDev() && wh_trans_settings.quickFinishAtt !== 3) {
+        if (wh_trans_settings.quickFinishAtt !== 3) {
             const user_btn_select = ['leave', 'mug', 'hosp'][wh_trans_settings.quickFinishAtt];
             const wrap = document.querySelector('#react-root');
-            console.log('光速跑路选项选中：', user_btn_select)
+            if(isDev()) console.log('光速跑路选项选中：', user_btn_select);
             new MutationObserver(() => {
                 const btn_arr = document.querySelectorAll('div[class^="dialogButtons___"] button');
                 if (btn_arr.length > 2) btn_arr.forEach(btn => {
                     const flag = btn.innerText.toLowerCase().includes(user_btn_select);
-                    console.log('按钮内容：', btn.innerText, '，是否包含选中：', flag);
+                    if(isDev()) console.log('按钮内容：', btn.innerText, '，是否包含选中：', flag);
                     if (!flag) btn.style.display = 'none';
                 });
             }).observe(wrap, {subtree: true, attributes: true, childList: true});
