@@ -1,8 +1,8 @@
 // ==UserScript==
-// @lastmodified  202201061829
+// @lastmodified  202201071742
 // @name         Torn翻译
 // @namespace    WOOH
-// @version      0.2.0106b
+// @version      0.2.0107a
 // @description  Torn UI翻译
 // @author       Woohoo-[2687093] sabrina_devil[2696209]
 // @match        https://www.torn.com/*
@@ -15,12 +15,19 @@
     ___window___.WHTRANS = true;
 
     const CC_set = /[\u4e00-\u9fa5]/;
-    const version = '0.2.0106b';
+    const version = '0.2.0107a';
 
     const changelist = [
         {
             todo: true,
-            cont: `baza npc商店 imarket及imarket搜索结果`,
+            cont: `翻译：baza npc商店、imarket、imarket搜索结果`,
+        },
+        {
+            ver: '0.2.0107a',
+            date: '20220107',
+            cont: `可以开打时声音提示
+非12月隐藏小镇相关
+添加自动刷新间隔`,
         },
         {
             ver: '0.2.0106b',
@@ -2912,6 +2919,8 @@
     if (window.innerWidth > 1000) device = 'pc';
     else if (window.innerWidth <= 600) device = 'mobile';
     else device = 'tablet';
+
+    // 插件的设置
     const settingsArr = [
         {
             domType: 'checkbox',
@@ -2970,18 +2979,6 @@
         },
         {
             domType: 'checkbox',
-            domId: 'wh-xmastown-wt',
-            domText: ' 圣诞小镇攻略',
-            dictName: 'xmasTownWT',
-        },
-        {
-            domType: 'checkbox',
-            domId: 'wh-xmastown-notify',
-            domText: ' 圣诞小镇物品提示',
-            dictName: 'xmasTownNotify',
-        },
-        {
-            domType: 'checkbox',
             domId: 'wh-energy-alert',
             domText: ' 起飞爆E警告',
             dictName: 'energyAlert',
@@ -2993,10 +2990,40 @@
             dictName: 'attRelocate',
         },
         {
-            domType: 'checkbox',
+            domType: 'select',
             domId: 'wh-attack-reload',
-            domText: ' 攻击界面自刷新',
+            domText: '攻击界面自刷新 ',
             dictName: 'attReload',
+            domSelectOpt: [
+                {
+                    domVal: 'none',
+                    domText: '无间隔(慎)',
+                },
+                {
+                    domVal: '1',
+                    domText: '约1s',
+                },
+                {
+                    domVal: '2',
+                    domText: '约2s',
+                },
+                {
+                    domVal: '3',
+                    domText: '约3s',
+                },
+                {
+                    domVal: '4',
+                    domText: '约4s',
+                },
+                {
+                    domVal: '5',
+                    domText: '约5s',
+                },
+                {
+                    domVal: 'disabled',
+                    domText: '关闭自动刷新',
+                },
+            ],
         },
         {
             domType: 'select',
@@ -3074,43 +3101,89 @@
                     if (!e.todo) {
                         insert += `版本: ${e.ver}<br/>
 时间: ${e.date.slice(0, 4)}年${e.date.slice(4, 6)}月${e.date.slice(6)}日<br/>
-更新: ${e.cont}<br/><br/>`;
+更新: ${e.cont.replaceAll('\n', '<br/>')}<br/><br/>`;
                     }
                 });
-                popupMsg(insert, '更新历史')
+                popupMsg(insert, '更新历史');
             },
         },
     ];
-    // 左侧标签
-    const zhongIconIntervalID = window.setInterval(() => {
-        if (!document.querySelector('#wh-trans-icon')) initIcon();
-    }, 3000);
+    // 12月时加入圣诞小镇选项
+    if (new Date().getMonth() === 11) {
+        [{
+            domType: 'checkbox',
+            domId: 'wh-xmastown-wt',
+            domText: ' 圣诞小镇攻略',
+            dictName: 'xmasTownWT',
+        }, {
+            domType: 'checkbox',
+            domId: 'wh-xmastown-notify',
+            domText: ' 圣诞小镇物品提示',
+            dictName: 'xmasTownNotify',
+        }].forEach(obj => settingsArr.push(obj));
+    }
+    // 默认设置
+    const default_settings = [
+        // 开启翻译
+        {key: 'transEnable', val: false},
+        // 快速犯罪
+        {key: 'quickCrime', val: true},
+        // 任务助手
+        {key: 'missionHint', val: true},
+        // 小镇攻略
+        {key: 'xmasTownWT', val: true},
+        // 小镇提醒
+        {key: 'xmasTownNotify', val: true},
+        // 起飞爆e
+        {key: 'energyAlert', val: true},
+        // 光速拔刀 6-关闭
+        {key: 'quickAttIndex', val: 2},
+        // 光速跑路 0-leave 1-mug 2-hos 3-关闭
+        {key: 'quickFinishAtt', val: 3},
+        // 废弃
+        {key: 'attRelocate', val: true},
+        // 攻击自刷新
+        {key: 'attReload', val: 0},
+        // 开发者模式
+        {key: 'isDev', val: false},
+    ];
+    // 从浏览器读取设置数据
     const wh_trans_settings = localStorage.getItem('wh_trans_settings')
         ? JSON.parse(localStorage.getItem('wh_trans_settings'))
         : {
             // 开启翻译
-            transEnable: false,
+            transEnable: undefined,
             // 快速犯罪
-            quickCrime: true,
+            quickCrime: undefined,
             // 任务助手
-            missionHint: true,
+            missionHint: undefined,
             // 小镇攻略
-            xmasTownWT: true,
+            xmasTownWT: undefined,
             // 小镇提醒
-            xmasTownNotify: true,
+            xmasTownNotify: undefined,
             // 起飞爆e
-            energyAlert: true,
+            energyAlert: undefined,
             // 光速拔刀 6-关闭
-            quickAttIndex: 2,
+            quickAttIndex: undefined,
             // 光速跑路 0-leave 1-mug 2-hos 3-关闭
-            quickFinishAtt: 3,
+            quickFinishAtt: undefined,
             // 废弃
-            attRelocate: true,
+            attRelocate: undefined,
             // 攻击自刷新
-            attReload: false,
+            attReload: undefined,
             // 开发者模式
-            isDev: false,
+            isDev: undefined,
         };
+    // 应用默认设置
+    default_settings.forEach(_default => {
+        if (typeof wh_trans_settings[_default.key] !== typeof _default.val) wh_trans_settings[_default.key] = _default.val;
+    });
+    saveSettings();
+
+    // 左侧“中”标签
+    const zhongIconIntervalID = window.setInterval(() => {
+        if (!document.querySelector('#wh-trans-icon')) initIcon();
+    }, 3000);
     initIcon();
     addStyle(`#wh-trans-icon{
   display: inline-block;
@@ -3838,39 +3911,90 @@ padding: 0.5em 0;
         if (wh_trans_settings.quickFinishAtt !== 3) {
             const user_btn_select = ['leave', 'mug', 'hosp'][wh_trans_settings.quickFinishAtt];
             const wrap = document.querySelector('#react-root');
-            if(isDev()) console.log('光速跑路选项选中：', user_btn_select);
+            if (isDev()) console.log('光速跑路选项选中：', user_btn_select);
             new MutationObserver(() => {
                 const btn_arr = document.querySelectorAll('div[class^="dialogButtons___"] button');
                 if (btn_arr.length > 2) btn_arr.forEach(btn => {
                     const flag = btn.innerText.toLowerCase().includes(user_btn_select);
-                    if(isDev()) console.log('按钮内容：', btn.innerText, '，是否包含选中：', flag);
+                    if (isDev()) console.log('按钮内容：', btn.innerText, '，是否包含选中：', flag);
                     if (!flag) btn.style.display = 'none';
                 });
             }).observe(wrap, {subtree: true, attributes: true, childList: true});
         }
         // 自刷新
-        if (wh_trans_settings.attReload) {
-            switch (device) {
-                case 'pc': {
-                    elementReady('#defender div[class^="modal___"]').then(elem => {
-                        if (!elem.querySelector('button')) {
-                            window.location.reload();
-                        }
-                    });
-                    break;
+        let audio_played_flag;
+        if (wh_trans_settings.attReload !== 6) {
+            const selector_device_map = {
+                'pc': '#defender div[class^="modal___"]',
+                'mobile': '#attacker div[class^="modal___"]',
+                'tablet': '',
+            };
+            const selector = selector_device_map[device];
+            // switch (device) {
+            //     case 'pc': {
+            elementReady(selector).then(elem => {
+                if (!elem.querySelector('button')) {
+                    if (wh_trans_settings.attReload === 0) {
+                        window.location.reload();
+                    } else {
+                        let reload_flag;
+                        const timeout = wh_trans_settings.attReload * 1000 + getRandomInt(-500, 500);
+                        if(isDev()) console.log(`[WH] ${timeout/1000}s 后自动刷新`);
+                        window.setInterval(() => {
+                            if (reload_flag === undefined) {
+                                reload_flag = true;
+                            } else {
+                                window.location.reload();
+                            }
+                        }, timeout);
+                    }
+                } else if (audio_played_flag === undefined) {
+                    audio_played_flag = true;
+                    let play_time = 0;
+                    const audio_play_id = window.setInterval(() => {
+                        const $audio = document.createElement('audio');
+                        $audio.src = 'https://www.torn.com/js/chat/sounds/Warble_1.mp3';
+                        $audio.play().then();
+                        play_time++;
+                        if (play_time === 3) clearInterval(audio_play_id);
+                    }, 600);
                 }
-                case 'mobile': {
-                    elementReady('#attacker div[class^="modal___"]').then(elem => {
-                        if (!elem.querySelector('button')) {
-                            window.location.reload();
-                        }
-                    });
-                    break;
-                }
-                case 'tablet': {
-                    break;
-                }
-            }
+            });
+            //     break;
+            // }
+            // case 'mobile': {
+            //     elementReady('#attacker div[class^="modal___"]').then(elem => {
+            //         if (!elem.querySelector('button')) {
+            //             if (wh_trans_settings.attReload === 0) {
+            //                 window.location.reload();
+            //             } else {
+            //                 let reload_flag;
+            //                 const reload_intervalID = window.setInterval(() => {
+            //                     if (reload_flag === undefined) {
+            //                         reload_flag = true;
+            //                     } else {
+            //                         window.location.reload();
+            //                     }
+            //                 }, wh_trans_settings.attReload * 1000 + getRandomInt(-999, 999));
+            //             }
+            //         } else if (audio_played_flag === undefined) {
+            //             audio_played_flag = true;
+            //             let play_time = 0;
+            //             const audio_play_id = window.setInterval(() => {
+            //                 const $audio = document.createElement('audio');
+            //                 $audio.src = 'https://www.torn.com/js/chat/sounds/Warble_1.mp3';
+            //                 $audio.play().then();
+            //                 play_time++;
+            //                 if (play_time === 3) clearInterval(audio_play_id);
+            //             }, 600);
+            //         }
+            //     });
+            //     break;
+            // }
+            // case 'tablet': {
+            //     break;
+            // }
+            // }
         }
         return;
     }
@@ -7452,5 +7576,12 @@ margin: 0 0 3px;
                     subtree: true
                 });
         });
+    }
+
+    // 得到一个两数之间的随机整数
+    function getRandomInt(min, max) {
+        min = Math.ceil(min);
+        max = Math.floor(max);
+        return Math.floor(Math.random() * (max - min)) + min; //不含最大值，含最小值
     }
 }());
