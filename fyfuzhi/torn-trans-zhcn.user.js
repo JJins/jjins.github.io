@@ -1,8 +1,8 @@
 // ==UserScript==
-// @lastmodified  202201071742
+// @lastmodified  202201081736
 // @name         Torn翻译
 // @namespace    WOOH
-// @version      0.2.0107a
+// @version      0.2.0108a
 // @description  Torn UI翻译
 // @author       Woohoo-[2687093] sabrina_devil[2696209]
 // @match        https://www.torn.com/*
@@ -15,12 +15,18 @@
     ___window___.WHTRANS = true;
 
     const CC_set = /[\u4e00-\u9fa5]/;
-    const version = '0.2.0107a';
+    const version = '0.2.0108a';
 
     const changelist = [
         {
             todo: true,
             cont: `翻译：baza npc商店、imarket、imarket搜索结果`,
+        },
+        {
+            ver: '0.2.0108a',
+            date: '20220108',
+            cont: `修改了“Flexible Body Armor”的物品名翻译
+增加了飞花库存图`,
         },
         {
             ver: '0.2.0107a',
@@ -1755,7 +1761,7 @@
         "Combat Helmet": '战斗头盔',
         "Combat Vest": '战斗背心',
         "Liquid Body Armor": '液体防弹衣',
-        "Flexible Body Armor": '活动防弹衣',
+        "Flexible Body Armor": '弹性防弹衣',
         "Medieval Helmet": '中世纪头盔',
         "Motorcycle Helmet": '摩托车头盔',
         "Welding Helmet": '电焊头盔',
@@ -3084,6 +3090,16 @@
                 },
             ],
             dictName: 'quickFinishAtt',
+        },
+        {
+            domType: 'button',
+            domId: 'wh-foreign-stock-btn',
+            domText: '飞花库存',
+            clickFunc: function (e) {
+                e.target.blur();
+                const insert = `<img alt="stock.png" src="https://jjins.github.io/t2i/stock.png" style="max-width:100%;display:block;margin:0 auto;" />`;
+                popupMsg(insert, '飞花库存');
+            },
         },
         {
             domType: 'checkbox',
