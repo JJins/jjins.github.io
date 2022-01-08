@@ -17,7 +17,7 @@
             let scriptCont;
             let replace;
 
-            fetch('conf.json')
+            fetch(`conf.json?${performance.now()}`)
                 .then(response => response.json())
                 .then(data => {
                     latest = data['latest'];
@@ -31,7 +31,7 @@
                 if (!latest) return;
                 load.disabled = true;
                 status.innerHTML = '正在加载脚本文件';
-                fetch(latest[0].name)
+                fetch(`${latest[0].name}?${performance.now()}`)
                     .then(response => response.text())
                     .then(text => {
                         status.innerHTML = '脚本加载完成';
