@@ -285,7 +285,30 @@ def test():
     import linecache
     result = linecache.getline(filename, 5)
     result = result.split(' ')[-1].strip()
+    # 生成脚本版本号
     txt2im(result, "version.png", show=False)
+    
+    c = open("stock.txt", "rb").read().decode("utf-8")
+    stock_cfg = {
+        "width": 220, # px
+        "padding": (5, 5, 5, 5),
+        "line-height": 16, #px
+        "title-line-height": 14, #px
+        "font-size": 14, # px
+        "title-font-size": 24, # px
+        "font-family": "msyh.ttc",
+        "font-color": (255, 255, 255),
+        "font-antialiasing": True, # 字体是否反锯齿
+        "background-color": (0, 0, 0),
+        "border-size": 0,
+        "border-color": (192, 192, 192),
+        "copyright": u"",
+        "copyright-center": False, # 版权信息居中显示，如为 False 则居左显示
+        "first-line-as-title": False,
+        "break-word": False,
+    }
+    # 生成库存图片
+    txt2im(c, "stock.png", stock_cfg, show=False)
 
 
 if __name__ == "__main__":
