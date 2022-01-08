@@ -1,17 +1,19 @@
 from datetime import datetime
+
 import requests
 
 url = "https://yata.yt/api/v1/travel/export/"
 resObj = requests.get(url).json()
 
-timestamp = int(datetime.now().timestamp())
 lastUpdate = 0
 dest_arr = ['mex', 'cay', 'can', 'haw', 'uni', 'arg', 'swi', 'jap', 'chi', 'uae', 'sou']
 for dest in dest_arr:
     res_update = resObj["stocks"][dest]["update"]
     if lastUpdate < res_update:
         lastUpdate = res_update
-seq = ["更新: %ss前\n" % str(timestamp - lastUpdate)]
+lastUpdate = datetime.fromtimestamp(lastUpdate)
+seq = ["最后更新 %s\n" % lastUpdate.strftime('%H:%M:%S')]
+
 mexStock = {}
 for stock in resObj["stocks"]["mex"]["stocks"]:
     if "Dahlia" == stock["name"]:
