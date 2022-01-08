@@ -21,10 +21,13 @@ jobs:
         wget https://gitee.com/wanyi007/torncity-zhcn-translate/raw/dev/torn-trans-zhcn.user.js
         python -m pip install pygame
         python -m pip install pillow
+        python -m pip install requests
         cd ../t2i
         rm -f version.png
-        ls -a
-        echo "generating png"
+        rm -f stock.png
+        echo "generating stocks txt"
+        python fstock.py
+        echo "generating version and stocks image"
         python t2i.py
         ls -a
     - name: Commit & Push
