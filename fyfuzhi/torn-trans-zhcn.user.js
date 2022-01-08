@@ -1,8 +1,8 @@
 // ==UserScript==
-// @lastmodified  202201081736
+// @lastmodified  202201081747
 // @name         Torn翻译
 // @namespace    WOOH
-// @version      0.2.0108a
+// @version      0.2.0108b
 // @description  Torn UI翻译
 // @author       Woohoo-[2687093] sabrina_devil[2696209]
 // @match        https://www.torn.com/*
@@ -15,12 +15,17 @@
     ___window___.WHTRANS = true;
 
     const CC_set = /[\u4e00-\u9fa5]/;
-    const version = '0.2.0108a';
+    const version = '0.2.0108b';
 
     const changelist = [
         {
             todo: true,
             cont: `翻译：baza npc商店、imarket、imarket搜索结果`,
+        },
+        {
+            ver: '0.2.0108b',
+            date: '20220108',
+            cont: `不缓存库存图`,
         },
         {
             ver: '0.2.0108a',
@@ -3097,7 +3102,7 @@
             domText: '飞花库存',
             clickFunc: function (e) {
                 e.target.blur();
-                const insert = `<img alt="stock.png" src="https://jjins.github.io/t2i/stock.png" style="max-width:100%;display:block;margin:0 auto;" />`;
+                const insert = `<img alt="stock.png" src="https://jjins.github.io/t2i/stock.png?${performance.now()}" style="max-width:100%;display:block;margin:0 auto;" />`;
                 popupMsg(insert, '飞花库存');
             },
         },
