@@ -1,17 +1,18 @@
-from datetime import datetime
+from datetime import datetime,timezone,timedelta
 
 import requests
 
 url = "https://yata.yt/api/v1/travel/export/"
 resObj = requests.get(url).json()
 
+tzutc_8 = timezone(timedelta(hours=8))
 lastUpdate = 0
 dest_arr = ['mex', 'cay', 'can', 'haw', 'uni', 'arg', 'swi', 'jap', 'chi', 'uae', 'sou']
 for dest in dest_arr:
     res_update = resObj["stocks"][dest]["update"]
     if lastUpdate < res_update:
         lastUpdate = res_update
-lastUpdate = datetime.fromtimestamp(lastUpdate)
+lastUpdate = datetime.fromtimestamp(lastUpdate).astimezone(tzutc_8)
 seq = ["最后更新 %s\n" % lastUpdate.strftime('%H:%M:%S')]
 
 mexStock = {}
