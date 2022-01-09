@@ -1,4 +1,4 @@
-name: Update js file
+name: Update images
 on:
   schedule:
     - cron: "*/5 * * * *"
