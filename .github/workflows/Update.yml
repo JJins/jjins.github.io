@@ -19,7 +19,7 @@ jobs:
         cd fyfuzhi
         rm -f torn-trans-zhcn.user.js
         wgetrs=1
-        while(($wgetrs!=0))
+        while(("$wgetrs">"0"))
         do
             wget https://gitee.com/wanyi007/torncity-zhcn-translate/raw/dev/torn-trans-zhcn.user.js
             if [ "$?"= "0" ]; then
