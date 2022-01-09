@@ -1,0 +1,36 @@
+name: Update js file
+on:
+  # push:
+  schedule:
+    - cron: "*/5 * * * *"
+#   workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        ref: master
+        token: ${{ github.token }}
+    - name: Update JS
+      run: |
+        cd fyfuzhi
+        rm -f torn-trans-zhcn.user.js
+        wget https://gitee.com/wanyi007/torncity-zhcn-translate/raw/dev/torn-trans-zhcn.user.js
+        # python -m pip install pygame
+        # python -m pip install pillow
+        # python -m pip install requests
+        # cd ../t2i
+        # rm -f version.png
+        # rm -f stock.png
+        # echo "generating stocks txt"
+        # python fstock.py
+        # echo "generating version and stocks image"
+        # python t2i.py
+        # ls -a
+    - name: Commit & Push
+      uses: EndBug/add-and-commit@v7
+      with:
+        branch: master
