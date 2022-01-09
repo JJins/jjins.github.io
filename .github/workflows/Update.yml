@@ -18,7 +18,15 @@ jobs:
       run: |
         cd fyfuzhi
         rm -f torn-trans-zhcn.user.js
-        wget https://gitee.com/wanyi007/torncity-zhcn-translate/raw/dev/torn-trans-zhcn.user.js
+        wgetrs=1
+        while((wgetrs!=0))
+        do
+            wget https://gitee.com/wanyi007/torncity-zhcn-translate/raw/dev/torn-trans-zhcn.user.js
+            if [ "$?"= "0" ]; then
+                $wgetrs = 0
+            fi
+            echo $wgetrs
+        done
         python -m pip install pygame
         python -m pip install pillow
         python -m pip install requests
