@@ -1,0 +1,36 @@
+name: Update js file
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        ref: master
+        token: ${{ github.token }}
+    - name: Update image
+      run: |
+        echo "安装python依赖"
+        python -m pip install pygame
+        python -m pip install pillow
+        python -m pip install requests
+        cd t2i
+        echo "删除旧图片"
+        rm -f version.png
+        rm -f stock.png
+        echo "生成库存文本文件"
+        python fstock.py
+        echo "生成脚本版本和库存图片"
+        python t2i.py
+        echo "当前目录文件："
+        ls -a
+        echo "结束"
+    - name: Commit & Push
+      uses: EndBug/add-and-commit@v7
+      with:
+        branch: master
