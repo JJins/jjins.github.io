@@ -286,8 +286,9 @@ def test():
     result = linecache.getline(filename, 5)
     result = result.split(' ')[-1].strip()
     # 生成脚本版本号
-    txt2im(result, "version.png", show=False)
+    txt2im(result, "version.png", show = False)
     
+    # 生成库存图片
     c = open("stock.txt", "rb").read().decode("utf-8")
     stock_cfg = {
         "width": 220, # px
@@ -307,8 +308,11 @@ def test():
         "first-line-as-title": False,
         "break-word": False,
     }
-    # 生成库存图片
-    txt2im(c, "stock.png", stock_cfg, show=False)
+    txt2im(c, "stock.png", stock_cfg, show = False)
+    
+    # 生成NPC Loot图片
+    c = open("loot.txt", "rb").read().decode("utf-8")
+    txt2im(c, "loot.png", stock_cfg, show = False)
 
 
 if __name__ == "__main__":
