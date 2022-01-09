@@ -25,6 +25,8 @@ jobs:
         rm -f stock.png
         echo "生成库存文本文件"
         python fstock.py
+        echo "生成npc loot文本文件"
+        python npc_loot.py
         echo "生成脚本版本和库存图片"
         python t2i.py
         echo "当前目录文件："
