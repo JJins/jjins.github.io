@@ -20,7 +20,8 @@ jobs:
         rm -f torn-trans-zhcn.user.js
         wgetrs=1
         wget https://gitee.com/wanyi007/torncity-zhcn-translate/raw/dev/torn-trans-zhcn.user.js
-        echo $?
+        $wgetrs=$?
+        echo $wgetrs
         # while(("$wgetrs">"0"))
         # do
         #     wget https://gitee.com/wanyi007/torncity-zhcn-translate/raw/dev/torn-trans-zhcn.user.js
