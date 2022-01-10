@@ -39,7 +39,7 @@ def makeConfig(cfg=None):
         "font-family": "msyh.ttc",
         "font-color": (0, 0, 0),
         "font-antialiasing": True, # 字体是否反锯齿
-        "background-color": (255, 255, 255),
+        "background-color": (242, 242, 242),
         "border-size": 0,
         "border-color": (192, 192, 192),
         "copyright": u"",
