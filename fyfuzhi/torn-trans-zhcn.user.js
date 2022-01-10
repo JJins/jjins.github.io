@@ -1,8 +1,8 @@
 // ==UserScript==
-// @lastmodified  202201081747
+// @lastmodified  202201101539
 // @name         Torn翻译
 // @namespace    WOOH
-// @version      0.2.0108b
+// @version      0.2.0110a
 // @description  Torn UI翻译
 // @author       Woohoo-[2687093] sabrina_devil[2696209]
 // @match        https://www.torn.com/*
@@ -15,12 +15,17 @@
     ___window___.WHTRANS = true;
 
     const CC_set = /[\u4e00-\u9fa5]/;
-    const version = '0.2.0108b';
+    const version = '0.2.0110a';
 
     const changelist = [
         {
             todo: true,
             cont: `翻译：baza npc商店、imarket、imarket搜索结果`,
+        },
+        {
+            ver: '0.2.0110a',
+            date: '20220110',
+            cont: `添加生存手册的链接、添加了NPC Loot时间表`,
         },
         {
             ver: '0.2.0108b',
@@ -3107,6 +3112,32 @@
             },
         },
         {
+            domType: 'button',
+            domId: 'wh-npc-loot-btn',
+            domText: 'NPC LOOT',
+            clickFunc: function (e) {
+                e.target.blur();
+                const insert = `<img alt="stock.png" src="https://jjins.github.io/t2i/loot.png?${performance.now()}" style="max-width:100%;display:block;margin:0 auto;" />
+<p>点击开打：</p>
+<p><a href="https://www.torn.com/loader.php?sid=attack&user2ID=4" target="_blank">Duke</a> 
+<a href="https://www.torn.com/loader.php?sid=attack&user2ID=15" target="_blank">Leslie</a> 
+<a href="https://www.torn.com/loader.php?sid=attack&user2ID=19" target="_blank">Jimmy</a> 
+<a href="https://www.torn.com/loader.php?sid=attack&user2ID=20" target="_blank">Fernando</a> 
+<a href="https://www.torn.com/loader.php?sid=attack&user2ID=21" target="_blank">Tiny</a></p>
+`;
+                popupMsg(insert, 'NPC LOOT');
+            },
+        },
+        {
+            domType: 'button',
+            domId: 'wh-link-shengcunshouce',
+            domText: '生存手册',
+            clickFunc: function (e) {
+                e.target.blur();
+                window.open('https://docs.qq.com/doc/DTVpmV2ZaRnB0RG56');
+            },
+        },
+        {
             domType: 'checkbox',
             domId: 'wh-dev-mode',
             domText: ' 开发者模式',
@@ -3209,12 +3240,14 @@
     addStyle(`#wh-trans-icon{
   display: inline-block;
   position: fixed;
-  top: calc(50% - 157px);
+  /*top: calc(50% - 157px);*/
+  top:0;
   left: 0;
-  z-index: 20000;
+  z-index: 100010;
   border: solid 1px #b5b5b5;
   border-left: none;
-  border-radius: 0 4px 4px 0;
+  border-top: none;
+  border-radius: 0 0 4px 0;
   max-width: 200px;
 }
 #wh-trans-icon button{
@@ -7523,6 +7556,12 @@ margin: 0 0 3px;
                         wh_trans_settings[setting.dictName] = elem.target.selectedIndex;
                         saveSettings();
                     };
+                    break;
+                }
+                case 'plain': {
+                    newNode.id = setting.domId;
+                    newNode.innerHTML += setting.domHTML;
+                    settingNode.appendChild(newNode);
                     break;
                 }
             }
