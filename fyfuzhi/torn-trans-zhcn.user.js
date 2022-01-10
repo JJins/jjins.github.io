@@ -1,8 +1,8 @@
 // ==UserScript==
-// @lastmodified  202201101539
+// @lastmodified  202201101639
 // @name         Torn翻译
 // @namespace    WOOH
-// @version      0.2.0110a
+// @version      0.2.0110b
 // @description  Torn UI翻译
 // @author       Woohoo-[2687093] sabrina_devil[2696209]
 // @match        https://www.torn.com/*
@@ -15,12 +15,17 @@
     ___window___.WHTRANS = true;
 
     const CC_set = /[\u4e00-\u9fa5]/;
-    const version = '0.2.0110a';
+    const version = '0.2.0110b';
 
     const changelist = [
         {
             todo: true,
             cont: `翻译：baza npc商店、imarket、imarket搜索结果`,
+        },
+        {
+            ver: '0.2.0110b',
+            date: '20220110',
+            cont: `添加自动开打和结束战斗`,
         },
         {
             ver: '0.2.0110a',
@@ -2938,12 +2943,14 @@
 
     // 插件的设置
     const settingsArr = [
+        // 开启翻译
         {
             domType: 'checkbox',
             domId: 'wh-trans-enable',
             domText: ' 开启翻译<span> (施工中)</span>',
             dictName: 'transEnable',
         },
+        // 更新词库按钮
         {
             domType: 'button',
             domId: 'wh-trans-data-update',
@@ -2981,30 +2988,35 @@
                 }
             },
         },
+        // 快速crime
         {
             domType: 'checkbox',
             domId: 'wh-quick-crime',
             domText: ' 快速犯罪',
             dictName: 'quickCrime',
         },
+        // 任务助手
         {
             domType: 'checkbox',
             domId: 'wh-mission-lint',
             domText: ' 任务助手',
             dictName: 'missionHint',
         },
+        // 起飞警告
         {
             domType: 'checkbox',
             domId: 'wh-energy-alert',
             domText: ' 起飞爆E警告',
             dictName: 'energyAlert',
         },
+        // 攻击链接转跳
         {
             domType: 'checkbox',
             domId: 'wh-attack-relocate',
             domText: ' 真·攻击界面转跳',
             dictName: 'attRelocate',
         },
+        // 攻击界面自刷新
         {
             domType: 'select',
             domId: 'wh-attack-reload',
@@ -3041,6 +3053,7 @@
                 },
             ],
         },
+        // 光速拔刀
         {
             domType: 'select',
             domId: 'wh-quick-attack-index',
@@ -3077,6 +3090,7 @@
             ],
             dictName: 'quickAttIndex',
         },
+        // 光速跑路
         {
             domType: 'select',
             domId: 'wh-quick-mug',
@@ -3101,6 +3115,14 @@
             ],
             dictName: 'quickFinishAtt',
         },
+        // 自动开打和结束
+        {
+            domType: 'checkbox',
+            domId: 'wh-auto-start-finish',
+            domText: ' 自动开打和结束 [慎!!!]',
+            dictName: 'autoStartFinish',
+        },
+        // 飞花库存
         {
             domType: 'button',
             domId: 'wh-foreign-stock-btn',
@@ -3111,6 +3133,7 @@
                 popupMsg(insert, '飞花库存');
             },
         },
+        // NPC LOOT
         {
             domType: 'button',
             domId: 'wh-npc-loot-btn',
@@ -3128,6 +3151,7 @@
                 popupMsg(insert, 'NPC LOOT');
             },
         },
+        // 生存手册
         {
             domType: 'button',
             domId: 'wh-link-shengcunshouce',
@@ -3137,12 +3161,14 @@
                 window.open('https://docs.qq.com/doc/DTVpmV2ZaRnB0RG56');
             },
         },
+        // dev
         {
             domType: 'checkbox',
             domId: 'wh-dev-mode',
             domText: ' 开发者模式',
             dictName: 'isDev',
         },
+        // 更新历史
         {
             domType: 'button',
             domId: 'wh-changeList',
@@ -3192,6 +3218,8 @@
         {key: 'quickAttIndex', val: 2},
         // 光速跑路 0-leave 1-mug 2-hos 3-关闭
         {key: 'quickFinishAtt', val: 3},
+        // 自动开打和结束
+        {key: 'autoStartFinish', val: false},
         // 废弃
         {key: 'attRelocate', val: true},
         // 攻击自刷新
@@ -3219,6 +3247,8 @@
             quickAttIndex: undefined,
             // 光速跑路 0-leave 1-mug 2-hos 3-关闭
             quickFinishAtt: undefined,
+            // 自动开打和结束
+            autoStartFinish: undefined,
             // 废弃
             attRelocate: undefined,
             // 攻击自刷新
@@ -3803,10 +3833,9 @@ padding: 0.5em 0;
         return;
     }
 
-    /**
-     * 攻击页面
-     */
+    // 攻击页面
     if (window.location.href.contains(/loader\.php\?sid=attack/)) {
+        let stop_reload = false;
         // 光速拔刀
         if (wh_trans_settings.quickAttIndex !== 6) {
             const selectedId = ['weapon_main', 'weapon_second', 'weapon_melee', 'weapon_temp', 'weapon_fists', 'weapon_boots']
@@ -3858,6 +3887,8 @@ padding: 0.5em 0;
                         btn.onclick = () => {
                             if (wh_trans_settings.quickFinishAtt !== 3) {
                                 btn.remove();
+                                // 停止自动刷新
+                                stop_reload = true;
                             } else {
                                 document.body.classList.toggle('wh-move-btn');
                             }
@@ -3934,6 +3965,8 @@ padding: 0.5em 0;
                         btn.onclick = () => {
                             if (wh_trans_settings.quickFinishAtt !== 3) {
                                 btn.remove();
+                                // 停止自动刷新
+                                stop_reload = true;
                             } else {
                                 document.body.classList.toggle('wh-move-btn');
                             }
@@ -3944,9 +3977,26 @@ padding: 0.5em 0;
                         break;
                     }
                 }
+                // 自动开打
+                if (wh_trans_settings.autoStartFinish === true) {
+                    if (btn.innerText.includes('(')) {
+                        let interval_id = window.setInterval(() => {
+                            if (!btn) {
+                                clearInterval(interval_id);
+                                return;
+                            }
+                            try {
+                                btn.click();
+                            } catch {
+                            }
+                        }, 100);
+                    } else {
+                        btn.click();
+                    }
+                }
             });
-            const CUR_DISABLED = false;
-            if (CUR_DISABLED) {
+            const CUR_DISABLED = true;
+            if (!CUR_DISABLED) {
                 const original_fetch = window.fetch;
                 window.fetch = async (url, init) => {
                     let response = await original_fetch(url, init)
@@ -3968,36 +4018,41 @@ padding: 0.5em 0;
             if (isDev()) console.log('光速跑路选项选中：', user_btn_select);
             new MutationObserver(() => {
                 const btn_arr = document.querySelectorAll('div[class^="dialogButtons___"] button');
-                if (btn_arr.length > 2) btn_arr.forEach(btn => {
+                if (btn_arr.length > 1) btn_arr.forEach(btn => {
                     const flag = btn.innerText.toLowerCase().includes(user_btn_select);
                     if (isDev()) console.log('按钮内容：', btn.innerText, '，是否包含选中：', flag);
                     if (!flag) btn.style.display = 'none';
+                    // 自动结束
+                    else if (wh_trans_settings.autoStartFinish === true) {
+                        try {
+                            btn.click();
+                        } catch {
+                        }
+                    }
                 });
             }).observe(wrap, {subtree: true, attributes: true, childList: true});
         }
         // 自刷新
         let audio_played_flag;
-        if (wh_trans_settings.attReload !== 6) {
+        if (wh_trans_settings.attReload !== 6 && stop_reload !== true) {
             const selector_device_map = {
                 'pc': '#defender div[class^="modal___"]',
                 'mobile': '#attacker div[class^="modal___"]',
                 'tablet': '',
             };
             const selector = selector_device_map[device];
-            // switch (device) {
-            //     case 'pc': {
             elementReady(selector).then(elem => {
                 if (!elem.querySelector('button')) {
-                    if (wh_trans_settings.attReload === 0) {
+                    if (wh_trans_settings.attReload === 0 && stop_reload !== true) {
                         window.location.reload();
                     } else {
                         let reload_flag;
                         const timeout = wh_trans_settings.attReload * 1000 + getRandomInt(-500, 500);
-                        if(isDev()) console.log(`[WH] ${timeout/1000}s 后自动刷新`);
+                        if (isDev()) console.log(`[WH] ${timeout / 1000}s 后自动刷新`);
                         window.setInterval(() => {
                             if (reload_flag === undefined) {
                                 reload_flag = true;
-                            } else {
+                            } else if (stop_reload !== true) {
                                 window.location.reload();
                             }
                         }, timeout);
@@ -4014,41 +4069,6 @@ padding: 0.5em 0;
                     }, 600);
                 }
             });
-            //     break;
-            // }
-            // case 'mobile': {
-            //     elementReady('#attacker div[class^="modal___"]').then(elem => {
-            //         if (!elem.querySelector('button')) {
-            //             if (wh_trans_settings.attReload === 0) {
-            //                 window.location.reload();
-            //             } else {
-            //                 let reload_flag;
-            //                 const reload_intervalID = window.setInterval(() => {
-            //                     if (reload_flag === undefined) {
-            //                         reload_flag = true;
-            //                     } else {
-            //                         window.location.reload();
-            //                     }
-            //                 }, wh_trans_settings.attReload * 1000 + getRandomInt(-999, 999));
-            //             }
-            //         } else if (audio_played_flag === undefined) {
-            //             audio_played_flag = true;
-            //             let play_time = 0;
-            //             const audio_play_id = window.setInterval(() => {
-            //                 const $audio = document.createElement('audio');
-            //                 $audio.src = 'https://www.torn.com/js/chat/sounds/Warble_1.mp3';
-            //                 $audio.play().then();
-            //                 play_time++;
-            //                 if (play_time === 3) clearInterval(audio_play_id);
-            //             }, 600);
-            //         }
-            //     });
-            //     break;
-            // }
-            // case 'tablet': {
-            //     break;
-            // }
-            // }
         }
         return;
     }
