@@ -1,8 +1,8 @@
 // ==UserScript==
-// @lastmodified  202201101639
+// @lastmodified  202201111440
 // @name         Torn翻译
 // @namespace    WOOH
-// @version      0.2.0110b
+// @version      0.2.0111a
 // @description  Torn UI翻译
 // @author       Woohoo-[2687093] sabrina_devil[2696209]
 // @match        https://www.torn.com/*
@@ -15,12 +15,17 @@
     ___window___.WHTRANS = true;
 
     const CC_set = /[\u4e00-\u9fa5]/;
-    const version = '0.2.0110b';
+    const version = '0.2.0111a';
 
     const changelist = [
         {
             todo: true,
             cont: `翻译：baza npc商店、imarket、imarket搜索结果`,
+        },
+        {
+            ver: '0.2.0111a',
+            date: '20220111',
+            cont: `添加危险行为警告开关`,
         },
         {
             ver: '0.2.0110b',
@@ -2941,17 +2946,86 @@
     else if (window.innerWidth <= 600) device = 'mobile';
     else device = 'tablet';
 
-    // 插件的设置
-    const settingsArr = [
+    // 默认设置
+    const default_settings = [
         // 开启翻译
-        {
+        {key: 'transEnable', val: false},
+        // 快速犯罪
+        {key: 'quickCrime', val: true},
+        // 任务助手
+        {key: 'missionHint', val: true},
+        // 小镇攻略
+        {key: 'xmasTownWT', val: true},
+        // 小镇提醒
+        {key: 'xmasTownNotify', val: true},
+        // 起飞爆e
+        {key: 'energyAlert', val: true},
+        // 光速拔刀 6-关闭
+        {key: 'quickAttIndex', val: 2},
+        // 光速跑路 0-leave 1-mug 2-hos 3-关闭
+        {key: 'quickFinishAtt', val: 3},
+        // 自动开打和结束
+        {key: 'autoStartFinish', val: false},
+        // 废弃
+        {key: 'attRelocate', val: true},
+        // 攻击自刷新 0-无间隔 1-5s 6-关闭
+        {key: 'attReload', val: 6},
+        // 开发者模式
+        {key: 'isDev', val: false},
+
+        // 危险行为⚠️
+        {key: 'dangerZone', val: false},
+    ];
+    // 从浏览器读取设置数据
+    const wh_trans_settings = localStorage.getItem('wh_trans_settings')
+        ? JSON.parse(localStorage.getItem('wh_trans_settings'))
+        : {
+            // 开启翻译
+            transEnable: undefined,
+            // 快速犯罪
+            quickCrime: undefined,
+            // 任务助手
+            missionHint: undefined,
+            // 小镇攻略
+            xmasTownWT: undefined,
+            // 小镇提醒
+            xmasTownNotify: undefined,
+            // 起飞爆e
+            energyAlert: undefined,
+            // 光速拔刀 6-关闭
+            quickAttIndex: undefined,
+            // 光速跑路 0-leave 1-mug 2-hos 3-关闭
+            quickFinishAtt: undefined,
+            // 自动开打和结束
+            autoStartFinish: undefined,
+            // 废弃
+            attRelocate: undefined,
+            // 攻击自刷新 0-无间隔 1-5s 6-关闭
+            attReload: undefined,
+            // 开发者模式
+            isDev: undefined,
+
+            // 危险行为⚠️
+            dangerZone: undefined,
+        };
+    // 对新值应用默认
+    default_settings.forEach(_default => {
+        if (typeof wh_trans_settings[_default.key] !== typeof _default.val) wh_trans_settings[_default.key] = _default.val;
+    });
+    saveSettings();
+
+    // 插件的设置dom配置列表
+    const settingsArr = []
+    {
+        // 开启翻译
+        settingsArr.push({
             domType: 'checkbox',
             domId: 'wh-trans-enable',
             domText: ' 开启翻译<span> (施工中)</span>',
             dictName: 'transEnable',
-        },
+        })
         // 更新词库按钮
-        {
+        settingsArr.push({
             domType: 'button',
             domId: 'wh-trans-data-update',
             domText: '更新翻译词库数据',
@@ -2987,74 +3061,52 @@
                     }, false);
                 }
             },
-        },
+        })
+        // 12月时加入圣诞小镇选项
+        if (new Date().getMonth() === 11) {
+            settingsArr.push({
+                domType: 'checkbox',
+                domId: 'wh-xmastown-wt',
+                domText: ' 圣诞小镇攻略',
+                dictName: 'xmasTownWT',
+            });
+            settingsArr.push({
+                domType: 'checkbox',
+                domId: 'wh-xmastown-notify',
+                domText: ' 圣诞小镇物品提示',
+                dictName: 'xmasTownNotify',
+            });
+        }
         // 快速crime
-        {
+        settingsArr.push({
             domType: 'checkbox',
             domId: 'wh-quick-crime',
             domText: ' 快速犯罪',
             dictName: 'quickCrime',
-        },
+        })
         // 任务助手
-        {
+        settingsArr.push({
             domType: 'checkbox',
             domId: 'wh-mission-lint',
             domText: ' 任务助手',
             dictName: 'missionHint',
-        },
+        })
         // 起飞警告
-        {
+        settingsArr.push({
             domType: 'checkbox',
             domId: 'wh-energy-alert',
             domText: ' 起飞爆E警告',
             dictName: 'energyAlert',
-        },
+        })
         // 攻击链接转跳
-        {
+        settingsArr.push({
             domType: 'checkbox',
             domId: 'wh-attack-relocate',
             domText: ' 真·攻击界面转跳',
             dictName: 'attRelocate',
-        },
-        // 攻击界面自刷新
-        {
-            domType: 'select',
-            domId: 'wh-attack-reload',
-            domText: '攻击界面自刷新 ',
-            dictName: 'attReload',
-            domSelectOpt: [
-                {
-                    domVal: 'none',
-                    domText: '无间隔(慎)',
-                },
-                {
-                    domVal: '1',
-                    domText: '约1s',
-                },
-                {
-                    domVal: '2',
-                    domText: '约2s',
-                },
-                {
-                    domVal: '3',
-                    domText: '约3s',
-                },
-                {
-                    domVal: '4',
-                    domText: '约4s',
-                },
-                {
-                    domVal: '5',
-                    domText: '约5s',
-                },
-                {
-                    domVal: 'disabled',
-                    domText: '关闭自动刷新',
-                },
-            ],
-        },
+        })
         // 光速拔刀
-        {
+        settingsArr.push({
             domType: 'select',
             domId: 'wh-quick-attack-index',
             domText: '光速拔刀 ',
@@ -3089,9 +3141,9 @@
                 },
             ],
             dictName: 'quickAttIndex',
-        },
+        })
         // 光速跑路
-        {
+        settingsArr.push({
             domType: 'select',
             domId: 'wh-quick-mug',
             domText: '光速跑路 ',
@@ -3114,16 +3166,60 @@
                 },
             ],
             dictName: 'quickFinishAtt',
-        },
-        // 自动开打和结束
-        {
-            domType: 'checkbox',
-            domId: 'wh-auto-start-finish',
-            domText: ' 自动开打和结束 [慎!!!]',
-            dictName: 'autoStartFinish',
-        },
+        })
+        // 危险行为⚠️
+        if (wh_trans_settings.dangerZone === true) {
+            // 攻击界面自刷新
+            settingsArr.push({
+                domType: 'select',
+                domId: 'wh-attack-reload',
+                domText: '⚠️攻击界面自动刷新 ',
+                dictName: 'attReload',
+                domSelectOpt: [
+                    {
+                        domVal: 'none',
+                        domText: '无间隔',
+                    },
+                    {
+                        domVal: '1',
+                        domText: '约1s',
+                    },
+                    {
+                        domVal: '2',
+                        domText: '约2s',
+                    },
+                    {
+                        domVal: '3',
+                        domText: '约3s',
+                    },
+                    {
+                        domVal: '4',
+                        domText: '约4s',
+                    },
+                    {
+                        domVal: '5',
+                        domText: '约5s',
+                    },
+                    {
+                        domVal: 'disabled',
+                        domText: '关闭',
+                    },
+                ],
+            });
+            // 自动开打和结束
+            settingsArr.push({
+                domType: 'checkbox',
+                domId: 'wh-auto-start-finish',
+                domText: ' ⚠️自动开打和结束',
+                dictName: 'autoStartFinish',
+            });
+        } else {
+            wh_trans_settings.autoStartFinish = false;
+            wh_trans_settings.attReload = 6;
+            saveSettings();
+        }
         // 飞花库存
-        {
+        settingsArr.push({
             domType: 'button',
             domId: 'wh-foreign-stock-btn',
             domText: '飞花库存',
@@ -3132,12 +3228,12 @@
                 const insert = `<img alt="stock.png" src="https://jjins.github.io/t2i/stock.png?${performance.now()}" style="max-width:100%;display:block;margin:0 auto;" />`;
                 popupMsg(insert, '飞花库存');
             },
-        },
+        })
         // NPC LOOT
-        {
+        settingsArr.push({
             domType: 'button',
             domId: 'wh-npc-loot-btn',
-            domText: 'NPC LOOT',
+            domText: 'NPC LOOT (真·世界BOSS)',
             clickFunc: function (e) {
                 e.target.blur();
                 const insert = `<img alt="stock.png" src="https://jjins.github.io/t2i/loot.png?${performance.now()}" style="max-width:100%;display:block;margin:0 auto;" />
@@ -3150,9 +3246,9 @@
 `;
                 popupMsg(insert, 'NPC LOOT');
             },
-        },
+        })
         // 生存手册
-        {
+        settingsArr.push({
             domType: 'button',
             domId: 'wh-link-shengcunshouce',
             domText: '生存手册',
@@ -3160,20 +3256,39 @@
                 e.target.blur();
                 window.open('https://docs.qq.com/doc/DTVpmV2ZaRnB0RG56');
             },
-        },
+        })
+        // 危险行为开关⚠️
+        settingsArr.push({
+            domType: 'button',
+            domId: 'wh-danger-zone',
+            domText: '危险行为',
+            clickFunc: function (e) {
+                e.target.blur();
+                const insert = `<p>即将打开危险功能，这些功能可能会造成账号封禁。请自行考虑是否使用。</p>
+<p><label><input type="checkbox" id="wh-danger-warning-check" ${wh_trans_settings.dangerZone?'checked ':' '}/> 知道了，开启</label></p>
+<div><button disabled>保存</button></div>`;
+                popupMsg(insert, '⚠️警告');
+                // const close_btn = document.querySelector('#wh-popup-close');
+                const warning_check = document.querySelector('#wh-popup-cont input');
+                const ok_btn = document.querySelector('#wh-popup-cont button');
+                warning_check.onchange = () => ok_btn.disabled = false;
+                ok_btn.onclick = () => {
+                    wh_trans_settings.dangerZone = warning_check.checked;
+                    saveSettings();
+                    window.location.reload();
+                };
+            },
+        })
         // dev
-        {
+        settingsArr.push({
             domType: 'checkbox',
             domId: 'wh-dev-mode',
             domText: ' 开发者模式',
             dictName: 'isDev',
-        },
+        })
         // 更新历史
-        {
-            domType: 'button',
-            domId: 'wh-changeList',
-            domText: '更新历史',
-            clickFunc: () => {
+        settingsArr.push({
+            domType: 'button', domId: 'wh-changeList', domText: '更新历史', clickFunc: () => {
                 let insert = '';
                 changelist.forEach(e => {
                     if (!e.todo) {
@@ -3184,88 +3299,13 @@
                 });
                 popupMsg(insert, '更新历史');
             },
-        },
-    ];
-    // 12月时加入圣诞小镇选项
-    if (new Date().getMonth() === 11) {
-        [{
-            domType: 'checkbox',
-            domId: 'wh-xmastown-wt',
-            domText: ' 圣诞小镇攻略',
-            dictName: 'xmasTownWT',
-        }, {
-            domType: 'checkbox',
-            domId: 'wh-xmastown-notify',
-            domText: ' 圣诞小镇物品提示',
-            dictName: 'xmasTownNotify',
-        }].forEach(obj => settingsArr.push(obj));
+        })
     }
-    // 默认设置
-    const default_settings = [
-        // 开启翻译
-        {key: 'transEnable', val: false},
-        // 快速犯罪
-        {key: 'quickCrime', val: true},
-        // 任务助手
-        {key: 'missionHint', val: true},
-        // 小镇攻略
-        {key: 'xmasTownWT', val: true},
-        // 小镇提醒
-        {key: 'xmasTownNotify', val: true},
-        // 起飞爆e
-        {key: 'energyAlert', val: true},
-        // 光速拔刀 6-关闭
-        {key: 'quickAttIndex', val: 2},
-        // 光速跑路 0-leave 1-mug 2-hos 3-关闭
-        {key: 'quickFinishAtt', val: 3},
-        // 自动开打和结束
-        {key: 'autoStartFinish', val: false},
-        // 废弃
-        {key: 'attRelocate', val: true},
-        // 攻击自刷新
-        {key: 'attReload', val: 0},
-        // 开发者模式
-        {key: 'isDev', val: false},
-    ];
-    // 从浏览器读取设置数据
-    const wh_trans_settings = localStorage.getItem('wh_trans_settings')
-        ? JSON.parse(localStorage.getItem('wh_trans_settings'))
-        : {
-            // 开启翻译
-            transEnable: undefined,
-            // 快速犯罪
-            quickCrime: undefined,
-            // 任务助手
-            missionHint: undefined,
-            // 小镇攻略
-            xmasTownWT: undefined,
-            // 小镇提醒
-            xmasTownNotify: undefined,
-            // 起飞爆e
-            energyAlert: undefined,
-            // 光速拔刀 6-关闭
-            quickAttIndex: undefined,
-            // 光速跑路 0-leave 1-mug 2-hos 3-关闭
-            quickFinishAtt: undefined,
-            // 自动开打和结束
-            autoStartFinish: undefined,
-            // 废弃
-            attRelocate: undefined,
-            // 攻击自刷新
-            attReload: undefined,
-            // 开发者模式
-            isDev: undefined,
-        };
-    // 应用默认设置
-    default_settings.forEach(_default => {
-        if (typeof wh_trans_settings[_default.key] !== typeof _default.val) wh_trans_settings[_default.key] = _default.val;
-    });
-    saveSettings();
 
     // 左侧“中”标签
-    const zhongIconIntervalID = window.setInterval(() => {
-        if (!document.querySelector('#wh-trans-icon')) initIcon();
-    }, 3000);
+    // const zhongIconIntervalID = window.setInterval(() => {
+    //     if (!document.querySelector('#wh-trans-icon')) initIcon();
+    // }, 3000);
     initIcon();
     addStyle(`#wh-trans-icon{
   display: inline-block;
@@ -3286,7 +3326,7 @@ padding:0;
 border:0;
 }
 #wh-gSettings div{
-margin: 1px 0;
+margin: 4px 0 0;
 }
 #wh-trans-icon .wh-container{
 margin:0;
@@ -3304,7 +3344,7 @@ padding:16px !important;
 #wh-latest-version{
 display:inline-block;
 background-image:url("https://jjins.github.io/t2i/version.png");
-height:17px;
+height:16px;
 width: 66px;}
 #wh-popup{
     position: fixed;
@@ -3349,6 +3389,15 @@ padding:0.25em 0;
 #wh-popup-cont h4{
 margin:0;
 padding: 0.5em 0;
+}
+
+#wh-popup-cont button{
+    /*float: right;*/
+    margin: 0px;
+    padding: 5px 8px;
+    border: solid 2px white;
+    color: white;
+    border-radius: 3px;
 }
 `);
 
