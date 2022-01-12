@@ -1,8 +1,8 @@
 // ==UserScript==
-// @lastmodified  202201111440
+// @lastmodified  202201130028
 // @name         Torn翻译
 // @namespace    WOOH
-// @version      0.2.0111a
+// @version      0.2.0113a
 // @description  Torn UI翻译
 // @author       Woohoo-[2687093] sabrina_devil[2696209]
 // @match        https://www.torn.com/*
@@ -15,12 +15,17 @@
     ___window___.WHTRANS = true;
 
     const CC_set = /[\u4e00-\u9fa5]/;
-    const version = '0.2.0111a';
+    const version = '0.2.0113a';
 
     const changelist = [
         {
             todo: true,
             cont: `翻译：baza npc商店、imarket、imarket搜索结果`,
+        },
+        {
+            ver: '0.2.0113a',
+            date: '20220113',
+            cont: `添加飞行闹钟`,
         },
         {
             ver: '0.2.0111a',
@@ -2960,6 +2965,8 @@
         {key: 'xmasTownNotify', val: true},
         // 起飞爆e
         {key: 'energyAlert', val: true},
+        // 飞行闹钟
+        {key: 'trvAlarm', val: true},
         // 光速拔刀 6-关闭
         {key: 'quickAttIndex', val: 2},
         // 光速跑路 0-leave 1-mug 2-hos 3-关闭
@@ -2992,6 +2999,8 @@
             xmasTownNotify: undefined,
             // 起飞爆e
             energyAlert: undefined,
+            // 飞行闹钟
+            trvAlarm: undefined,
             // 光速拔刀 6-关闭
             quickAttIndex: undefined,
             // 光速跑路 0-leave 1-mug 2-hos 3-关闭
@@ -3096,6 +3105,13 @@
             domType: 'checkbox',
             domId: 'wh-energy-alert',
             domText: ' 起飞爆E警告',
+            dictName: 'energyAlert',
+        })
+        // 飞行闹钟
+        settingsArr.push({
+            domType: 'checkbox',
+            domId: 'wh-trv-alarm-check',
+            domText: ' 飞行闹钟(仅PC)',
             dictName: 'energyAlert',
         })
         // 攻击链接转跳
@@ -3261,11 +3277,11 @@
         settingsArr.push({
             domType: 'button',
             domId: 'wh-danger-zone',
-            domText: '危险行为',
+            domText: '危险功能',
             clickFunc: function (e) {
                 e.target.blur();
-                const insert = `<p>即将打开危险功能，这些功能可能会造成账号封禁。请自行考虑是否使用。</p>
-<p><label><input type="checkbox" id="wh-danger-warning-check" ${wh_trans_settings.dangerZone?'checked ':' '}/> 知道了，开启</label></p>
+                const insert = `<p>即将打开危险功能，使用这些功能可能会造成账号封禁。请自行考虑是否使用。</p>
+<p><label><input type="checkbox" id="wh-danger-warning-check" ${wh_trans_settings.dangerZone ? 'checked ' : ' '}/> 知道了，开启</label></p>
 <div><button disabled>保存</button></div>`;
                 popupMsg(insert, '⚠️警告');
                 // const close_btn = document.querySelector('#wh-popup-close');
@@ -3343,7 +3359,7 @@ padding:16px !important;
 #wh-trans-icon.wh-icon-expanded .wh-container{display:block;}
 #wh-latest-version{
 display:inline-block;
-background-image:url("https://jjins.github.io/t2i/version.png");
+background-image:url("https://jjins.github.io/t2i/version.png?${performance.now()}");
 height:16px;
 width: 66px;}
 #wh-popup{
@@ -3736,39 +3752,249 @@ padding: 0.5em 0;
      * 飞行页面
      */
     if (window.location.href.indexOf('index.php') >= 0 &&
-        $('div.travelling h4').length !== 0 &&
-        wh_trans_settings.transEnable) {
-        const travelOB = new MutationObserver(travelOBInit);
+        !!document.querySelector('div.travelling h4')) {
+        if (wh_trans_settings.transEnable) {
+            const travelOB = new MutationObserver(travelOBInit);
 
-        function travelOBInit() {
-            travelOB.disconnect();
+            function travelOBInit() {
+                travelOB.disconnect();
+                travelTrans();
+                travelOB.observe($('div.content-wrapper')[0], {childList: true, subtree: true});
+            }
+
+            function travelTrans() {
+                titleTrans();
+                contentTitleLinksTrans();
+
+                // 气泡
+                if (tipsDict[$('div.inner-popup').text().trim()])
+                    $('div.inner-popup').text(tipsDict[$('div.inner-popup').text().trim()]);
+                // Remaining Flight Time -
+                $('div.destination-title span').contents().each((i, e) => {
+                    if (e.childNodes.length !== 0) return;
+                    if (!e.nodeValue) return;
+                    if (travelingDict[e.nodeValue.trim()])
+                        e.nodeValue = travelingDict[e.nodeValue.trim()];
+                });
+                // torntools扩展插件落地时间
+                if ($('div.tt-landing-time span.description').text().split(' ')[0] === 'Landing') {
+                    const landingTime = $('div.tt-landing-time span.description').text().slice(11, 19);
+                    $('div.tt-landing-time span.description').text('于 ' + landingTime + ' 降落');
+                }
+            }
+
             travelTrans();
             travelOB.observe($('div.content-wrapper')[0], {childList: true, subtree: true});
         }
+        // 飞行闹钟
+        if (device === 'pc' && wh_trans_settings.energyAlert) elementReady('#countrTravel.hasCountdown').then(node => {
+            const remaining_arr = node.innerText.trim().split(':');
 
-        function travelTrans() {
-            titleTrans();
-            contentTitleLinksTrans();
+            const wh_trv_alarm = localStorage.getItem('wh_trv_alarm')
+                ? JSON.parse(localStorage.getItem('wh_trv_alarm'))
+                : {'enable': true, 'alert_time': 30, 'node_pos': [240, 240]};
+            const save_trv_settings = () => localStorage.setItem('wh_trv_alarm', JSON.stringify(wh_trv_alarm));
 
-            // 气泡
-            if (tipsDict[$('div.inner-popup').text().trim()])
-                $('div.inner-popup').text(tipsDict[$('div.inner-popup').text().trim()]);
-            // Remaining Flight Time -
-            $('div.destination-title span').contents().each((i, e) => {
-                if (e.childNodes.length !== 0) return;
-                if (!e.nodeValue) return;
-                if (travelingDict[e.nodeValue.trim()])
-                    e.nodeValue = travelingDict[e.nodeValue.trim()];
+            const wh_trv_alarm_node = document.createElement('div');
+            wh_trv_alarm_node.id = 'wh-trv-alarm';
+            wh_trv_alarm_node.style.left = `${wh_trv_alarm.node_pos[0] || 240}px`;
+            wh_trv_alarm_node.style.top = `${wh_trv_alarm.node_pos[1] || 240}px`;
+            wh_trv_alarm_node.innerHTML = `<div id="wh-trv-error"><p><b>❌ 权限错误</b><br/>点击网页内任意位置以激活闹钟</p></div>
+<div id="wh-trv-alarm-title">
+  <div id="wh-trv-alarm-move-btn"><span></span></div>
+  <h5 id="wh-trv-alarm-header">飞行闹钟</h5>
+</div>
+<div id="wh-trv-alarm-bottom">
+  <div id="wh-trv-alarm-cont">
+    <p id="wh-trv-alarm-remaining"></p>
+    <p><span id="wh-trv-status">飞行中...</span><span>✈</span></p>
+    <div><label><input type="checkbox" ${wh_trv_alarm.enable ? 'checked ' : ' '}/> 开启闹钟</label></div>
+    <div><label>落地前响铃时长(单位秒): <input type="number" value="${wh_trv_alarm.alert_time || 30}" /></label><button>确定</button></div>
+    <div class="wh-trv-alarm-stop-hide"><button>停止闹钟</button></div>
+  </div>
+</div>
+`;
+            addStyle(`
+#wh-trv-alarm{
+position:absolute;
+width:248px;
+/*left:${wh_trv_alarm.node_pos[0] || 240}px;
+top:${wh_trv_alarm.node_pos[1] || 240}px;*/
+background:white;
+border-radius:4px;
+box-shadow:#0000001f 0 0 10px 4px;
+border:solid 1px #aaa;
+z-index:100001;
+}
+#wh-trv-alarm button{
+margin:0;
+}
+#wh-trv-error{
+position:absolute;
+width:100%;
+height:100%;
+/*display: table;*/
+display:none;
+}
+#wh-trv-error p{
+background:#ffd0d0;
+color:red;
+display:table-cell;
+vertical-align:middle;
+padding:1em;
+text-align:center;
+}
+#wh-trv-alarm-title{
+height: 30px;
+border-bottom: solid #aaa 1px;
+}
+#wh-trv-alarm-move-btn span{
+background:url(/images/v2/home_main/move.svg);
+width: 30px;
+height: 30px;
+float: right;
+cursor: move;
+}
+h5#wh-trv-alarm-header{
+    height: 100%;
+    line-height: 30px;
+    padding:0 12px;
+    font-weight: bold;
+    text-align: center;
+}
+#wh-trv-alarm-bottom{
+    padding: 12px;
+}
+#wh-trv-alarm-remaining{
+float:right;
+color:red;
+}
+#wh-trv-alarm-cont input[type="number"]{
+    width: 42px;
+    border-bottom: solid 1px #aaa;
+}
+.wh-trv-alarm-stop-hide{
+display:none;
+}
+`);
+            document.body.append(wh_trv_alarm_node);
+            // 报错dom
+            const error_node = wh_trv_alarm_node.querySelector('#wh-trv-error');
+            // jquery拖动
+            $(wh_trv_alarm_node).draggable({
+                containment: "body",
+                distance: 5,
+                handle: "#wh-trv-alarm-move-btn",
+                stop: () => {
+                    wh_trv_alarm.node_pos = [parseInt(wh_trv_alarm_node.style.left), parseInt(wh_trv_alarm_node.style.top)];
+                    save_trv_settings();
+                },
+                scroll: false,
             });
-            // torntools扩展插件落地时间
-            if ($('div.tt-landing-time span.description').text().split(' ')[0] === 'Landing') {
-                const landingTime = $('div.tt-landing-time span.description').text().slice(11, 19);
-                $('div.tt-landing-time span.description').text('于 ' + landingTime + ' 降落');
+            // 剩余时间dom
+            const remaining_node = wh_trv_alarm_node.querySelector('#wh-trv-alarm-remaining');
+            // 设定闹钟响的按钮
+            const set_node = wh_trv_alarm_node.querySelectorAll('#wh-trv-alarm-cont button')[0];
+            // 落地前响铃时长
+            const cd_time = wh_trv_alarm_node.querySelector('input[type="number"]');
+            set_node.onclick = () => {
+                try {
+                    wh_trv_alarm.alert_time = parseInt(cd_time.value);
+                } catch {
+                    wh_trv_alarm.alert_time = 30;
+                }
+                save_trv_settings();
+                set_node.value = wh_trv_alarm.alert_time;
+            };
+            // 停止响铃按钮
+            const stop_node = wh_trv_alarm_node.querySelectorAll('#wh-trv-alarm-cont button')[1];
+            stop_node.onclick = () => {
+                user_stop_alert = true;
+                stop_node.innerText = '本次已关闭';
+                stop_node.disabled = true;
             }
-        }
+            // 开启闹钟勾选
+            const enable_node = wh_trv_alarm_node.querySelector('#wh-trv-alarm-cont input[type="checkbox"]');
+            enable_node.onchange = ev => {
+                wh_trv_alarm.enable = ev.target.checked;
+                save_trv_settings();
+            };
+            // 剩余时间 秒
+            const remaining_sec = parseInt(remaining_arr[0]) * 3600 + parseInt(remaining_arr[1]) * 60 + parseInt(remaining_arr[2]);
+            // 落地时timestamp
+            const land_timestamp = Date.now() + remaining_sec * 1000;
+            // 音频dom
+            const audio = document.createElement('audio');
+            audio.src = 'https://www.torn.com/js/chat/sounds/Warble_1.mp3';
+            audio.play()
+                .catch(() => {
+                    error_node.style.display = 'table';
+                    const func = () => {
+                        error_node.remove();
+                        document.body.removeEventListener('click', func);
+                    };
+                    document.body.addEventListener('click', func);
+                })
+                .then(() => audio.pause());
+            // 是否正在响铃
+            let audio_play_flag = false;
+            // 用户是否停止当前响铃
+            let user_stop_alert = false;
+            // 响铃循环id
+            let audio_play_id = null;
+            // 响铃的方法
+            let audio_play_handle = () => {
+                if (user_stop_alert) {
+                    clearInterval(audio_play_id);
+                    audio_play_id = null;
+                    return;
+                }
+                if (!audio_play_flag || !wh_trv_alarm.enable) return;
+                audio.play().then();
+            };
+            // 飞机小动画字符
+            const flying_arr = [
+                '✈ ',
+                '&nbsp;&nbsp;✈ ',
+                '&nbsp;&nbsp;&nbsp;&nbsp;✈ ',
+                '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;✈ ',
+                '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;✈ ',
+                '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;✈ ',
+                '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;✈ ',
+                '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;✈ ',
+                '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;✈ ',
+                '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;✈ ',
+            ];
+            // 飞行的状态dom
+            const flying_status = wh_trv_alarm_node.querySelector('#wh-trv-status');
+            // 飞机的小动画dom
+            const flying_ani = flying_status.nextElementSibling;
+            // 飞机的计数
+            let flying_index = 0;
+            const id = window.setInterval(() => {
+                const remaining_time = (land_timestamp - Date.now()) / 1000 | 0;
+                remaining_node.innerText = `${remaining_time / 3600 | 0}时${remaining_time % 3600 / 60 | 0}分${remaining_time % 60}秒`;
 
-        travelTrans();
-        travelOB.observe($('div.content-wrapper')[0], {childList: true, subtree: true});
+                if (remaining_time < wh_trv_alarm.alert_time) {
+                    flying_status.innerHTML = `即将落地...`;
+                    if (wh_trv_alarm.enable) {
+                        // 播放提示音
+                        audio_play_flag = true;
+                        if (audio_play_id === null && !user_stop_alert) audio_play_id = window.setInterval(audio_play_handle, 750);
+                        stop_node.parentElement.classList.remove('wh-trv-alarm-stop-hide');
+                    }
+                } else {
+                    flying_status.innerHTML = `飞行中...`;
+                    if (wh_trv_alarm.enable) {
+                        clearInterval(audio_play_id);
+                        audio_play_id = null;
+                        stop_node.parentElement.classList.add('wh-trv-alarm-stop-hide');
+                    }
+                }
+                flying_ani.innerHTML = `${flying_arr[flying_index]}`;
+                flying_index = (flying_index + 1) % flying_arr.length;
+            }, 1000);
+        });
         return;
     }
 
