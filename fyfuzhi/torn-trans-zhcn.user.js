@@ -1,8 +1,8 @@
 // ==UserScript==
-// @lastmodified  202201142310
+// @lastmodified  202201140041
 // @name         Torn翻译
 // @namespace    WOOH
-// @version      0.2.0114a
+// @version      0.2.0114b
 // @description  Torn UI翻译
 // @author       Woohoo-[2687093] sabrina_devil[2696209]
 // @match        https://www.torn.com/*
@@ -15,12 +15,17 @@
     ___window___.WHTRANS = true;
 
     const CC_set = /[\u4e00-\u9fa5]/;
-    const version = '0.2.0114a';
+    const version = '0.2.0114b';
 
     const changelist = [
         {
             todo: true,
             cont: `翻译：baza npc商店、imarket、imarket搜索结果`,
+        },
+        {
+            ver: '0.2.0114b',
+            date: '20220114',
+            cont: `修复设置开关的错误`,
         },
         {
             ver: '0.2.0114a',
@@ -3117,7 +3122,7 @@
             domType: 'checkbox',
             domId: 'wh-trv-alarm-check',
             domText: ' 飞行闹钟(仅PC)',
-            dictName: 'energyAlert',
+            dictName: 'trvAlarm',
         })
         // 攻击链接转跳
         settingsArr.push({
@@ -3792,7 +3797,7 @@ padding: 0.5em 0;
             travelOB.observe($('div.content-wrapper')[0], {childList: true, subtree: true});
         }
         // 飞行闹钟
-        if (device === 'pc' && wh_trans_settings.energyAlert) elementReady('#countrTravel.hasCountdown').then(node => {
+        if (device === 'pc' && wh_trans_settings.trvAlarm) elementReady('#countrTravel.hasCountdown').then(node => {
             const remaining_arr = node.innerText.trim().split(':');
 
             const wh_trv_alarm = localStorage.getItem('wh_trv_alarm')
