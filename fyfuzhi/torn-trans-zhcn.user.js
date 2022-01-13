@@ -1,8 +1,8 @@
 // ==UserScript==
-// @lastmodified  202201130028
+// @lastmodified  202201142310
 // @name         Torn翻译
 // @namespace    WOOH
-// @version      0.2.0113a
+// @version      0.2.0114a
 // @description  Torn UI翻译
 // @author       Woohoo-[2687093] sabrina_devil[2696209]
 // @match        https://www.torn.com/*
@@ -15,12 +15,17 @@
     ___window___.WHTRANS = true;
 
     const CC_set = /[\u4e00-\u9fa5]/;
-    const version = '0.2.0113a';
+    const version = '0.2.0114a';
 
     const changelist = [
         {
             todo: true,
             cont: `翻译：baza npc商店、imarket、imarket搜索结果`,
+        },
+        {
+            ver: '0.2.0114a',
+            date: '20220114',
+            cont: `调整飞行闹钟的样式`,
         },
         {
             ver: '0.2.0113a',
@@ -3801,7 +3806,7 @@ padding: 0.5em 0;
             wh_trv_alarm_node.style.top = `${wh_trv_alarm.node_pos[1] || 240}px`;
             wh_trv_alarm_node.innerHTML = `<div id="wh-trv-error"><p><b>❌ 权限错误</b><br/>点击网页内任意位置以激活闹钟</p></div>
 <div id="wh-trv-alarm-title">
-  <div id="wh-trv-alarm-move-btn"><span></span></div>
+<!--  <div id="wh-trv-alarm-move-btn"><span></span></div>-->
   <h5 id="wh-trv-alarm-header">飞行闹钟</h5>
 </div>
 <div id="wh-trv-alarm-bottom">
@@ -3809,7 +3814,7 @@ padding: 0.5em 0;
     <p id="wh-trv-alarm-remaining"></p>
     <p><span id="wh-trv-status">飞行中...</span><span>✈</span></p>
     <div><label><input type="checkbox" ${wh_trv_alarm.enable ? 'checked ' : ' '}/> 开启闹钟</label></div>
-    <div><label>落地前响铃时长(单位秒): <input type="number" value="${wh_trv_alarm.alert_time || 30}" /></label><button>确定</button></div>
+    <div><label>落地前响铃时长(秒): <input type="number" value="${wh_trv_alarm.alert_time || 30}" /></label><button>确定</button></div>
     <div class="wh-trv-alarm-stop-hide"><button>停止闹钟</button></div>
   </div>
 </div>
@@ -3825,6 +3830,7 @@ border-radius:4px;
 box-shadow:#0000001f 0 0 10px 4px;
 border:solid 1px #aaa;
 z-index:100001;
+margin:2em;
 }
 #wh-trv-alarm button{
 margin:0;
@@ -3847,14 +3853,15 @@ text-align:center;
 #wh-trv-alarm-title{
 height: 30px;
 border-bottom: solid #aaa 1px;
+cursor: move;
 }
-#wh-trv-alarm-move-btn span{
+/*#wh-trv-alarm-move-btn span{
 background:url(/images/v2/home_main/move.svg);
 width: 30px;
 height: 30px;
 float: right;
 cursor: move;
-}
+}*/
 h5#wh-trv-alarm-header{
     height: 100%;
     line-height: 30px;
@@ -3884,7 +3891,8 @@ display:none;
             $(wh_trv_alarm_node).draggable({
                 containment: "body",
                 distance: 5,
-                handle: "#wh-trv-alarm-move-btn",
+                handle: "#wh-trv-alarm-title",
+                // handle: "#wh-trv-alarm-move-btn",
                 stop: () => {
                     wh_trv_alarm.node_pos = [parseInt(wh_trv_alarm_node.style.left), parseInt(wh_trv_alarm_node.style.top)];
                     save_trv_settings();
