@@ -1,8 +1,8 @@
 // ==UserScript==
-// @lastmodified  202201161732
+// @lastmodified  202201161843
 // @name         Torn翻译
 // @namespace    WOOH
-// @version      0.2.0116a
+// @version      0.2.0116b
 // @description  Torn UI翻译
 // @author       Woohoo-[2687093] sabrina_devil[2696209]
 // @match        https://www.torn.com/*
@@ -15,12 +15,17 @@
     ___window___.WHTRANS = true;
 
     const CC_set = /[\u4e00-\u9fa5]/;
-    const version = '0.2.0116a';
+    const version = '0.2.0116b';
 
     const changelist = [
         {
             todo: true,
             cont: `翻译：baza npc商店、imarket、imarket搜索结果`,
+        },
+        {
+            ver: '0.2.0116b',
+            date: '20220116',
+            cont: `小窗口快速crime手机版错误修复`,
         },
         {
             ver: '0.2.0116a',
@@ -3343,7 +3348,9 @@
 
         const cIframe = $popup.querySelector('iframe');
 
-        const dom = `<div class="wh-translate"><div class="title-black" style="border-radius: 5px 5px 0 0;"><span>快捷操作：</span></div><div class="cont-gray" style="padding: 6px 0;border-radius: 0 0 5px 5px;">
+        const mobile_prepend_node = document.createElement('div');
+        mobile_prepend_node.classList.add('wh-translate');
+        mobile_prepend_node.innerHTML = `<div class="title-black" style="border-radius: 5px 5px 0 0;"><span>快捷操作：</span></div><div class="cont-gray" style="padding: 6px 0;border-radius: 0 0 5px 5px;">
 <form id="wh-translate-quick" action="crimes.php?step=docrime4" method="post" style="display: inline-block;margin: 0 5px">
 <input name="nervetake" type="hidden" value="18">
 <input name="crime" type="hidden" value="hackbank">
@@ -3358,7 +3365,7 @@
 <input name="nervetake" type="hidden" value="4">
 <input name="crime" type="hidden" value="jacket">
 <input style="-webkit-appearance:none;padding: 4px;background: #009688;border-radius: 5px;color: white;" type="submit" value="偷夹克" />
-</form></div><hr class="page-head-delimiter m-top10 m-bottom10 r1854"></div>`
+</form></div><hr class="page-head-delimiter m-top10 m-bottom10 r1854">`;
 
         cIframe.onload = () => {
             const ifDocu = cIframe.contentWindow.document;
@@ -3366,8 +3373,8 @@
             const loading_node = $popup.querySelector('p');
             window.whifdocu = ifDocu;
             if (!!loading_node) loading_node.remove();
-            // console.log(ifDocu)
             cIframe.style.display = 'block';
+            // 如果iframe内部未运行脚本
             if (ifWH === undefined) {
                 // 隐藏顶部
                 elementReady('#header-root', ifDocu).then(e => e.style.display = 'none');
@@ -3380,7 +3387,7 @@
                 // 调整容器位置
                 elementReady('.content-wrapper', ifDocu).then(e => {
                     // 加入
-                    e.prepend(dom);
+                    e.prepend(mobile_prepend_node);
                     e.style.margin = '0px';
                     e.style.position = 'absolute';
                     e.style.top = '-35px';
