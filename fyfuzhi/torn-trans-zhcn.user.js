@@ -1,8 +1,8 @@
 // ==UserScript==
-// @lastmodified  202201140041
+// @lastmodified  202201161732
 // @name         Torn翻译
 // @namespace    WOOH
-// @version      0.2.0114b
+// @version      0.2.0116a
 // @description  Torn UI翻译
 // @author       Woohoo-[2687093] sabrina_devil[2696209]
 // @match        https://www.torn.com/*
@@ -15,12 +15,17 @@
     ___window___.WHTRANS = true;
 
     const CC_set = /[\u4e00-\u9fa5]/;
-    const version = '0.2.0114b';
+    const version = '0.2.0116a';
 
     const changelist = [
         {
             todo: true,
             cont: `翻译：baza npc商店、imarket、imarket搜索结果`,
+        },
+        {
+            ver: '0.2.0116a',
+            date: '20220116',
+            cont: `添加小窗口快速crime`,
         },
         {
             ver: '0.2.0114b',
@@ -217,7 +222,7 @@
 更新了一些物品名称翻译，咸鱼修正为鳟鱼`,
         },
     ];
-
+    const isIframe = self !== top;
 
     const $ = window.jQuery;
     const titleDict = {
@@ -3100,7 +3105,7 @@
         settingsArr.push({
             domType: 'checkbox',
             domId: 'wh-quick-crime',
-            domText: ' 快速犯罪',
+            domText: ' 快速犯罪 <button id="wh-quick-crime-btn">小窗开启</button>',
             dictName: 'quickCrime',
         })
         // 任务助手
@@ -3327,12 +3332,62 @@
             },
         })
     }
-
     // 左侧“中”标签
-    // const zhongIconIntervalID = window.setInterval(() => {
-    //     if (!document.querySelector('#wh-trans-icon')) initIcon();
-    // }, 3000);
-    initIcon();
+    const $zhongNode = initIcon();
+    // 小窗犯罪按钮
+    if ($zhongNode) $zhongNode.querySelector('#wh-quick-crime-btn').onclick = () => {
+        const insert = `<p>加载中请稍后</p>
+<iframe src="/crimes.php?step=main" name="wh-crime-if" style="width:100%;max-width: 450px;margin: 0 auto;display: none;height: 340px;"></iframe>
+`;
+        const $popup = popupMsg(insert, '小窗快速犯罪');
+
+        const cIframe = $popup.querySelector('iframe');
+
+        const dom = `<div class="wh-translate"><div class="title-black" style="border-radius: 5px 5px 0 0;"><span>快捷操作：</span></div><div class="cont-gray" style="padding: 6px 0;border-radius: 0 0 5px 5px;">
+<form id="wh-translate-quick" action="crimes.php?step=docrime4" method="post" style="display: inline-block;margin: 0 5px">
+<input name="nervetake" type="hidden" value="18">
+<input name="crime" type="hidden" value="hackbank">
+<input style="-webkit-appearance:none;padding: 4px;background: #e91e63;border-radius: 5px;color: white;" type="submit" value="18-1" />
+</form>
+<form id="wh-translate-quick" action="crimes.php?step=docrime4" method="post" style="display: inline-block;margin: 0 5px">
+<input name="nervetake" type="hidden" value="11">
+<input name="crime" type="hidden" value="warehouse">
+<input style="-webkit-appearance:none;padding: 4px;background: #2196f3;border-radius: 5px;color: white;" type="submit" value="烧仓库" />
+</form>
+<form id="wh-translate-quick" action="crimes.php?step=docrime4" method="post" style="display: inline-block;margin: 0 5px">
+<input name="nervetake" type="hidden" value="4">
+<input name="crime" type="hidden" value="jacket">
+<input style="-webkit-appearance:none;padding: 4px;background: #009688;border-radius: 5px;color: white;" type="submit" value="偷夹克" />
+</form></div><hr class="page-head-delimiter m-top10 m-bottom10 r1854"></div>`
+
+        cIframe.onload = () => {
+            const ifDocu = cIframe.contentWindow.document;
+            const ifWH = cIframe.contentWindow.WHTRANS;
+            const loading_node = $popup.querySelector('p');
+            window.whifdocu = ifDocu;
+            if (!!loading_node) loading_node.remove();
+            // console.log(ifDocu)
+            cIframe.style.display = 'block';
+            if (ifWH === undefined) {
+                // 隐藏顶部
+                elementReady('#header-root', ifDocu).then(e => e.style.display = 'none');
+                // 隐藏4条
+                elementReady('#sidebarroot', ifDocu).then(e => e.style.display = 'none');
+                // 隐藏聊天
+                elementReady('#chatRoot', ifDocu).then(e => e.style.display = 'none');
+                // 隐藏滚动条
+                ifDocu.body.style.overflow = 'hidden';
+                // 调整容器位置
+                elementReady('.content-wrapper', ifDocu).then(e => {
+                    // 加入
+                    e.prepend(dom);
+                    e.style.margin = '0px';
+                    e.style.position = 'absolute';
+                    e.style.top = '-35px';
+                });
+            }
+        };
+    };
     addStyle(`#wh-trans-icon{
   display: inline-block;
   position: fixed;
@@ -3763,6 +3818,7 @@ padding: 0.5em 0;
      */
     if (window.location.href.indexOf('index.php') >= 0 &&
         !!document.querySelector('div.travelling h4')) {
+        // 翻译
         if (wh_trans_settings.transEnable) {
             const travelOB = new MutationObserver(travelOBInit);
 
@@ -3798,6 +3854,9 @@ padding: 0.5em 0;
         }
         // 飞行闹钟
         if (device === 'pc' && wh_trans_settings.trvAlarm) elementReady('#countrTravel.hasCountdown').then(node => {
+            const DEST_STR = {
+                'Mexico': '墨西哥', 'Canada': '加拿大',
+            }[document.querySelector('#tcLogo').attributes.title.nodeValue];
             const remaining_arr = node.innerText.trim().split(':');
 
             const wh_trv_alarm = localStorage.getItem('wh_trv_alarm')
@@ -3809,9 +3868,8 @@ padding: 0.5em 0;
             wh_trv_alarm_node.id = 'wh-trv-alarm';
             wh_trv_alarm_node.style.left = `${wh_trv_alarm.node_pos[0] || 240}px`;
             wh_trv_alarm_node.style.top = `${wh_trv_alarm.node_pos[1] || 240}px`;
-            wh_trv_alarm_node.innerHTML = `<div id="wh-trv-error"><p><b>❌ 权限错误</b><br/>点击网页内任意位置以激活闹钟</p></div>
+            wh_trv_alarm_node.innerHTML = `<div id="wh-trv-error"><p><b>❌ 没有权限</b><br/>点击网页内任意位置以激活闹钟</p></div>
 <div id="wh-trv-alarm-title">
-<!--  <div id="wh-trv-alarm-move-btn"><span></span></div>-->
   <h5 id="wh-trv-alarm-header">飞行闹钟</h5>
 </div>
 <div id="wh-trv-alarm-bottom">
@@ -3897,7 +3955,6 @@ display:none;
                 containment: "body",
                 distance: 5,
                 handle: "#wh-trv-alarm-title",
-                // handle: "#wh-trv-alarm-move-btn",
                 stop: () => {
                     wh_trv_alarm.node_pos = [parseInt(wh_trv_alarm_node.style.left), parseInt(wh_trv_alarm_node.style.top)];
                     save_trv_settings();
@@ -4576,6 +4633,17 @@ display:none;
      * crime
      */
     if (window.location.href.contains(/crimes\.php/)) {
+        if (isIframe) {
+            elementReady('#header-root').then(e => e.style.display = 'none');
+            elementReady('#sidebarroot').then(e => e.style.display = 'none');
+            elementReady('#chatRoot').then(e => e.style.display = 'none');
+            document.body.style.overflow = 'hidden';
+            elementReady('.content-wrapper').then(e => {
+                e.style.margin = '0px';
+                e.style.position = 'absolute';
+                e.style.top = '-35px';
+            });
+        }
         const $$ = document.querySelector('.content-wrapper');
         const OB = new MutationObserver(() => {
             OB.disconnect();
@@ -4605,7 +4673,7 @@ display:none;
 <input name="nervetake" type="hidden" value="4">
 <input name="crime" type="hidden" value="jacket">
 <input style="-webkit-appearance:none;padding: 4px;background: #009688;border-radius: 5px;color: white;" type="submit" value="偷夹克" />
-</form></div><hr class="page-head-delimiter m-top10 m-bottom10 r1854"></div>`
+</form></div><hr class="page-head-delimiter m-top10 m-bottom10 r1854"></div>`;
             const is_wh_translate = $$.querySelector('.wh-translate') !== null;
             const is_captcha = $$.querySelector('div#tab-menu.captcha') !== null;
             const $title = $('div.content-title');
@@ -7814,13 +7882,14 @@ margin: 0 0 3px;
             wh_gStyle.innerHTML = v;
             document.head.append(wh_gStyle);
         }
-        console.log('css规则已注入', v);
+        if (isDev()) console.log('css规则已注入', v);
     }
 
     /*
     添加左侧图标
      */
     function initIcon() {
+        if (isIframe) return;
         const zhongNode = document.createElement('div');
         zhongNode.id = 'wh-trans-icon';
         zhongNode.classList.add('cont-gray');
@@ -7890,6 +7959,7 @@ margin: 0 0 3px;
             popupMsg(innerHtml, '如何更新');
         };
         document.body.prepend(zhongNode);
+        return zhongNode;
     }
 
     /*
@@ -7915,6 +7985,7 @@ margin: 0 0 3px;
 </div>`;
         document.body.append(popup);
         popup.querySelector('#wh-popup-close').onclick = () => popup.remove();
+        return popup.querySelector('#wh-popup-cont');
     }
 
     /**
@@ -7922,24 +7993,25 @@ margin: 0 0 3px;
      * Useful for resolving race conditions.
      *
      * @param selector
+     * @param content
      * @returns {Promise}
      */
-    function elementReady(selector) {
+    function elementReady(selector, content = document) {
         return new Promise((resolve, reject) => {
-            let el = document.querySelector(selector);
+            let el = content.querySelector(selector);
             if (el) {
                 resolve(el);
                 return
             }
             new MutationObserver((mutationRecords, observer) => {
                 // Query for elements matching the specified selector
-                Array.from(document.querySelectorAll(selector)).forEach((element) => {
+                Array.from(content.querySelectorAll(selector)).forEach((element) => {
                     resolve(element);
                     //Once we have resolved we don't need the observer anymore.
                     observer.disconnect();
                 });
             })
-                .observe(document.documentElement, {
+                .observe(content.documentElement, {
                     childList: true,
                     subtree: true
                 });
