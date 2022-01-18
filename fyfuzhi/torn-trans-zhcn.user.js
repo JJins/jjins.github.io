@@ -1,10 +1,10 @@
 // ==UserScript==
-// @lastmodified  202201171751
+// @lastmodified  202201181732
 // @name         Torn翻译
 // @namespace    WOOH
-// @version      0.2.0117a
+// @version      0.2.0118a
 // @description  Torn UI翻译
-// @author       Woohoo-[2687093] sabrina_devil[2696209]
+// @author       Woohoo[2687093] Sabrina_Devil[2696209]
 // @match        https://www.torn.com/*
 // @grant        none
 // ==/UserScript==
@@ -15,12 +15,17 @@
     ___window___.WHTRANS = true;
 
     const CC_set = /[\u4e00-\u9fa5]/;
-    const version = '0.2.0117a';
+    const version = '0.2.0118a';
 
     const changelist = [
         {
             todo: true,
             cont: `翻译：baza npc商店、imarket、imarket搜索结果`,
+        },
+        {
+            ver: '0.2.0118a',
+            date: '20220118',
+            cont: `小窗口快速crime错误修复、优化边缘设置按钮`,
         },
         {
             ver: '0.2.0117a',
@@ -3912,9 +3917,14 @@ padding: 0.5em 0;
         }
         // 飞行闹钟
         if (device === 'pc' && wh_trans_settings.trvAlarm) elementReady('#countrTravel.hasCountdown').then(node => {
+            const logo_node = document.querySelector('#tcLogo[title]');
             const DEST_STR = {
-                'Mexico': '墨西哥', 'Canada': '加拿大',
-            }[document.querySelector('#tcLogo').attributes.title.nodeValue];
+                'Mexico': '墨西哥', 'Canada': '加拿大', 'Cayman Islands': '开曼',
+                'Hawaii': '夏威夷', 'United Kingdom': '英国', 'Argentina': '阿根廷', 'Switzerland': '瑞士',
+                'Japan': '日本', 'China': '中国', 'United Arab Emirates': 'UAE', 'South Africa': '南非',
+            };
+            let dest_cn = '回城';
+            if (logo_node) dest_cn = DEST_STR[logo_node.attributes.title.nodeValue];
             const remaining_arr = node.innerText.trim().split(':');
 
             const wh_trv_alarm = localStorage.getItem('wh_trv_alarm')
@@ -3924,8 +3934,8 @@ padding: 0.5em 0;
 
             const wh_trv_alarm_node = document.createElement('div');
             wh_trv_alarm_node.id = 'wh-trv-alarm';
-            wh_trv_alarm_node.style.left = `${wh_trv_alarm.node_pos[0] || 240}px`;
-            wh_trv_alarm_node.style.top = `${wh_trv_alarm.node_pos[1] || 240}px`;
+            wh_trv_alarm_node.style.left = `${wh_trv_alarm.node_pos[0]}px`;
+            wh_trv_alarm_node.style.top = `${wh_trv_alarm.node_pos[1]}px`;
             wh_trv_alarm_node.innerHTML = `<div id="wh-trv-error"><p><b>❌ 没有权限</b><br/>点击网页内任意位置以激活闹钟</p></div>
 <div id="wh-trv-alarm-title">
   <h5 id="wh-trv-alarm-header">飞行闹钟</h5>
@@ -3933,7 +3943,7 @@ padding: 0.5em 0;
 <div id="wh-trv-alarm-bottom">
   <div id="wh-trv-alarm-cont">
     <p id="wh-trv-alarm-remaining"></p>
-    <p><span id="wh-trv-status">飞行中...</span><span>✈</span></p>
+    <p><span id="wh-trv-status">正在${dest_cn === '回城' ? dest_cn : '飞往' + dest_cn}</span><span>✈</span></p>
     <div><label><input type="checkbox" ${wh_trv_alarm.enable ? 'checked ' : ' '}/> 开启闹钟</label></div>
     <div><label>落地前响铃时长(秒): <input type="number" value="${wh_trv_alarm.alert_time || 30}" /></label><button>确定</button></div>
     <div class="wh-trv-alarm-stop-hide"><button>停止闹钟</button></div>
@@ -4692,10 +4702,11 @@ display:none;
      */
     if (window.location.href.contains(/crimes\.php/)) {
         if (isIframe) {
+            const isValidate = document.querySelector('h4#skip-to-content').innerText.toLowerCase().includes('validate');
             elementReady('#header-root').then(e => e.style.display = 'none');
             elementReady('#sidebarroot').then(e => e.style.display = 'none');
             elementReady('#chatRoot').then(e => e.style.display = 'none');
-            document.body.style.overflow = 'hidden';
+            if (!isValidate) document.body.style.overflow = 'hidden';
             elementReady('.content-wrapper').then(e => {
                 e.style.margin = '0px';
                 e.style.position = 'absolute';
@@ -8001,9 +8012,24 @@ margin: 0 0 3px;
                 }
             }
         });
-        zhongNode.querySelector('#wh-trans-icon-btn').onclick = (e) => {
-            e.target.blur();
-            e.target.parentElement.parentElement.classList.toggle('wh-icon-expanded');
+        zhongNode.querySelector('#wh-trans-icon-btn').onclick = () => {
+            zhongNode.classList.toggle('wh-icon-expanded');
+            const click_func = e => {
+                if (isDev()) console.log('[wh]', e.target);
+                if (e.target === zhongNode.querySelector('#wh-trans-icon-btn')) return;
+                if (!zhongNode.contains(e.target)) {
+                    if (isDev()) console.log('[wh]', '移除事件监听器');
+                    document.body.removeEventListener('click', click_func);
+                    zhongNode.classList.remove('wh-icon-expanded');
+                }
+            };
+            if (zhongNode.classList.contains('wh-icon-expanded')) {
+                if (isDev()) console.log('[wh]', '添加事件监听器');
+                document.body.addEventListener('click', click_func);
+            } else {
+                if (isDev()) console.log('[wh]', '移除事件监听器');
+                document.body.removeEventListener('click', click_func);
+            }
         };
         zhongNode.querySelector('#wh-update-btn').onclick = (e) => {
             e.target.blur();
@@ -8012,7 +8038,7 @@ margin: 0 0 3px;
 <p>这些扩展长这样：<img src="//jjins.github.io/tm.png" alt="tm.png" /><img src="//jjins.github.io/vm.png" alt="vm.png" /></p>
 <p></p>
 <h4>手机</h4>
-<p>安卓KIWI等可以用油猴脚本的浏览器也可以点上面的链接安装👆</p>
+<p>安卓 KIWI 等可以用油猴脚本的浏览器也可以点上面的链接安装👆</p>
 <p>Torn PDA app 或 Alook 用户可打开<a href="//jjins.github.io/fyfuzhi/" target="_blank">这个网页</a>快捷复制粘贴。</p>`;
             popupMsg(innerHtml, '如何更新');
         };
@@ -8042,7 +8068,17 @@ margin: 0 0 3px;
 <div id="wh-popup-cont">${innerHTML}</div>
 </div>`;
         document.body.append(popup);
-        popup.querySelector('#wh-popup-close').onclick = () => popup.remove();
+        const close_btn = popup.querySelector('#wh-popup-close');
+        close_btn.onclick = () => popup.remove();
+
+        const clickFunc = e => {
+            if (e.target === popup) {
+                popup.removeEventListener('click', clickFunc);
+                popup.remove();
+            }
+        };
+        popup.addEventListener('click', clickFunc);
+
         return popup.querySelector('#wh-popup-cont');
     }
 
