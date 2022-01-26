@@ -1,0 +1,22 @@
+name: Cache Mug Info
+on:
+  schedule:
+    - cron: "* * * * *"
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        ref: master
+        token: ${{ github.token }}
+    - name: fetch
+      run: |
+        curl http://222.160.142.50:8154/mugger/ > mugger.json
+    - name: Commit & Push
+      uses: EndBug/add-and-commit@v7
+      with:
+        branch: master
