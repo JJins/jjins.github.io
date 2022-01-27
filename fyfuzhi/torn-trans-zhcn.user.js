@@ -1,8 +1,8 @@
 // ==UserScript==
-// @lastmodified  202201271811
+// @lastmodified  202201280112
 // @name         Torn翻译
 // @namespace    WOOH
-// @version      0.3.2
+// @version      0.3.3
 // @description  Torn UI翻译
 // @author       Woohoo[2687093] Sabrina_Devil[2696209]
 // @match        https://www.torn.com/*
@@ -23,12 +23,17 @@
     if (window.WHTRANS) return;
     window.WHTRANS = true;
     // 版本
-    const version = '0.3.2';
+    const version = '0.3.3';
     // 修改历史
     const changelist = [
         {
             todo: true,
             cont: `翻译：baza npc商店、imarket、imarket搜索结果`,
+        },
+        {
+            ver: '0.3.3',
+            date: '20220128',
+            cont: `调整样式、减少初始设置的通知`,
         },
         {
             ver: '0.3.2',
@@ -3093,7 +3098,7 @@
     default_settings.forEach(_default => {
         if (typeof wh_trans_settings[_default.key] !== typeof _default.val) wh_trans_settings[_default.key] = _default.val;
     });
-    saveSettings();
+    saveSettings(true);
 
     const GS = {};
 
@@ -3104,46 +3109,8 @@
         settingsArr.push({
             domType: 'checkbox',
             domId: 'wh-trans-enable',
-            domText: ' 开启翻译<span> (施工中)</span>',
+            domText: ' 开启翻译 <button id="wh-trans-data-update">更新词库</button>',
             dictName: 'transEnable',
-        })
-        // 更新词库按钮
-        settingsArr.push({
-            domType: 'button',
-            domId: 'wh-trans-data-update',
-            domText: '更新翻译词库数据',
-            clickFunc: function (e) {
-                e.target.blur();
-                if (this.intervalID) return;
-                const url = isDev() ? 'http://192.168.1.7:8080/' : 'https://jjins.github.io/gengxin/';
-                const popup = window.open(url);
-                let hsCount = 0;
-                this.intervalID = window.setInterval(() => {
-                    if (hsCount > 20) {
-                        clearInterval(this.intervalID);
-                        this.intervalID = null;
-                        return;
-                    }
-                    popup.postMessage("connect", '*');
-                    hsCount++;
-                }, 500);
-                let connected = false;
-                if (!this.msgEventCreated) {
-                    window.addEventListener("message", (e) => {
-                        this.msgEventCreated = true;
-                        if (e.data === 'connected') {
-                            connected = true;
-                            clearInterval(this.intervalID);
-                            this.intervalID = null;
-                            return;
-                        }
-                        if (connected) {
-                            // 传回的动态内容
-                            log(e.data);
-                        }
-                    }, false);
-                }
-            },
         })
         // 12月时加入圣诞小镇选项
         if (new Date().getMonth() === 11) {
@@ -3306,7 +3273,7 @@
         } else {
             wh_trans_settings.autoStartFinish = false;
             wh_trans_settings.attReload = 6;
-            saveSettings();
+            saveSettings(true);
         }
         // 飞花库存
         settingsArr.push({
@@ -3359,8 +3326,8 @@
                         () => window.location.href = 'https://www.torn.com/crimes.php');
                     return;
                 }
-                // const popup_node = popupMsg(`加载中 ${loading_gif_html}<br/>`, '飞贼助手加载');
                 if (!GS.LOADED) {
+                    notify('正在加载...');
                     COFetch('https://cdn.staticfile.org/vue/2.2.2/vue.min.js')
                         .catch(err => notify(err))
                         .then(VueJS => {
@@ -3396,7 +3363,7 @@
                                     }
                                     window.eval(GSJS);
                                     if (isDev()) window.GM_setValue("gsp_showContent", true);
-                                    notify('飞贼助手已载入');
+                                    notify('已载入飞贼助手');
                                 })
                                 .catch(err => notify(`PDA API错误。${err}`));
                         });
@@ -3523,6 +3490,38 @@
     // 左侧“中”标签
     const $zhongNode = initIcon();
     if ($zhongNode) {
+        // 更新词库按钮
+        $zhongNode.querySelector('#wh-trans-data-update').onclick = function () {
+            if (this.intervalID) return;
+            const url = isDev() ? 'http://192.168.1.7:8080/' : 'https://jjins.github.io/gengxin/';
+            const popup = window.open(url);
+            let hsCount = 0;
+            this.intervalID = window.setInterval(() => {
+                if (hsCount > 20) {
+                    clearInterval(this.intervalID);
+                    this.intervalID = null;
+                    return;
+                }
+                popup.postMessage("connect", '*');
+                hsCount++;
+            }, 500);
+            let connected = false;
+            if (!this.msgEventCreated) {
+                window.addEventListener("message", (e) => {
+                    this.msgEventCreated = true;
+                    if (e.data === 'connected') {
+                        connected = true;
+                        clearInterval(this.intervalID);
+                        this.intervalID = null;
+                        return;
+                    }
+                    if (connected) {
+                        // 传回的动态内容
+                        log(e.data);
+                    }
+                }, false);
+            }
+        }
         // 小窗犯罪按钮
         $zhongNode.querySelector('#wh-quick-crime-btn').onclick = () => {
             // 弹出小窗口
@@ -3627,13 +3626,33 @@
         // 开发详情按钮
         $zhongNode.querySelector('#wh-devInfo').onclick = () => {
             const date = new Date();
-            const insert = `当前页面: ${window.location.href}<br/>
-分辨率: ${window.innerWidth}x${window.innerHeight}<br/>
-设备类型: ${getDeviceType()}<br/>
-脚本类型: ${getScriptEngine()}<br/>
-时间: ${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}<br/>
-插件版本: ${version}<br/>
-`;
+            let os = '未知';
+            try {
+                os = window.navigator.userAgentData.platform || window.navigator.platform
+            } catch {
+            }
+            let browser = window.navigator.appName;
+            try {
+                browser = window.navigator.userAgentData.brands[0].brand + ' ' + window.navigator.userAgentData.brands[0].version;
+            } catch {
+            }
+
+            const insert = `<table id="wh-dev-info-tb">
+  <tr><td>URL</td><td>${window.location.href}</td></tr>
+  <tr><td>页面尺寸</td><td>${window.innerWidth}x${window.innerHeight}</td></tr>
+  <tr><td>设备类型</td><td>${getDeviceType().toUpperCase()}</td></tr>
+  <tr><td>脚本运行方式</td><td>${{'gm':'油猴','raw':'直接运行','pda':'TornPDA'}[getScriptEngine()]}</td></tr>
+  <tr><td>时间</td><td>${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}</td></tr>
+  <tr><td>插件版本</td><td>${version}</td></tr>
+  <tr><td>操作系统</td><td>${os}</td></tr>
+  <tr><td>浏览器</td><td>${browser}</td></tr>
+</table>
+<style>
+#wh-dev-info-tb td{
+padding: 2px 4px;
+color:white;
+}
+</style>`;
             popupMsg(insert, '开发者详情');
         };
     }
@@ -3676,7 +3695,8 @@ padding:16px !important;
 display:inline-block;
 background-image:url("https://jjins.github.io/t2i/version.png?${performance.now()}");
 height:16px;
-width: 66px;}
+width: 66px;
+}
 #wh-popup{
     position: fixed;
     z-index: 9900034;
@@ -3684,20 +3704,21 @@ width: 66px;}
     left: 0;
     width: 100%;
     height: 100%;
-    background: #808080ba;
+    background: #000000cc;
 }
 #wh-popup-container{
     max-width: 600px;
     margin: 5em auto 0;
-    background: #3c3c3c;
-    min-height: 200px;
-    box-shadow: 0 0 13px #b4b4b4
+    background: #d7d7d7;
+    min-height: 120px;
+    box-shadow: 0 0 5px 1px #898989;
+    border-radius: 4px;
 }
 #wh-popup-title p{
-    background: black;
-    color: white;
-    padding: 1em;
+    padding: 1em 0;
     font-size: 16px;
+    font-weight: bold;
+    text-align: center;
 }
 #wh-popup-close{
     float: right;
@@ -3708,8 +3729,7 @@ width: 66px;}
     border-radius: 3px;
 }
 #wh-popup-cont{
-    padding: 1em;
-    color: white;
+    padding: 0 1em 1em;
     max-height: 30em;
     overflow-y: auto;
 }
@@ -8231,9 +8251,9 @@ margin: 0 0 3px;
     /*
     保存脚本的配置
      */
-    function saveSettings() {
+    function saveSettings(not_notify = false) {
         // 通知
-        notify('已保存设置', 3)
+        if (!not_notify) notify('已保存设置', 3)
 
         localStorage.setItem('wh_trans_settings', JSON.stringify(wh_trans_settings));
     }
@@ -8255,12 +8275,12 @@ margin: 0 0 3px;
         popup.id = 'wh-popup';
         popup.innerHTML =
             `<div id="wh-popup-container">
-<div id="wh-popup-title"><button id="wh-popup-close">x</button><p>${title}</p></div>
+<div id="wh-popup-title"><!--button id="wh-popup-close">x</button--><p>${title}</p></div>
 <div id="wh-popup-cont">${innerHTML}</div>
 </div>`;
         document.body.append(popup);
-        const close_btn = popup.querySelector('#wh-popup-close');
-        close_btn.onclick = () => popup.remove();
+        // const close_btn = popup.querySelector('#wh-popup-close');
+        // close_btn.onclick = () => popup.remove();
 
         const clickFunc = e => {
             e.stopImmediatePropagation();
@@ -8392,7 +8412,7 @@ margin: 0 0 3px;
      * @param callback 通知结束后执行的函数
      * @returns HTMLElement 通知的node
      */
-    function notify(msg = '', timeout = 3, callback = () => null) {
+    function notify(msg = '', timeout = 3, callback = null) {
         const date = new Date();
         // 通知的唯一id
         const uid = `${date.getHours()}${date.getSeconds()}${date.getMilliseconds()}${getRandomInt(1000, 9999)}`;
@@ -8435,7 +8455,7 @@ margin: 0 0 3px;
             const removeNode = () => {
                 clearInterval(intervalID);
                 new_node.remove();
-                callback();
+                if (callback !== null) callback();
             };
             new_node.querySelector('.wh-notify-close button').addEventListener('click', removeNode);
         };
