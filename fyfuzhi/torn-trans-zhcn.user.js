@@ -1,8 +1,8 @@
 // ==UserScript==
-// @lastmodified  202201261722
+// @lastmodified  202201271811
 // @name         Torn翻译
 // @namespace    WOOH
-// @version      0.3.1
+// @version      0.3.2
 // @description  Torn UI翻译
 // @author       Woohoo[2687093] Sabrina_Devil[2696209]
 // @match        https://www.torn.com/*
@@ -23,12 +23,17 @@
     if (window.WHTRANS) return;
     window.WHTRANS = true;
     // 版本
-    const version = '0.3.1';
+    const version = '0.3.2';
     // 修改历史
     const changelist = [
         {
             todo: true,
             cont: `翻译：baza npc商店、imarket、imarket搜索结果`,
+        },
+        {
+            ver: '0.3.2',
+            date: '20220127',
+            cont: `增加通知`,
         },
         {
             ver: '0.3.1',
@@ -3350,18 +3355,18 @@
             clickFunc: function (e) {
                 e.target.blur();
                 if (getScriptEngine() === UserScriptEngine.PDA && !window.location.href.includes('crimes.php')) {
-                    window.alert('因PDA 或 Torn 限制无法开启飞贼小助手，即将转跳至 Crime 页面。')
-                    window.location.href = 'https://www.torn.com/crimes.php';
+                    notify('因PDA 或 Torn 限制仅某些页面(如 Crime 页面)可开启飞贼小助手，即将转跳，请转跳后开启。后续将会改善。', 3,
+                        () => window.location.href = 'https://www.torn.com/crimes.php');
                     return;
                 }
-                const popup_node = popupMsg(`加载中 ${loading_gif_html}<br/>`, '飞贼助手加载');
+                // const popup_node = popupMsg(`加载中 ${loading_gif_html}<br/>`, '飞贼助手加载');
                 if (!GS.LOADED) {
                     COFetch('https://cdn.staticfile.org/vue/2.2.2/vue.min.js')
-                        .catch(err => popup_node.innerHTML = err)
+                        .catch(err => notify(err))
                         .then(VueJS => {
                             window.eval(VueJS);
                             GS.LOADED = true;
-                            popup_node.innerHTML += '已载入依赖<br/>';
+                            notify('已载入依赖');
                             window.GM_getValue = (k, v = undefined) => {
                                 const objV = JSON.parse(window.localStorage.getItem('wh-gs-storage') || '{}')[k];
                                 return objV || v;
@@ -3391,12 +3396,12 @@
                                     }
                                     window.eval(GSJS);
                                     if (isDev()) window.GM_setValue("gsp_showContent", true);
-                                    popup_node.innerHTML += '飞贼助手已载入<br/>';
+                                    notify('飞贼助手已载入');
                                 })
-                                .catch(err => popup_node.innerHTML = `PDA API错误。${err}`);
+                                .catch(err => notify(`PDA API错误。${err}`));
                         });
                 } else {
-                    popup_node.innerHTML += '飞贼助手已经加载了';
+                    notify('飞贼助手已经加载了');
                 }
             },
         })
@@ -3449,61 +3454,69 @@
             domId: 'wh-test-btn',
             domText: '测试按钮',
             clickFunc: function () {
-                log(window, document)
-                // let pop = popupMsg('');
-                // let ifr = document.createElement('iframe');
-                // ifr.src = 'https://www.torn.com/crimes.php';
-                // document.body.append(ifr)
-                // log(ifr.contentDocument)
-                // ifr.onload = () => {
-                //     const _window = ifr.contentWindow;
-                //     const _docu = _window.document;
-                //     _docu.head.innerHTML = '';
-                //     _docu.body.innerHTML = '';
-                //     COFetch('https://cdn.staticfile.org/vue/2.2.2/vue.min.js')
-                //         // .catch(err => popup_node.innerHTML = err)
-                //         .then(vuejs => {
-                //             _window.eval(vuejs)
-                //             log('Vue: ', typeof _window.Vue)
-                //             // Eval(vuejs).catch(err => log(err)).then(() => {
-                //             // muggerInter.hasVue = true;
-                //             // popup_node.innerHTML += '依赖已载入<br/>';
-                //             _window.GM_getValue = (k, v = undefined) => {
-                //                 const objV = JSON.parse(_window.localStorage.getItem('wh-gs-storage') || '{}')[k];
-                //                 return objV || v;
-                //             };
-                //             _window.GM_setValue = (k, v) => {
-                //                 const obj = JSON.parse(_window.localStorage.getItem('wh-gs-storage') || '{}');
-                //                 obj[k] = v;
-                //                 _window.localStorage.setItem('wh-gs-storage', JSON.stringify(obj));
-                //             };
-                //             COFetch(`https://gitee.com/ameto_kasao/tornjs/raw/master/GoldenSnitch.js?${performance.now()}`)
-                //                 .then(res => {
-                //                     // if (getScriptEngine() === UserScriptEngine.GM) {
-                //                     //     ifr.contentWindow.GM_xmlhttpRequest = GM_xmlhttpRequest;
-                //                     // } else
-                //                     if (getScriptEngine() === UserScriptEngine.PDA) {
-                //                         res = res.replace('http://222.160.142.50:8154/mugger', `https://jjins.github.io/mugger.json?${performance.now()}`);
-                //                         _window.GM_xmlhttpRequest = function (opt) {
-                //                             // 暂不适配pda post
-                //                             if (opt.method.toLowerCase() === 'post') return;
-                //                             COFetch(opt.url).then(res => {
-                //                                 const obj = {};
-                //                                 obj.responseText = res;
-                //                                 opt.onload(obj);
-                //                             });
-                //                         };
-                //                     }
-                //                     _window.eval(res);
-                //                     // Eval(res).catch(err => log(err)).then(() => {
-                //                     if (isDev()) _window.GM_setValue("gsp_showContent", true)
-                //                     // });
-                //                     // popup_node.innerHTML += '飞贼助手已载入<br/>';
-                //                 })
-                //             // .catch(err => popup_node.innerHTML = `PDA API错误。${err}`);
-                //             // })
-                //         });
-                // };
+                let pop = popupMsg('');
+                let ifr = document.createElement('iframe');
+                ifr.src = 'https://www.torn.com/crimes.php';
+                document.body.append(ifr)
+                log(ifr.contentDocument)
+                ifr.onload = () => {
+                    const _window = ifr.contentWindow;
+                    const _docu = _window.document;
+                    _docu.head.innerHTML = '';
+                    _docu.body.innerHTML = '';
+                    COFetch('https://cdn.staticfile.org/vue/2.2.2/vue.min.js')
+                        // .catch(err => popup_node.innerHTML = err)
+                        .then(vuejs => {
+                            _window.eval(vuejs)
+                            log('Vue: ', typeof _window.Vue)
+                            // Eval(vuejs).catch(err => log(err)).then(() => {
+                            // muggerInter.hasVue = true;
+                            // popup_node.innerHTML += '依赖已载入<br/>';
+                            _window.GM_getValue = (k, v = undefined) => {
+                                const objV = JSON.parse(_window.localStorage.getItem('wh-gs-storage') || '{}')[k];
+                                return objV || v;
+                            };
+                            _window.GM_setValue = (k, v) => {
+                                const obj = JSON.parse(_window.localStorage.getItem('wh-gs-storage') || '{}');
+                                obj[k] = v;
+                                _window.localStorage.setItem('wh-gs-storage', JSON.stringify(obj));
+                            };
+                            COFetch(`https://gitee.com/ameto_kasao/tornjs/raw/master/GoldenSnitch.js?${performance.now()}`)
+                                .then(res => {
+                                    // if (getScriptEngine() === UserScriptEngine.GM) {
+                                    //     ifr.contentWindow.GM_xmlhttpRequest = GM_xmlhttpRequest;
+                                    // } else
+                                    if (getScriptEngine() === UserScriptEngine.PDA) {
+                                        res = res.replace('http://222.160.142.50:8154/mugger', `https://jjins.github.io/mugger.json?${performance.now()}`);
+                                        _window.GM_xmlhttpRequest = function (opt) {
+                                            // 暂不适配pda post
+                                            if (opt.method.toLowerCase() === 'post') return;
+                                            COFetch(opt.url).then(res => {
+                                                const obj = {};
+                                                obj.responseText = res;
+                                                opt.onload(obj);
+                                            });
+                                        };
+                                    }
+                                    _window.eval(res);
+                                    // Eval(res).catch(err => log(err)).then(() => {
+                                    if (isDev()) _window.GM_setValue("gsp_showContent", true)
+                                    // });
+                                    // popup_node.innerHTML += '飞贼助手已载入<br/>';
+                                })
+                            // .catch(err => popup_node.innerHTML = `PDA API错误。${err}`);
+                            // })
+                        });
+                };
+            },
+        })
+        // 测试按钮2
+        if (isDev()) settingsArr.push({
+            domType: 'button',
+            domId: 'wh-test2-btn',
+            domText: '测试按钮2',
+            clickFunc: function () {
+                notify(`测试${getRandomInt(0, 99999)}`, 5, () => log('通知关闭'));
             },
         })
     }
@@ -4117,7 +4130,7 @@ padding: 0.5em 0;
 <div id="wh-trv-alarm-bottom">
   <div id="wh-trv-alarm-cont">
     <p id="wh-trv-alarm-remaining"></p>
-    <p><span id="wh-trv-status">正在${dest_cn === '回城' ? dest_cn : '飞往' + dest_cn}</span><span>✈</span></p>
+    <p><span id="wh-trv-status">正在${dest_cn === '回城' ? dest_cn : '飞往' + dest_cn}    </span><span>✈</span></p>
     <div><label><input type="checkbox" ${wh_trv_alarm.enable ? 'checked ' : ' '}/> 开启闹钟</label></div>
     <div><label>落地前响铃时长(秒): <input type="number" value="${wh_trv_alarm.alert_time || 30}" /></label><button>确定</button></div>
     <div class="wh-trv-alarm-stop-hide"><button>停止闹钟</button></div>
@@ -4288,7 +4301,7 @@ display:none;
                 remaining_node.innerText = `${remaining_time / 3600 | 0}时${remaining_time % 3600 / 60 | 0}分${remaining_time % 60}秒`;
 
                 if (remaining_time < wh_trv_alarm.alert_time) {
-                    flying_status.innerHTML = `即将落地...`;
+                    // flying_status.innerHTML = `即将落地...`;
                     if (wh_trv_alarm.enable) {
                         // 播放提示音
                         audio_play_flag = true;
@@ -4296,7 +4309,7 @@ display:none;
                         stop_node.parentElement.classList.remove('wh-trv-alarm-stop-hide');
                     }
                 } else {
-                    flying_status.innerHTML = `飞行中...`;
+                    // flying_status.innerHTML = `飞行中...`;
                     if (wh_trv_alarm.enable) {
                         clearInterval(audio_play_id);
                         audio_play_id = null;
@@ -8220,6 +8233,7 @@ margin: 0 0 3px;
      */
     function saveSettings() {
         // 通知
+        notify('已保存设置', 3)
 
         localStorage.setItem('wh_trans_settings', JSON.stringify(wh_trans_settings));
     }
@@ -8365,8 +8379,110 @@ margin: 0 0 3px;
         return rs += '}';
     }
 
-    // log改写
+    // console.log改写
     function log(...o) {
         if (isDev()) console.log('[WH]', ...o)
+    }
+
+    /**
+     * 通知
+     *
+     * @param msg 通知上显示的内容，默认为空
+     * @param timeout 停留的时间，默认3秒
+     * @param callback 通知结束后执行的函数
+     * @returns HTMLElement 通知的node
+     */
+    function notify(msg = '', timeout = 3, callback = () => null) {
+        const date = new Date();
+        // 通知的唯一id
+        const uid = `${date.getHours()}${date.getSeconds()}${date.getMilliseconds()}${getRandomInt(1000, 9999)}`;
+        // 通知容器id
+        const node_id = 'wh-notify';
+        // 通知的容器
+        let notify_contain = document.querySelector(`#${node_id}`);
+        // 添加通知到容器
+        const add_notify = () => {
+            // 每条通知
+            const new_node = document.createElement('div');
+            new_node.id = `wh-notify-${uid}`;
+            new_node.classList.add('wh-notify-item');
+            new_node.innerHTML = `<div class="wh-notify-bar"></div>
+<div class="wh-notify-cont">
+    <div class="wh-notify-close"><button>关闭</button></div>
+    <div class="wh-notify-msg"><p>${msg}</p></div>
+</div>`;
+            notify_contain.append(new_node);
+            // 进度条node
+            const progressBar = new_node.querySelector('.wh-notify-bar');
+            // 是否hover
+            let mouse_enter = false;
+            new_node.addEventListener('mouseenter', () => mouse_enter = true, true);
+            new_node.addEventListener('mouseleave', () => mouse_enter = false);
+            // 通知进度条
+            let progressCount = 101;
+            // 计时器
+            let intervalID = window.setInterval(() => {
+                if (mouse_enter) {
+                    progressCount = 101;
+                    progressBar.style.width = '100%';
+                    return;
+                }
+                progressCount--;
+                progressBar.style.width = `${progressCount}%`;
+                if (progressCount === 0) removeNode();
+            }, timeout * 1000 / 100);
+            // 删除通知
+            const removeNode = () => {
+                clearInterval(intervalID);
+                new_node.remove();
+                callback();
+            };
+            new_node.querySelector('.wh-notify-close button').addEventListener('click', removeNode);
+        };
+        // 存在容器 添加新通知
+        if (!!notify_contain) {
+            add_notify();
+        }
+        // 不存在容器 创建后添加
+        else {
+            notify_contain = document.createElement('div');
+            notify_contain.id = node_id;
+            addStyle(`
+#${node_id} {
+    /*height: 500px;
+    background: red;*/
+    
+    display: inline-block;
+    position: fixed;
+    top: 0;
+    left: calc(50% - 180px);
+    width: 360px;
+    z-index: 200000;
+}
+#${node_id} .wh-notify-item {
+    /*height: 50px;*/
+    background: rgb(239 249 255 / 90%);
+    border-radius: 2px;
+    margin: 0.5em 0 0 0;
+    box-shadow: 0 0 5px 0px #959595;
+}
+#${node_id} .wh-notify-item:hover {
+    background: rgb(239 249 255 / 98%);
+}
+#${node_id} .wh-notify-item .wh-notify-bar {
+    height:2px;
+    background:#2196f3;
+}
+#${node_id} .wh-notify-item .wh-notify-close {
+    float:right;
+    padding: 1em 0;
+}
+#${node_id} .wh-notify-item .wh-notify-msg {
+    padding:1.4em 1em;
+}
+`);
+            document.body.append(notify_contain);
+            add_notify();
+        }
     }
 }());
