@@ -1,8 +1,8 @@
 // ==UserScript==
-// @lastmodified  202201280112
+// @lastmodified  202201281534
 // @name         Torn翻译
 // @namespace    WOOH
-// @version      0.3.3
+// @version      0.3.4
 // @description  Torn UI翻译
 // @author       Woohoo[2687093] Sabrina_Devil[2696209]
 // @match        https://www.torn.com/*
@@ -17,18 +17,23 @@
     try {
         window = UWCopy || window;
     } catch (e) {
-        console.error(`[wh] 错误：window对象是常量 ${e}`);
+        console.error(`[WH] 错误：window对象是常量 ${e}`);
     }
     // 防止脚本重复运行
     if (window.WHTRANS) return;
     window.WHTRANS = true;
     // 版本
-    const version = '0.3.3';
+    const version = '0.3.4';
     // 修改历史
     const changelist = [
         {
             todo: true,
             cont: `翻译：baza npc商店、imarket、imarket搜索结果`,
+        },
+        {
+            ver: '0.3.4',
+            date: '20220128',
+            cont: `飞贼小助手现可在所有页面加载`,
         },
         {
             ver: '0.3.3',
@@ -3027,7 +3032,6 @@
     // 加载中html
     const loading_gif_html = `<img src="${loading_gif_base64()}" alt="lgif" style="width:14px;height:14px;" />`;
 
-
     // 默认设置
     const default_settings = [
         // 开启翻译
@@ -3099,8 +3103,6 @@
         if (typeof wh_trans_settings[_default.key] !== typeof _default.val) wh_trans_settings[_default.key] = _default.val;
     });
     saveSettings(true);
-
-    const GS = {};
 
     // 插件的设置dom配置列表
     const settingsArr = [];
@@ -3321,55 +3323,7 @@
             domText: '飞贼',
             clickFunc: function (e) {
                 e.target.blur();
-                if (getScriptEngine() === UserScriptEngine.PDA && !window.location.href.includes('crimes.php')) {
-                    notify('因PDA 或 Torn 限制仅某些页面(如 Crime 页面)可开启飞贼小助手，即将转跳，请转跳后开启。后续将会改善。', 3,
-                        () => window.location.href = 'https://www.torn.com/crimes.php');
-                    return;
-                }
-                if (!GS.LOADED) {
-                    notify('正在加载...');
-                    COFetch('https://cdn.staticfile.org/vue/2.2.2/vue.min.js')
-                        .catch(err => notify(err))
-                        .then(VueJS => {
-                            window.eval(VueJS);
-                            GS.LOADED = true;
-                            notify('已载入依赖');
-                            window.GM_getValue = (k, v = undefined) => {
-                                const objV = JSON.parse(window.localStorage.getItem('wh-gs-storage') || '{}')[k];
-                                return objV || v;
-                            };
-                            window.GM_setValue = (k, v) => {
-                                const obj = JSON.parse(window.localStorage.getItem('wh-gs-storage') || '{}');
-                                obj[k] = v;
-                                window.localStorage.setItem('wh-gs-storage', JSON.stringify(obj));
-                            };
-                            COFetch(`https://gitee.com/ameto_kasao/tornjs/raw/master/GoldenSnitch.js?${performance.now()}`)
-                                .then(GSJS => {
-                                    if (getScriptEngine() === UserScriptEngine.GM) {
-                                        window.GM_xmlhttpRequest = GM_xmlhttpRequest;
-                                    } else if (getScriptEngine() === UserScriptEngine.PDA) {
-                                        GSJS = GSJS.replace('http://222.160.142.50:8154/mugger', `https://jjins.github.io/mugger.json?${performance.now()}`);
-
-                                        window.GM_xmlhttpRequest = function (opt) {
-                                            // 暂不适配pda post
-                                            if (opt.method.toLowerCase() === 'post') return;
-
-                                            COFetch(opt.url).then(res => {
-                                                const obj = {}
-                                                obj.responseText = res
-                                                opt.onload(obj)
-                                            });
-                                        };
-                                    }
-                                    window.eval(GSJS);
-                                    if (isDev()) window.GM_setValue("gsp_showContent", true);
-                                    notify('已载入飞贼助手');
-                                })
-                                .catch(err => notify(`PDA API错误。${err}`));
-                        });
-                } else {
-                    notify('飞贼助手已经加载了');
-                }
+                loadGS(getScriptEngine());
             },
         })
         // 危险行为开关⚠️
@@ -3416,79 +3370,26 @@
             },
         })
         // 测试按钮
-        if (isDev()) settingsArr.push({
-            domType: 'button',
-            domId: 'wh-test-btn',
-            domText: '测试按钮',
-            clickFunc: function () {
-                let pop = popupMsg('');
-                let ifr = document.createElement('iframe');
-                ifr.src = 'https://www.torn.com/crimes.php';
-                document.body.append(ifr)
-                log(ifr.contentDocument)
-                ifr.onload = () => {
-                    const _window = ifr.contentWindow;
-                    const _docu = _window.document;
-                    _docu.head.innerHTML = '';
-                    _docu.body.innerHTML = '';
-                    COFetch('https://cdn.staticfile.org/vue/2.2.2/vue.min.js')
-                        // .catch(err => popup_node.innerHTML = err)
-                        .then(vuejs => {
-                            _window.eval(vuejs)
-                            log('Vue: ', typeof _window.Vue)
-                            // Eval(vuejs).catch(err => log(err)).then(() => {
-                            // muggerInter.hasVue = true;
-                            // popup_node.innerHTML += '依赖已载入<br/>';
-                            _window.GM_getValue = (k, v = undefined) => {
-                                const objV = JSON.parse(_window.localStorage.getItem('wh-gs-storage') || '{}')[k];
-                                return objV || v;
-                            };
-                            _window.GM_setValue = (k, v) => {
-                                const obj = JSON.parse(_window.localStorage.getItem('wh-gs-storage') || '{}');
-                                obj[k] = v;
-                                _window.localStorage.setItem('wh-gs-storage', JSON.stringify(obj));
-                            };
-                            COFetch(`https://gitee.com/ameto_kasao/tornjs/raw/master/GoldenSnitch.js?${performance.now()}`)
-                                .then(res => {
-                                    // if (getScriptEngine() === UserScriptEngine.GM) {
-                                    //     ifr.contentWindow.GM_xmlhttpRequest = GM_xmlhttpRequest;
-                                    // } else
-                                    if (getScriptEngine() === UserScriptEngine.PDA) {
-                                        res = res.replace('http://222.160.142.50:8154/mugger', `https://jjins.github.io/mugger.json?${performance.now()}`);
-                                        _window.GM_xmlhttpRequest = function (opt) {
-                                            // 暂不适配pda post
-                                            if (opt.method.toLowerCase() === 'post') return;
-                                            COFetch(opt.url).then(res => {
-                                                const obj = {};
-                                                obj.responseText = res;
-                                                opt.onload(obj);
-                                            });
-                                        };
-                                    }
-                                    _window.eval(res);
-                                    // Eval(res).catch(err => log(err)).then(() => {
-                                    if (isDev()) _window.GM_setValue("gsp_showContent", true)
-                                    // });
-                                    // popup_node.innerHTML += '飞贼助手已载入<br/>';
-                                })
-                            // .catch(err => popup_node.innerHTML = `PDA API错误。${err}`);
-                            // })
-                        });
-                };
-            },
-        })
-        // 测试按钮2
-        if (isDev()) settingsArr.push({
-            domType: 'button',
-            domId: 'wh-test2-btn',
-            domText: '测试按钮2',
-            clickFunc: function () {
-                notify(`测试${getRandomInt(0, 99999)}`, 5, () => log('通知关闭'));
-            },
-        })
+        // if (isDev()) settingsArr.push({
+        //     domType: 'button',
+        //     domId: 'wh-test-btn',
+        //     domText: '测试按钮',
+        //     clickFunc: function () {
+        //     },
+        // })
+        // // 测试按钮
+        // if (isDev()) settingsArr.push({
+        //     domType: 'button',
+        //     domId: 'wh-test2-btn',
+        //     domText: '测试按钮2',
+        //     clickFunc: function () {
+        //         let a = WHNotify('test', 10);
+        //     },
+        // })
     }
     // 左侧“中”标签
     const $zhongNode = initIcon();
+    // 标签中的按钮
     if ($zhongNode) {
         // 更新词库按钮
         $zhongNode.querySelector('#wh-trans-data-update').onclick = function () {
@@ -3641,16 +3542,17 @@
   <tr><td>URL</td><td>${window.location.href}</td></tr>
   <tr><td>页面尺寸</td><td>${window.innerWidth}x${window.innerHeight}</td></tr>
   <tr><td>设备类型</td><td>${getDeviceType().toUpperCase()}</td></tr>
-  <tr><td>脚本运行方式</td><td>${{'gm':'油猴','raw':'直接运行','pda':'TornPDA'}[getScriptEngine()]}</td></tr>
+  <tr><td>脚本运行方式</td><td>${{'gm': '油猴', 'raw': '直接运行', 'pda': 'TornPDA'}[getScriptEngine()]}</td></tr>
   <tr><td>时间</td><td>${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}</td></tr>
   <tr><td>插件版本</td><td>${version}</td></tr>
   <tr><td>操作系统</td><td>${os}</td></tr>
   <tr><td>浏览器</td><td>${browser}</td></tr>
+  <tr><td>UA</td><td>${window.navigator.userAgent}</td></tr>
 </table>
 <style>
 #wh-dev-info-tb td{
 padding: 2px 4px;
-color:white;
+color:black;
 }
 </style>`;
             popupMsg(insert, '开发者详情');
@@ -3743,11 +3645,10 @@ padding: 0.5em 0;
 }
 
 #wh-popup-cont button{
-    /*float: right;*/
     margin: 0px;
     padding: 5px 8px;
-    border: solid 2px white;
-    color: white;
+    border: solid 2px black;
+    color: black;
     border-radius: 3px;
 }
 `);
@@ -8062,13 +7963,6 @@ margin: 0 0 3px;
         return `${task ? '任务要求：' + task : '暂无，请联系<a href="profiles.php?XID=2687093">Woohoo</a>'}${hint ? '<br>提示：' + hint : ''}`;
     }
 
-    /**
-     * 物品名翻译
-     */
-    function itemNameTrans(str) {
-        return itemNameDict[str] || str;
-    }
-
     /*
     展开物品详情
      */
@@ -8253,7 +8147,7 @@ margin: 0 0 3px;
      */
     function saveSettings(not_notify = false) {
         // 通知
-        if (!not_notify) notify('已保存设置', 3)
+        if (!not_notify) WHNotify('已保存设置', 3)
 
         localStorage.setItem('wh_trans_settings', JSON.stringify(wh_trans_settings));
     }
@@ -8412,7 +8306,7 @@ margin: 0 0 3px;
      * @param callback 通知结束后执行的函数
      * @returns HTMLElement 通知的node
      */
-    function notify(msg = '', timeout = 3, callback = null) {
+    function WHNotify(msg = '', timeout = 3, callback = null) {
         const date = new Date();
         // 通知的唯一id
         const uid = `${date.getHours()}${date.getSeconds()}${date.getMilliseconds()}${getRandomInt(1000, 9999)}`;
@@ -8457,21 +8351,16 @@ margin: 0 0 3px;
                 new_node.remove();
                 if (callback !== null) callback();
             };
+            new_node.del = removeNode;
             new_node.querySelector('.wh-notify-close button').addEventListener('click', removeNode);
+            return new_node;
         };
-        // 存在容器 添加新通知
-        if (!!notify_contain) {
-            add_notify();
-        }
-        // 不存在容器 创建后添加
-        else {
+        // 不存在容器 创建
+        if (!notify_contain) {
             notify_contain = document.createElement('div');
             notify_contain.id = node_id;
             addStyle(`
 #${node_id} {
-    /*height: 500px;
-    background: red;*/
-    
     display: inline-block;
     position: fixed;
     top: 0;
@@ -8495,14 +8384,132 @@ margin: 0 0 3px;
 }
 #${node_id} .wh-notify-item .wh-notify-close {
     float:right;
-    padding: 1em 0;
+    padding:0;
+}
+#${node_id} .wh-notify-item .wh-notify-close button {
+    padding:10px;
+    margin:0;
+    border:0;
 }
 #${node_id} .wh-notify-item .wh-notify-msg {
-    padding:1.4em 1em;
+    padding:12px;
 }
 `);
             document.body.append(notify_contain);
-            add_notify();
         }
+        return add_notify();
+    }
+
+    // gs loader
+    function loadGS(use) {
+        if (use === UserScriptEngine.PDA) {
+            let ifr = document.querySelector('#wh-gs-loader-ifr');
+            if (ifr) {
+                WHNotify('飞贼小助手已经加载了');
+                return;
+            }
+            const container = document.createElement('div');
+            container.id = 'wh-gs-loader';
+            ifr = document.createElement('iframe');
+            ifr.id = 'wh-gs-loader-ifr';
+            ifr.src = 'https://www.torn.com/crimes.php';
+            container.append(ifr);
+            document.body.append(container);
+            addStyle(`
+#wh-gs-loader {
+position:fixed;
+top:0;
+left:0;
+z-index:100001;
+}
+`)
+            let notify = WHNotify('加载中');
+            ifr.onload = () => {
+                notify.del();
+                const _window = ifr.contentWindow;
+                const _docu = _window.document;
+                _docu.head.innerHTML = '';
+                _docu.body.innerHTML = '';
+                notify = WHNotify('加载依赖');
+                COFetch('https://cdn.staticfile.org/vue/2.2.2/vue.min.js')
+                    .then(vuejs => {
+                        notify.del();
+                        _window.eval(vuejs)
+                        _window.GM_getValue = (k, v = undefined) => {
+                            const objV = JSON.parse(_window.localStorage.getItem('wh-gs-storage') || '{}')[k];
+                            return objV || v;
+                        };
+                        _window.GM_setValue = (k, v) => {
+                            const obj = JSON.parse(_window.localStorage.getItem('wh-gs-storage') || '{}');
+                            obj[k] = v;
+                            _window.localStorage.setItem('wh-gs-storage', JSON.stringify(obj));
+                        };
+                        _window.GM_xmlhttpRequest = function (opt) {
+                            // 暂不适配pda post
+                            if (opt.method.toLowerCase() === 'post') return;
+                            COFetch(opt.url).then(res => {
+                                const obj = {};
+                                obj.responseText = res;
+                                opt.onload(obj);
+                            });
+                        };
+                        notify = WHNotify('加载飞贼小助手');
+                        COFetch(`https://gitee.com/ameto_kasao/tornjs/raw/master/GoldenSnitch.js?${performance.now()}`)
+                            .then(res => {
+                                _window.eval(res.replace('http://222.160.142.50:8154/mugger', `https://jjins.github.io/mugger.json?${performance.now()}`));
+                                _window.GM_setValue("gsp_x", 10);
+                                _window.GM_setValue("gsp_y", 10);
+                                notify.del();
+                                notify = WHNotify('飞贼小助手已加载');
+                                const gsp = _docu.querySelector('#gsp');
+                                gsp.style.top = '10px';
+                                gsp.style.left = '10px';
+                                // log(gsp)
+                                const init = () => {
+                                    ifr.style.height = `${gsp.offsetHeight + 10}px`;
+                                    ifr.style.width = `${gsp.offsetWidth + 20}px`;
+                                };
+                                new MutationObserver(init).observe(gsp, {childList: true, subtree: true});
+                                init();
+                                if (isDev()) _window.GM_setValue("gsp_showContent", true)
+                            });
+                    });
+            };
+            return;
+        }
+        if (use === UserScriptEngine.GM) {
+            if (typeof window.Vue !== 'function') {
+                let notify = WHNotify('正在加载依赖');
+                COFetch('https://cdn.staticfile.org/vue/2.2.2/vue.min.js')
+                    .catch(err => WHNotify(Obj2Str(err)))
+                    .then(VueJS => {
+                        window.eval(VueJS);
+                        notify.del();
+                        notify = WHNotify('已载入依赖');
+                        window.GM_getValue = (k, v = undefined) => {
+                            const objV = JSON.parse(window.localStorage.getItem('wh-gs-storage') || '{}')[k];
+                            return objV || v;
+                        };
+                        window.GM_setValue = (k, v) => {
+                            const obj = JSON.parse(window.localStorage.getItem('wh-gs-storage') || '{}');
+                            obj[k] = v;
+                            window.localStorage.setItem('wh-gs-storage', JSON.stringify(obj));
+                        };
+                        window.GM_xmlhttpRequest = GM_xmlhttpRequest;
+                        COFetch(`https://gitee.com/ameto_kasao/tornjs/raw/master/GoldenSnitch.js?${performance.now()}`)
+                            .then(GSJS => {
+                                window.eval(GSJS);
+                                if (isDev()) window.GM_setValue("gsp_showContent", true);
+                                notify.del();
+                                notify = WHNotify('已载入飞贼助手');
+                            })
+                            .catch(err => WHNotify(`PDA API错误。${Obj2Str(err)}`));
+                    });
+            } else {
+                WHNotify('飞贼助手已经加载了');
+            }
+            return;
+        }
+        WHNotify('暂不支持');
     }
 }());
