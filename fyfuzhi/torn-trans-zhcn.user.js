@@ -1,8 +1,8 @@
 // ==UserScript==
-// @lastmodified  202201292356
+// @lastmodified  202201300035
 // @name         芜湖助手
 // @namespace    WOOH
-// @version      0.3.5
+// @version      0.3.6
 // @description  托恩，起飞！
 // @author       Woohoo[2687093] Sabrina_Devil[2696209]
 // @match        https://www.torn.com/*
@@ -23,12 +23,17 @@
     if (window.WHTRANS) return;
     window.WHTRANS = true;
     // 版本
-    const version = '0.3.5';
+    const version = '0.3.6';
     // 修改历史
     const changelist = [
         {
             todo: true,
             cont: `翻译：baza npc商店、imarket、imarket搜索结果`,
+        },
+        {
+            ver: '0.3.6',
+            date: '20220130',
+            cont: `修复闹钟提醒的错误，添加今日不再提醒`,
         },
         {
             ver: '0.3.5',
@@ -3170,7 +3175,7 @@
         settingsArr.push({
             domType: 'checkbox',
             domId: 'wh-15-alarm-check',
-            domText: ' 啤酒提醒(45s前)',
+            domText: ' 啤酒提醒(45s前) <button id="wh-15-alarm-ignToday">今日不提醒</button>',
             dictName: '_15Alarm',
         });
         // 攻击链接转跳
@@ -3453,14 +3458,27 @@ height:30px;
             },
         })
         // 测试按钮
-        if (isDev()) settingsArr.push({
-            domType: 'button',
-            domId: 'wh-test-btn',
-            domText: '测试按钮',
-            clickFunc: function () {
-                audioPlay();
-            },
-        })
+//         if (isDev()) settingsArr.push({
+//             domType: 'button',
+//             domId: 'wh-test-btn',
+//             domText: '测试按钮',
+//             clickFunc: function () {
+//                 let count=0
+//                 let timeOutFunc = function () {
+//                     log(count++)
+//                     WHNotify(`<span style="background-color:green;color:white;border-radius:3px;">【啤酒小助手】</span><br/>
+// 提醒您：还有不到 50 秒 NPC 的商品就要刷新了，啤酒血包要抢的可以准备咯。`, 30);
+//                     window.setTimeout(audioPlay, 800);
+//                     window.setTimeout(audioPlay, 800 * 2);
+//                     window.setTimeout(audioPlay, 800 * 3);
+//                     window.setTimeout(timeOutFunc, 15 * 60 * 1000);
+//                 };
+//                 // 距离下一个15分的时间，0位分，1位秒
+//                 // let next15 = [4 - (dt.getMinutes() % 5), 60 - dt.getSeconds()];
+//                 // let next15 = [14 - (dt.getMinutes() % 15), 60 - dt.getSeconds()];
+//                 window.setTimeout(timeOutFunc, 200)
+//             },
+//         })
         // // 测试按钮
         // if (isDev()) settingsArr.push({
         //     domType: 'button',
@@ -3476,7 +3494,7 @@ height:30px;
     // 标签中的按钮
     if ($zhongNode) {
         // 更新词库按钮
-        $zhongNode.querySelector('#wh-trans-data-update').onclick = function () {
+        $zhongNode.querySelector('button#wh-trans-data-update').onclick = function () {
             if (this.intervalID) return;
             const url = isDev() ? 'http://192.168.1.7:8080/' : 'https://jjins.github.io/gengxin/';
             const popup = window.open(url);
@@ -3508,7 +3526,7 @@ height:30px;
             }
         }
         // 小窗犯罪按钮
-        $zhongNode.querySelector('#wh-quick-crime-btn').onclick = () => {
+        $zhongNode.querySelector('button#wh-quick-crime-btn').onclick = () => {
             // 弹出小窗口
             const ifHTML = `<iframe src="/crimes.php?step=main" style="width:100%;max-width: 450px;margin: 0 auto;display: none;height: 340px;"></iframe>`;
             const popup_insert = `<p>加载中请稍后${loading_gif_html}</p><div id="wh-quick-crime-if-container"></div>`;
@@ -3608,8 +3626,13 @@ height:30px;
                 }
             }, 1000);
         };
+        // 今日不提醒
+        $zhongNode.querySelector('button#wh-15-alarm-ignToday').onclick = () => {
+            const date = new Date();
+            setAndSaveSettings('_15_alarm_ignore', `${date.getFullYear()}${date.getMonth() + 1}${date.getDate()}`);
+        };
         // 开发详情按钮
-        $zhongNode.querySelector('#wh-devInfo').onclick = () => {
+        $zhongNode.querySelector('button#wh-devInfo').onclick = () => {
             const date = new Date();
             let os = '未知';
             try {
@@ -3727,19 +3750,19 @@ width: 66px;
     // 啤酒提醒
     const _15alert = () => {
         let dt = new Date();
+        if (wh_trans_settings['_15_alarm_ignore'] === `${dt.getFullYear()}${dt.getMonth() + 1}${dt.getDate()}`) return;
         let timeOutFunc = () => {
+            if (wh_trans_settings['_15_alarm_ignore'] === `${dt.getFullYear()}${dt.getMonth() + 1}${dt.getDate()}`) return;
             WHNotify(`<span style="background-color:green;color:white;border-radius:3px;">【啤酒小助手】</span><br/>
 提醒您：还有不到 50 秒 NPC 的商品就要刷新了，啤酒血包要抢的可以准备咯。`, 30);
-            let counter = 0;
-            const intervalID = window.setInterval(() => {
-                audioPlay();
-                counter++;
-                if (counter === 3) clearInterval(intervalID);
-            }, 800);
+            window.setTimeout(audioPlay, 800);
+            window.setTimeout(audioPlay, 800 * 2);
+            window.setTimeout(audioPlay, 800 * 3);
             window.setTimeout(timeOutFunc, 15 * 60 * 1000);
         };
         // 距离下一个15分的时间，0位分，1位秒
-        let next15 = [14 - (dt.getMinutes() % 15), 60 - dt.getSeconds()];
+        let next15 = [4 - (dt.getMinutes() % 5), 60 - dt.getSeconds()];
+        // let next15 = [14 - (dt.getMinutes() % 15), 60 - dt.getSeconds()];
         window.setTimeout(timeOutFunc, (next15[0] * 60 + next15[1] - 45) * 1000)
     };
     if (wh_trans_settings._15Alarm) _15alert();
@@ -8251,6 +8274,12 @@ margin: 0 0 3px;
         localStorage.setItem('wh_trans_settings', JSON.stringify(wh_trans_settings));
     }
 
+    // 设置并保存设置
+    function setAndSaveSettings(k, v) {
+        wh_trans_settings[k] = v;
+        saveSettings();
+    }
+
     // bool 返回当前是否dev状态
     function isDev() {
         try {
@@ -8617,7 +8646,9 @@ z-index:100001;
     function audioPlay(url = 'https://www.torn.com/js/chat/sounds/Warble_1.mp3') {
         const audio = new Audio(url);
         audio.addEventListener("canplaythrough", () => {
-            audio.play().then();
+            audio.play()
+                .catch(err => log(err))
+                .then();
         });
     }
 }());
