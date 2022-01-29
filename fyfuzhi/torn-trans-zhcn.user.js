@@ -1,9 +1,9 @@
 // ==UserScript==
-// @lastmodified  202201281534
-// @name         Torn翻译
+// @lastmodified  202201292356
+// @name         芜湖助手
 // @namespace    WOOH
-// @version      0.3.4
-// @description  Torn UI翻译
+// @version      0.3.5
+// @description  托恩，起飞！
 // @author       Woohoo[2687093] Sabrina_Devil[2696209]
 // @match        https://www.torn.com/*
 // @grant        GM_xmlhttpRequest
@@ -23,12 +23,17 @@
     if (window.WHTRANS) return;
     window.WHTRANS = true;
     // 版本
-    const version = '0.3.4';
+    const version = '0.3.5';
     // 修改历史
     const changelist = [
         {
             todo: true,
             cont: `翻译：baza npc商店、imarket、imarket搜索结果`,
+        },
+        {
+            ver: '0.3.5',
+            date: '20220129',
+            cont: `调整界面样式，添加常用链接，添加啤酒提醒`,
         },
         {
             ver: '0.3.4',
@@ -3048,6 +3053,8 @@
         {key: 'energyAlert', val: true},
         // 飞行闹钟
         {key: 'trvAlarm', val: true},
+        // 啤酒提醒
+        {key: '_15Alarm', val: true},
         // 光速拔刀 6-关闭
         {key: 'quickAttIndex', val: 2},
         // 光速跑路 0-leave 1-mug 2-hos 3-关闭
@@ -3082,6 +3089,8 @@
             energyAlert: undefined,
             // 飞行闹钟
             trvAlarm: undefined,
+            // 啤酒提醒
+            _15Alarm: true,
             // 光速拔刀 6-关闭
             quickAttIndex: undefined,
             // 光速跑路 0-leave 1-mug 2-hos 3-关闭
@@ -3157,6 +3166,13 @@
             domText: ' 飞行闹钟(仅PC)',
             dictName: 'trvAlarm',
         })
+        // 啤酒提醒
+        settingsArr.push({
+            domType: 'checkbox',
+            domId: 'wh-15-alarm-check',
+            domText: ' 啤酒提醒(45s前)',
+            dictName: '_15Alarm',
+        });
         // 攻击链接转跳
         settingsArr.push({
             domType: 'checkbox',
@@ -3295,32 +3311,99 @@
             domText: 'NPC LOOT (真·世界BOSS)',
             clickFunc: function (e) {
                 e.target.blur();
-                const insert = `<img alt="stock.png" src="https://jjins.github.io/t2i/loot.png?${performance.now()}" style="max-width:100%;display:block;margin:0 auto;" />
-<p>点击开打：</p>
-<p><a href="https://www.torn.com/loader.php?sid=attack&user2ID=4" target="_blank">Duke</a> 
-<a href="https://www.torn.com/loader.php?sid=attack&user2ID=15" target="_blank">Leslie</a> 
-<a href="https://www.torn.com/loader.php?sid=attack&user2ID=19" target="_blank">Jimmy(面包刀)</a> 
-<a href="https://www.torn.com/loader.php?sid=attack&user2ID=20" target="_blank">Fernando(毒伞)</a> 
-<a href="https://www.torn.com/loader.php?sid=attack&user2ID=21" target="_blank">Tiny(大锤)</a></p>
-`;
+                const insert = `<p>点击开打：</p>
+<ul>
+<li><a href="https://www.torn.com/loader.php?sid=attack&user2ID=4" target="_blank">Duke</a></li>
+<li><a href="https://www.torn.com/loader.php?sid=attack&user2ID=15" target="_blank">Leslie</a></li>
+<li><a href="https://www.torn.com/loader.php?sid=attack&user2ID=19" target="_blank">Jimmy(面包刀)</a></li>
+<li><a href="https://www.torn.com/loader.php?sid=attack&user2ID=20" target="_blank">Fernando(毒伞)</a></li>
+<li><a href="https://www.torn.com/loader.php?sid=attack&user2ID=21" target="_blank">Tiny(大锤)</a></li>
+</ul>
+<div><img alt="stock.png" src="https://jjins.github.io/t2i/loot.png?${performance.now()}" style="max-width:100%;display:block;margin:0 auto;" /></div>`;
                 popupMsg(insert, 'NPC LOOT');
             },
         })
-        // 生存手册
+        // 常用链接
         settingsArr.push({
             domType: 'button',
-            domId: 'wh-link-shengcunshouce',
-            domText: '生存手册',
+            domId: 'wh-link-collection',
+            domText: '常用链接',
             clickFunc: function (e) {
+                if (!this.styleAdded) {
+                    addStyle(`
+.wh-link-collection-cont a{
+    display: inline-block;
+    border: solid 1px #b3b3b3;
+    border-radius: 4px;
+    margin: 0 5px 2px 0;
+    padding: 4px 8px;
+    text-align:center;
+    background: #efefef;
+    background: linear-gradient(#f1f1f1,#e3e3e3);
+    color:black !important;
+}
+.wh-link-collection-cont span{
+display: block;
+/*padding: 0 4px 8px;*/
+}
+.wh-link-collection-cont .wh-link-collection-img{
+display: block;
+width:60px;
+height:30px;
+}
+`);
+                    this.styleAdded = true;
+                }
                 e.target.blur();
-                window.open('https://docs.qq.com/doc/DTVpmV2ZaRnB0RG56');
+                const quick_link_dict = [];
+                // 生存手册
+                quick_link_dict.push({
+                    name: '生存手册',
+                    url: 'https://docs.qq.com/doc/DTVpmV2ZaRnB0RG56',
+                    new_tab: true,
+                    img: 'https://www.torn.com/images/items/293/medium.png',
+                });
+                // 买啤酒
+                quick_link_dict.push({
+                    name: '抢啤酒',
+                    url: 'https://www.torn.com/shops.php?step=bitsnbobs',
+                    new_tab: true,
+                    img: 'https://www.torn.com/images/items/180/medium.png',
+                });
+                // 买XAN
+                quick_link_dict.push({
+                    name: '买XAN',
+                    url: 'https://www.torn.com/imarket.php#/p=shop&step=shop&type=&searchname=Xanax',
+                    new_tab: true,
+                    img: 'https://www.torn.com/images/items/206/medium.png',
+                });
+                // 起飞
+                quick_link_dict.push({
+                    name: '起飞',
+                    url: 'https://www.torn.com/travelagency.php',
+                    new_tab: true,
+                    img: 'https://www.torn.com/images/items/396/medium.png',
+                });
+                // 买PT
+                quick_link_dict.push({
+                    name: '买PT',
+                    url: 'https://www.torn.com/pmarket.php',
+                    new_tab: true,
+                    img: 'https://www.torn.com/images/items/722/medium.png',
+                });
+                let insert = '<p>';
+                quick_link_dict.forEach(el => {
+                    insert += `<a href="${el.url}"${el.new_tab ? ' target="_blank"' : ''}><span class="wh-link-collection-img" style="background: url(${el.img})"></span><span>${el.name}</span></a>`;
+                });
+                insert += '</p>'
+                popupMsg(insert, '常用链接').classList.add('wh-link-collection-cont');
             },
         })
-        // 飞贼模块
+        // 飞贼
         settingsArr.push({
             domType: 'button',
             domId: 'wh-gs-btn',
-            domText: '飞贼',
+            domText: '飞贼小助手(by 伞佬)',
             clickFunc: function (e) {
                 e.target.blur();
                 loadGS(getScriptEngine());
@@ -3370,13 +3453,14 @@
             },
         })
         // 测试按钮
-        // if (isDev()) settingsArr.push({
-        //     domType: 'button',
-        //     domId: 'wh-test-btn',
-        //     domText: '测试按钮',
-        //     clickFunc: function () {
-        //     },
-        // })
+        if (isDev()) settingsArr.push({
+            domType: 'button',
+            domId: 'wh-test-btn',
+            domText: '测试按钮',
+            clickFunc: function () {
+                audioPlay();
+            },
+        })
         // // 测试按钮
         // if (isDev()) settingsArr.push({
         //     domType: 'button',
@@ -3568,18 +3652,14 @@ border-radius:4px;
 max-width: 200px;
 box-shadow: 0 0 3px 1px #8484848f;
 }
-#wh-trans-icon:not(.wh-icon-expanded):hover {
-background: #f8f8f8;
-}
+#wh-trans-icon:not(.wh-icon-expanded):hover {background: #f8f8f8;}
 #wh-trans-icon button{
 margin:0;
 padding:0;
 border:0;
 cursor:pointer;
 }
-#wh-gSettings div{
-margin: 4px 0 0;
-}
+#wh-gSettings div{margin: 4px 0 0;}
 #wh-trans-icon .wh-container{
 margin:0;
 padding:0 16px 16px;
@@ -3599,6 +3679,7 @@ background-image:url("https://jjins.github.io/t2i/version.png?${performance.now(
 height:16px;
 width: 66px;
 }
+/** 弹出窗口 **/
 #wh-popup{
     position: fixed;
     z-index: 9900034;
@@ -3607,9 +3688,10 @@ width: 66px;
     width: 100%;
     height: 100%;
     background: #000000cc;
+    color:#333;
 }
 #wh-popup-container{
-    max-width: 600px;
+    max-width: 568px;
     margin: 5em auto 0;
     background: #d7d7d7;
     min-height: 120px;
@@ -3622,28 +3704,17 @@ width: 66px;
     font-weight: bold;
     text-align: center;
 }
-#wh-popup-close{
-    float: right;
-    margin: 8px;
-    padding: 5px 8px;
-    border: solid 2px white;
-    color: white;
-    border-radius: 3px;
-}
+/** 弹出窗口的内容 **/
 #wh-popup-cont{
     padding: 0 1em 1em;
     max-height: 30em;
     overflow-y: auto;
+    font-size:13px;
 }
-#wh-popup-cont p{
-padding:0.25em 0;
-}
-#wh-popup-cont a{color:red;}
-#wh-popup-cont h4{
-margin:0;
-padding: 0.5em 0;
-}
-
+#wh-popup-cont p{padding:0.25em 0;}
+#wh-popup-cont a{color:red;text-decoration:none;}
+#wh-popup-cont li{margin:4px 0;}
+#wh-popup-cont h4{margin:0;padding: 0.5em 0;}
 #wh-popup-cont button{
     margin: 0px;
     padding: 5px 8px;
@@ -3652,6 +3723,26 @@ padding: 0.5em 0;
     border-radius: 3px;
 }
 `);
+
+    // 啤酒提醒
+    const _15alert = () => {
+        let dt = new Date();
+        let timeOutFunc = () => {
+            WHNotify(`<span style="background-color:green;color:white;border-radius:3px;">【啤酒小助手】</span><br/>
+提醒您：还有不到 50 秒 NPC 的商品就要刷新了，啤酒血包要抢的可以准备咯。`, 30);
+            let counter = 0;
+            const intervalID = window.setInterval(() => {
+                audioPlay();
+                counter++;
+                if (counter === 3) clearInterval(intervalID);
+            }, 800);
+            window.setTimeout(timeOutFunc, 15 * 60 * 1000);
+        };
+        // 距离下一个15分的时间，0位分，1位秒
+        let next15 = [14 - (dt.getMinutes() % 15), 60 - dt.getSeconds()];
+        window.setTimeout(timeOutFunc, (next15[0] * 60 + next15[1] - 45) * 1000)
+    };
+    if (wh_trans_settings._15Alarm) _15alert();
 
     /**
      * 时分秒转换
@@ -4143,6 +4234,7 @@ display:none;
             const set_node = wh_trv_alarm_node.querySelectorAll('#wh-trv-alarm-cont button')[0];
             // 落地前响铃时长
             const cd_time = wh_trv_alarm_node.querySelector('input[type="number"]');
+            let count_down_notify = {};
             set_node.onclick = () => {
                 try {
                     wh_trv_alarm.alert_time = parseInt(cd_time.value);
@@ -4151,6 +4243,8 @@ display:none;
                 }
                 save_trv_settings();
                 set_node.value = wh_trv_alarm.alert_time;
+                if (count_down_notify.del) count_down_notify.del();
+                count_down_notify = WHNotify('设置已更新');
             };
             // 停止响铃按钮
             const stop_node = wh_trv_alarm_node.querySelectorAll('#wh-trv-alarm-cont button')[1];
@@ -4161,9 +4255,12 @@ display:none;
             }
             // 开启闹钟勾选
             const enable_node = wh_trv_alarm_node.querySelector('#wh-trv-alarm-cont input[type="checkbox"]');
+            let on_off_notify = {};
             enable_node.onchange = ev => {
                 wh_trv_alarm.enable = ev.target.checked;
                 save_trv_settings();
+                if (on_off_notify.del) on_off_notify.del();
+                on_off_notify = WHNotify(wh_trv_alarm.enable ? '闹钟已开启' : '闹钟已关闭');
             };
             // 剩余时间 秒
             const remaining_sec = parseInt(remaining_arr[0]) * 3600 + parseInt(remaining_arr[1]) * 60 + parseInt(remaining_arr[2]);
@@ -8033,17 +8130,19 @@ margin: 0 0 3px;
         }
     }
 
-    /*
-    添加全局style
+    /**
+     * 添加全局style
+     * @param CSS
+     * @returns undefined
      */
-    function addStyle(v) {
+    function addStyle(CSS) {
         let wh_gStyle = document.querySelector('style#wh-trans-gStyle');
         if (wh_gStyle) {
-            wh_gStyle.innerHTML += v;
+            wh_gStyle.innerHTML += CSS;
         } else {
             wh_gStyle = document.createElement("style");
             wh_gStyle.id = 'wh-trans-gStyle';
-            wh_gStyle.innerHTML = v;
+            wh_gStyle.innerHTML = CSS;
             document.head.append(wh_gStyle);
         }
         log('新的CSS规则已注入', wh_gStyle);
@@ -8060,7 +8159,7 @@ margin: 0 0 3px;
         zhongNode.innerHTML = `<div><button id="wh-trans-icon-btn"></button></div>
 <div class="wh-container">
   <div class="wh-main">
-    <div><b>芜湖的翻译助手</b></div>
+    <div><b>芜湖助手</b></div>
     <div id="wh-gSettings"></div>
     <div><p>当前版本: ${version} <button id="wh-update-btn">更新</button></p></div>
     <div><p>最新版本: <span id="wh-latest-version"></span></p></div>
@@ -8163,19 +8262,16 @@ margin: 0 0 3px;
     }
 
     // 弹出窗口
-    function popupMsg(innerHTML, title = '芜湖的翻译助手') {
+    function popupMsg(innerHTML, title = '芜湖助手') {
         if (hasPopup()) return null;
         const popup = document.createElement('div');
         popup.id = 'wh-popup';
         popup.innerHTML =
             `<div id="wh-popup-container">
-<div id="wh-popup-title"><!--button id="wh-popup-close">x</button--><p>${title}</p></div>
+<div id="wh-popup-title"><p>${title}</p></div>
 <div id="wh-popup-cont">${innerHTML}</div>
 </div>`;
         document.body.append(popup);
-        // const close_btn = popup.querySelector('#wh-popup-close');
-        // close_btn.onclick = () => popup.remove();
-
         const clickFunc = e => {
             e.stopImmediatePropagation();
             if (e.target === popup) {
@@ -8184,7 +8280,6 @@ margin: 0 0 3px;
             }
         };
         popup.addEventListener('click', clickFunc);
-
         return popup.querySelector('#wh-popup-cont');
     }
 
@@ -8367,6 +8462,7 @@ margin: 0 0 3px;
     left: calc(50% - 180px);
     width: 360px;
     z-index: 200000;
+    color:#333;
 }
 #${node_id} .wh-notify-item {
     /*height: 50px;*/
@@ -8460,14 +8556,13 @@ z-index:100001;
                                 _window.GM_setValue("gsp_x", 10);
                                 _window.GM_setValue("gsp_y", 10);
                                 notify.del();
-                                notify = WHNotify('飞贼小助手已加载');
+                                notify = WHNotify('飞贼小助手已加载', 1);
                                 const gsp = _docu.querySelector('#gsp');
-                                gsp.style.top = '10px';
-                                gsp.style.left = '10px';
-                                // log(gsp)
                                 const init = () => {
                                     ifr.style.height = `${gsp.offsetHeight + 10}px`;
                                     ifr.style.width = `${gsp.offsetWidth + 20}px`;
+                                    gsp.style.top = '10px';
+                                    gsp.style.left = '10px';
                                 };
                                 new MutationObserver(init).observe(gsp, {childList: true, subtree: true});
                                 init();
@@ -8511,5 +8606,18 @@ z-index:100001;
             return;
         }
         WHNotify('暂不支持');
+    }
+
+    /**
+     * 播放音频
+     *
+     * @param url:String 播放的音频URL
+     * @returns void
+     */
+    function audioPlay(url = 'https://www.torn.com/js/chat/sounds/Warble_1.mp3') {
+        const audio = new Audio(url);
+        audio.addEventListener("canplaythrough", () => {
+            audio.play().then();
+        });
     }
 }());
