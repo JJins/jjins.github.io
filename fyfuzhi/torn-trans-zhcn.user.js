@@ -1,5 +1,5 @@
 // ==UserScript==
-// @lastmodified  202201300134
+// @lastmodified  202201300313
 // @name         芜湖助手
 // @namespace    WOOH
 // @version      0.3.6
@@ -3175,7 +3175,7 @@
         settingsArr.push({
             domType: 'checkbox',
             domId: 'wh-15-alarm-check',
-            domText: ' 啤酒提醒(45s前) <button id="wh-15-alarm-ignToday">今日不提醒</button>',
+            domText: ' 啤酒提醒 <button id="wh-15-alarm-ignToday">今日不提醒</button>',
             dictName: '_15Alarm',
         });
         // 攻击链接转跳
@@ -3627,12 +3627,7 @@ height:30px;
             }, 1000);
         };
         // 今日不提醒
-        $zhongNode.querySelector('button#wh-15-alarm-ignToday').onclick = () => {
-            const date = new Date();
-            setAndSaveSettings('_15_alarm_ignore', [date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()], true);
-            const notify = WHNotify(`明早8点前将不再提醒 <button id="wh-rd-btn-${getRandomInt(0, 100)}">取消</button>`);
-            notify.querySelector('.wh-notify-msg button').addEventListener('click', () => setAndSaveSettings('_15_alarm_ignore', undefined));
-        };
+        $zhongNode.querySelector('button#wh-15-alarm-ignToday').onclick = () => WHNotify('没有打开提醒呢，点击无效');
         // 开发详情按钮
         $zhongNode.querySelector('button#wh-devInfo').onclick = () => {
             const date = new Date();
@@ -3666,6 +3661,42 @@ color:black;
 </style>`;
             popupMsg(insert, '开发者详情');
         };
+        // 啤酒提醒
+        if (wh_trans_settings._15Alarm) {
+            // 今日不再提醒
+            const ign = () => {
+                const date = new Date();
+                setAndSaveSettings('_15_alarm_ignore', [date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()], true);
+                const notify = WHNotify(`明早8点前将不再提醒 <button id="wh-rd-btn-${getRandomInt(0, 100)}">取消</button>`);
+                notify.querySelector('.wh-notify-msg button').addEventListener('click', () => setAndSaveSettings('_15_alarm_ignore', undefined));
+            };
+            // 中菜单里的今日不再提醒点击
+            $zhongNode.querySelector('button#wh-15-alarm-ignToday').onclick = ign;
+            // 主逻辑
+            (() => {
+                let dt = new Date();
+                // 今日不再提醒
+                if (wh_trans_settings['_15_alarm_ignore'] &&
+                    [dt.getUTCFullYear(), dt.getUTCMonth(), dt.getUTCDate()] === wh_trans_settings['_15_alarm_ignore'])
+                    return;
+                // 每次的函数
+                const timeOutFunc = () => {
+                    if (wh_trans_settings['_15_alarm_ignore'] &&
+                        JSON.stringify([new Date().getUTCFullYear(), new Date().getUTCMonth(), new Date().getUTCDate()]) === JSON.stringify(wh_trans_settings['_15_alarm_ignore'])) return;
+                    const notify = WHNotify(`<span style="background-color:green;color:white;border-radius:3px;">【啤酒小助手】</span><br/>
+提醒您：还有不到 50 秒 NPC 的商品就要刷新了，啤酒血包要抢的可以准备咯。<button id="wh-rd-btn-${getRandomInt(0, 100)}">[今日不再提醒]</button>`, 30);
+
+                    notify.querySelector('.wh-notify-msg button').addEventListener('click', ign);
+                    window.setTimeout(audioPlay, 800);
+                    window.setTimeout(audioPlay, 800 * 2);
+                    window.setTimeout(audioPlay, 800 * 3);
+                    window.setTimeout(timeOutFunc, 15 * 60 * 1000);
+                };
+                // 距离下一个15分的时间，[分,秒]
+                let next15 = [14 - (dt.getMinutes() % 15), 60 - dt.getSeconds()];
+                window.setTimeout(timeOutFunc, (next15[0] * 60 + next15[1] - 45) * 1000)
+            })();
+        }
     }
     addStyle(`#wh-trans-icon{
 display: inline-block;
@@ -3748,29 +3779,6 @@ width: 66px;
     border-radius: 3px;
 }
 `);
-
-    // 啤酒提醒
-    const _15alert = () => {
-        let dt = new Date();
-        if (wh_trans_settings['_15_alarm_ignore'] &&
-            [dt.getUTCFullYear(), dt.getUTCMonth(), dt.getUTCDate()] === wh_trans_settings['_15_alarm_ignore'])
-            return;
-        const timeOutFunc = () => {
-            if (wh_trans_settings['_15_alarm_ignore'] &&
-                [new Date().getUTCFullYear(), new Date().getUTCMonth(), new Date().getUTCDate()] === wh_trans_settings['_15_alarm_ignore']) return;
-            WHNotify(`<span style="background-color:green;color:white;border-radius:3px;">【啤酒小助手】</span><br/>
-提醒您：还有不到 50 秒 NPC 的商品就要刷新了，啤酒血包要抢的可以准备咯。`, 30);
-            window.setTimeout(audioPlay, 800);
-            window.setTimeout(audioPlay, 800 * 2);
-            window.setTimeout(audioPlay, 800 * 3);
-            window.setTimeout(timeOutFunc, 15 * 60 * 1000);
-        };
-        // 距离下一个15分的时间，0位分，1位秒
-        // let next15 = [4 - (dt.getMinutes() % 5), 60 - dt.getSeconds()];
-        let next15 = [14 - (dt.getMinutes() % 15), 60 - dt.getSeconds()];
-        window.setTimeout(timeOutFunc, (next15[0] * 60 + next15[1] - 45) * 1000)
-    };
-    if (wh_trans_settings._15Alarm) _15alert();
 
     /**
      * 时分秒转换
@@ -8181,6 +8189,7 @@ margin: 0 0 3px;
      */
     function initIcon() {
         if (isIframe) return;
+        if (!!document.querySelector('div#wh-trans-icon')) return;
         const zhongNode = document.createElement('div');
         zhongNode.id = 'wh-trans-icon';
         zhongNode.classList.add('cont-gray');
