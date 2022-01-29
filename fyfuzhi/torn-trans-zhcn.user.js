@@ -1,5 +1,5 @@
 // ==UserScript==
-// @lastmodified  202201300035
+// @lastmodified  202201300134
 // @name         芜湖助手
 // @namespace    WOOH
 // @version      0.3.6
@@ -16,8 +16,8 @@
     const UWCopy = window.unsafeWindow;
     try {
         window = UWCopy || window;
-    } catch (e) {
-        console.error(`[WH] 错误：window对象是常量 ${e}`);
+    } catch (err) {
+        console.error('[WH]',err);
     }
     // 防止脚本重复运行
     if (window.WHTRANS) return;
@@ -3076,7 +3076,7 @@
         // 危险行为⚠️
         {key: 'dangerZone', val: false},
     ];
-    // 从浏览器读取设置数据
+    // 插件的全局设置
     const wh_trans_settings = localStorage.getItem('wh_trans_settings')
         ? JSON.parse(localStorage.getItem('wh_trans_settings'))
         : {
@@ -3629,7 +3629,9 @@ height:30px;
         // 今日不提醒
         $zhongNode.querySelector('button#wh-15-alarm-ignToday').onclick = () => {
             const date = new Date();
-            setAndSaveSettings('_15_alarm_ignore', `${date.getFullYear()}${date.getMonth() + 1}${date.getDate()}`);
+            setAndSaveSettings('_15_alarm_ignore', [date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()], true);
+            const notify = WHNotify(`明早8点前将不再提醒 <button id="wh-rd-btn-${getRandomInt(0, 100)}">取消</button>`);
+            notify.querySelector('.wh-notify-msg button').addEventListener('click', () => setAndSaveSettings('_15_alarm_ignore', undefined));
         };
         // 开发详情按钮
         $zhongNode.querySelector('button#wh-devInfo').onclick = () => {
@@ -3750,9 +3752,12 @@ width: 66px;
     // 啤酒提醒
     const _15alert = () => {
         let dt = new Date();
-        if (wh_trans_settings['_15_alarm_ignore'] === `${dt.getFullYear()}${dt.getMonth() + 1}${dt.getDate()}`) return;
-        let timeOutFunc = () => {
-            if (wh_trans_settings['_15_alarm_ignore'] === `${dt.getFullYear()}${dt.getMonth() + 1}${dt.getDate()}`) return;
+        if (wh_trans_settings['_15_alarm_ignore'] &&
+            [dt.getUTCFullYear(), dt.getUTCMonth(), dt.getUTCDate()] === wh_trans_settings['_15_alarm_ignore'])
+            return;
+        const timeOutFunc = () => {
+            if (wh_trans_settings['_15_alarm_ignore'] &&
+                [new Date().getUTCFullYear(), new Date().getUTCMonth(), new Date().getUTCDate()] === wh_trans_settings['_15_alarm_ignore']) return;
             WHNotify(`<span style="background-color:green;color:white;border-radius:3px;">【啤酒小助手】</span><br/>
 提醒您：还有不到 50 秒 NPC 的商品就要刷新了，啤酒血包要抢的可以准备咯。`, 30);
             window.setTimeout(audioPlay, 800);
@@ -3761,8 +3766,8 @@ width: 66px;
             window.setTimeout(timeOutFunc, 15 * 60 * 1000);
         };
         // 距离下一个15分的时间，0位分，1位秒
-        let next15 = [4 - (dt.getMinutes() % 5), 60 - dt.getSeconds()];
-        // let next15 = [14 - (dt.getMinutes() % 15), 60 - dt.getSeconds()];
+        // let next15 = [4 - (dt.getMinutes() % 5), 60 - dt.getSeconds()];
+        let next15 = [14 - (dt.getMinutes() % 15), 60 - dt.getSeconds()];
         window.setTimeout(timeOutFunc, (next15[0] * 60 + next15[1] - 45) * 1000)
     };
     if (wh_trans_settings._15Alarm) _15alert();
@@ -8275,9 +8280,9 @@ margin: 0 0 3px;
     }
 
     // 设置并保存设置
-    function setAndSaveSettings(k, v) {
+    function setAndSaveSettings(k, v, not_notify = false) {
         wh_trans_settings[k] = v;
-        saveSettings();
+        saveSettings(not_notify);
     }
 
     // bool 返回当前是否dev状态
