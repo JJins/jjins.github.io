@@ -15,7 +15,7 @@ jobs:
         token: ${{ github.token }}
     - name: fetch
       run: |
-        curl https://script.google.com/macros/s/AKfycbyRfg1Cx2Jm3IuCWASUu8czKeP3wm5jKsie4T4bxwZHzXTmPbaw4ybPRA/exec?key=getItems > item_price_raw.json
+        wget https://script.google.com/macros/s/AKfycbyRfg1Cx2Jm3IuCWASUu8czKeP3wm5jKsie4T4bxwZHzXTmPbaw4ybPRA/exec?key=getItems > item_price_raw.json
     - name: Commit & Push
       uses: EndBug/add-and-commit@v7
       with:
