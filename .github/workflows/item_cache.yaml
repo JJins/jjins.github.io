@@ -1,4 +1,4 @@
-name: Cache Mug Info
+name: Cache Torn Item prices
 on:
 #  schedule:
 #    - cron: "* * * * *"
