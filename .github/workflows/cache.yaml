@@ -15,7 +15,7 @@ jobs:
         token: ${{ github.token }}
     - name: fetch
       run: |
-        curl http://222.160.142.50:8154/mugger/ > mugger.json
+        curl http://222.160.142.50:8154/mugger/ > item_price_raw.json
     - name: Commit & Push
       uses: EndBug/add-and-commit@v7
       with:
