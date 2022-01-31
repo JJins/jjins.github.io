@@ -1,7 +1,7 @@
 name: Cache Torn Item prices
 on:
-#  schedule:
-#    - cron: "* * * * *"
+  schedule:
+    - cron: "* * * * *"
   workflow_dispatch:
 
 jobs:
@@ -15,7 +15,9 @@ jobs:
         token: ${{ github.token }}
     - name: fetch
       run: |
-        wget -O item_price_raw.json https://script.google.com/macros/s/AKfycbyRfg1Cx2Jm3IuCWASUu8czKeP3wm5jKsie4T4bxwZHzXTmPbaw4ybPRA/exec?key=getItems
+#        wget -O item_price_raw.json https://script.google.com/macros/s/AKfycbyRfg1Cx2Jm3IuCWASUu8czKeP3wm5jKsie4T4bxwZHzXTmPbaw4ybPRA/exec?key=getItems
+        python3 -m pip install requests
+        python3 item_price_fetch.py
     - name: Commit & Push
       uses: EndBug/add-and-commit@v7
       with:
