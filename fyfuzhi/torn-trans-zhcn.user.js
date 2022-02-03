@@ -1,8 +1,8 @@
 // ==UserScript==
-// @lastmodified  202202031713
+// @lastmodified  202202031949
 // @name         芜湖助手
 // @namespace    WOOH
-// @version      0.3.7
+// @version      0.3.8
 // @description  托恩，起飞！
 // @author       Woohoo[2687093] Sabrina_Devil[2696209]
 // @match        https://www.torn.com/*
@@ -23,12 +23,17 @@
     if (window.WHTRANS) return;
     window.WHTRANS = true;
     // 版本
-    const version = '0.3.7';
+    const version = '0.3.8';
     // 修改历史
     const changelist = [
         {
             todo: true,
             cont: `翻译：baza npc商店、imarket、imarket搜索结果`,
+        },
+        {
+            ver: '0.3.8',
+            date: '20220203',
+            cont: `修复捡垃圾助手的错误，调整样式`,
         },
         {
             ver: '0.3.7',
@@ -4912,9 +4917,15 @@ display:inline-block;
             container.append(info);
             base.append(header);
             base.append(container);
-            COFetch('https://jjins.github.io/item_price_raw.json').then(r => items = JSON.parse(r));
+            COFetch('https://jjins.github.io/item_price_raw.json')
+                .catch(err => {
+                    log(err)
+                    items = undefined
+                })
+                .then(r => items = JSON.parse(r));
             elementReady('div.leaflet-marker-pane').then(elem => {
                 document.querySelector('#map').classList.add('wh-city-finds');
+                document.querySelector('.content-wrapper').prepend(base);
                 // 发现的物品id与map img node
                 const founds = [];
                 elem.querySelectorAll('img.map-user-item-icon').forEach(node => {
@@ -4931,8 +4942,9 @@ display:inline-block;
                     info.innerHTML = '空空如也，请大佬明天再来';
                     return;
                 }
-                document.querySelector('.content-wrapper').prepend(base);
+                // 将id显示为物品名与价格的函数
                 const displayNamePrice = () => {
+                    // 总价
                     let total = 0;
                     founds.forEach(el => {
                         const value = items[el.id]['price'];
@@ -4951,9 +4963,9 @@ display:inline-block;
                     });
                     header.innerHTML = `捡垃圾助手 - ${founds.length} 个物品，总价值 $${toThousands(total)}`;
                 };
-                if (items !== null) {
-                    displayNamePrice();
-                } else {
+                // 未取到数据时添加循环来调用函数
+                if (items === null) {
+                    // 15s超时
                     let timeout = 30;
                     const interval = window.setInterval(() => {
                         timeout--;
@@ -4966,6 +4978,14 @@ display:inline-block;
                             clearInterval(interval)
                         }
                     }, 500);
+                }
+                // 无法跨域获取数据时
+                else if (items === undefined) {
+                    info.innerHTML += '(当前平台暂不支持查询价格)';
+                }
+                // 调用函数
+                else {
+                    displayNamePrice();
                 }
             })
         }
