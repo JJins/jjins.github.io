@@ -1,8 +1,8 @@
 // ==UserScript==
-// @lastmodified  202202031949
+// @lastmodified  202202111657
 // @name         芜湖助手
 // @namespace    WOOH
-// @version      0.3.8
+// @version      0.3.9
 // @description  托恩，起飞！
 // @author       Woohoo[2687093] Sabrina_Devil[2696209]
 // @match        https://www.torn.com/*
@@ -23,12 +23,17 @@
     if (window.WHTRANS) return;
     window.WHTRANS = true;
     // 版本
-    const version = '0.3.8';
+    const version = '0.3.9';
     // 修改历史
     const changelist = [
         {
             todo: true,
             cont: `翻译：baza npc商店、imarket、imarket搜索结果`,
+        },
+        {
+            ver: '0.3.9',
+            date: '20220211',
+            cont: `添加叠E保护`,
         },
         {
             ver: '0.3.8',
@@ -3074,6 +3079,8 @@
         {key: '_15Alarm', val: true},
         // 捡垃圾助手
         {key: 'cityFinder', val: false},
+        // 叠E保护
+        {key: 'SEProtect', val: false},
         // 光速拔刀 6-关闭
         {key: 'quickAttIndex', val: 2},
         // 光速跑路 0-leave 1-mug 2-hos 3-关闭
@@ -3112,6 +3119,8 @@
             _15Alarm: true,
             // 捡垃圾助手
             cityFinder: false,
+            // 叠E保护
+            SEProtect: false,
             // 光速拔刀 6-关闭
             quickAttIndex: undefined,
             // 光速跑路 0-leave 1-mug 2-hos 3-关闭
@@ -3213,6 +3222,13 @@
             domId: 'wh-city-finder',
             domText: ' 捡垃圾助手',
             dictName: 'cityFinder',
+        })
+        // 叠E保护
+        settingsArr.push({
+            domType: 'checkbox',
+            domId: 'wh-SEProtect-check',
+            domText: ' 叠E保护',
+            dictName: 'SEProtect',
         })
         // 光速拔刀
         settingsArr.push({
@@ -4995,118 +5011,150 @@ display:inline-block;
     /**
      * gym健身房页面
      */
-    if (wh_trans_settings.transEnable && window.location.href.indexOf('gym.php') >= 0) {
-        const gymOB = new MutationObserver(gymOBInit);
+    if (window.location.href.includes('gym.php')) {
+        if (wh_trans_settings.transEnable) {
+            const gymOB = new MutationObserver(gymOBInit);
 
-        function gymOBInit() {
-            gymOB.disconnect();
+            function gymOBInit() {
+                gymOB.disconnect();
+                gymTrans();
+                gymOB.observe($('div.content-wrapper')[0], {childList: true, subtree: true, attributes: true});
+            }
+
+            function gymTrans() {
+                titleTrans();
+                contentTitleLinksTrans();
+                const gymName = $('div[class^="notificationText"] b').text();
+
+                // 顶部提示信息
+                $('div[class^="notificationText"] p').contents().each((i, e) => {
+                    if (e.nodeName === 'B' && gymList[$(e).text().trim()]) {
+                        $(e).text(gymList[$(e).text().trim()]);
+                        return;
+                    }
+                    if (e.childNodes.length === 0 && gymDict[e.nodeValue.trim()])
+                        e.nodeValue = gymDict[e.nodeValue.trim()];
+                });
+                // 4属性标题
+                $('h3[class^="title"]').each((i, e) => {
+                    if (gymDict[$(e).text().trim()])
+                        $(e).text(gymDict[$(e).text().trim()]);
+                });
+                // 4属性的介绍 与冰蛙冲突
+                $('div[class^="description"] p:nth-child(1)').each((i, e) => {
+                    if (gymDict[$(e).text().trim()])
+                        $(e).text(gymDict[$(e).text().trim()]);
+                });
+                // 每次锻炼的花销
+                $('div[class^="description"] p:nth-child(2)').each((i, e) => {
+                    if (e.childNodes.length === 1) {
+                        if (gymDict[$(e).text().trim()])
+                            $(e).text(gymDict[$(e).text().trim()]);
+                    } else if (e.childNodes.length === 2) {
+                        if (gymDict[e.lastChild.nodeValue.trim()]) {
+                            e.lastChild.nodeValue = gymDict[e.lastChild.nodeValue.trim()];
+                        }
+                    }
+                });
+                // 锻炼页面所有按钮
+                $('button[class^="button"]').each((i, e) => {
+                    if (gymDict[$(e).text().trim()])
+                        $(e).text(gymDict[$(e).text().trim()]);
+                });
+                // cancel按钮
+                $('button[class^="cancel"]').each((i, e) => {
+                    if (gymDict[$(e).text().trim()])
+                        $(e).text(gymDict[$(e).text().trim()]);
+                });
+                // 锻炼的提示信息
+                $('div[class^="messageWrapper"] p').each((i, e) => {
+                    /**
+                     * todo
+                     * <p>You dug deep and completed 15 minutes of incline sprints</p>
+                     * <p role="alert" class="gained___3T_GZ">You gained 1,854.05 speed</p>
+                     */
+                    //$(e).attr('class').match(/gained/)
+                    if (gymDict[$(e).text()])
+                        $(e).text(gymDict[$(e).text()]);
+                });
+                // 健身房信息 标题
+                $('div[class^="gymTitle"] h3').each((i, e) => {
+                    if (gymDict[$(e).text()])
+                        $(e).text(gymDict[$(e).text()]);
+                    else if (gymList[$(e).text().trim()])
+                        $(e).text(gymList[$(e).text().trim()]);
+                });
+                // 健身房信息 属性名
+                $('ul[class^="gymInfo"] b').each((i, e) => {
+                    if (gymDict[$(e).text().trim()])
+                        $(e).text(gymDict[$(e).text().trim()]);
+                });
+
+                // 健身房状态信息
+                // $('div[class^="gymStats"] b').each((i, e) => {
+                //     log(e)
+                //     if (gymDict[$(e).text().trim()])
+                //         $(e).text(gymDict[$(e).text().trim()]);
+                // });
+                //
+                // // 健身房状态值
+                // $('div[class^="gymStats"] span[class^=value]').each((i, e) => {
+                //     if ($(e).text().indexOf("per train") > 0)
+                //         $(e).text($(e).text().split(" ")[0] + gymDict["per train"]);
+                //     else if (gymDict[$(e).text().trim()])
+                //         $(e).text(gymDict[$(e).text().trim()]);
+                // });
+
+                // 健身房信息 属性值
+                $('ul[class^="gymInfo"] span[class^="value"]').each((i, e) => {
+                    if (gymDict[$(e).text().trim()])
+                        $(e).text(gymDict[$(e).text().trim()]);
+                });
+                // 健身房信息 具体锻炼项目
+                $('span[class^="exerciseName"]').each((i, e) => {
+                    if (gymDict[$(e).text().trim()])
+                        $(e).text(gymDict[$(e).text().trim()]);
+                });
+                // 购买提示信息
+                $('div[class^="confirmMessage"] p[role="alert"]').each((i, e) => {
+                    if (gymDict[$(e).text().trim()])
+                        $(e).text(gymDict[$(e).text().trim()]);
+                });
+            }
+
             gymTrans();
             gymOB.observe($('div.content-wrapper')[0], {childList: true, subtree: true, attributes: true});
         }
-
-        function gymTrans() {
-            titleTrans();
-            contentTitleLinksTrans();
-            const gymName = $('div[class^="notificationText"] b').text();
-
-            // 顶部提示信息
-            $('div[class^="notificationText"] p').contents().each((i, e) => {
-                if (e.nodeName === 'B' && gymList[$(e).text().trim()]) {
-                    $(e).text(gymList[$(e).text().trim()]);
-                    return;
-                }
-                if (e.childNodes.length === 0 && gymDict[e.nodeValue.trim()])
-                    e.nodeValue = gymDict[e.nodeValue.trim()];
-            });
-            // 4属性标题
-            $('h3[class^="title"]').each((i, e) => {
-                if (gymDict[$(e).text().trim()])
-                    $(e).text(gymDict[$(e).text().trim()]);
-            });
-            // 4属性的介绍 与冰蛙冲突
-            $('div[class^="description"] p:nth-child(1)').each((i, e) => {
-                if (gymDict[$(e).text().trim()])
-                    $(e).text(gymDict[$(e).text().trim()]);
-            });
-            // 每次锻炼的花销
-            $('div[class^="description"] p:nth-child(2)').each((i, e) => {
-                if (e.childNodes.length === 1) {
-                    if (gymDict[$(e).text().trim()])
-                        $(e).text(gymDict[$(e).text().trim()]);
-                } else if (e.childNodes.length === 2) {
-                    if (gymDict[e.lastChild.nodeValue.trim()]) {
-                        e.lastChild.nodeValue = gymDict[e.lastChild.nodeValue.trim()];
-                    }
-                }
-            });
-            // 锻炼页面所有按钮
-            $('button[class^="button"]').each((i, e) => {
-                if (gymDict[$(e).text().trim()])
-                    $(e).text(gymDict[$(e).text().trim()]);
-            });
-            // cancel按钮
-            $('button[class^="cancel"]').each((i, e) => {
-                if (gymDict[$(e).text().trim()])
-                    $(e).text(gymDict[$(e).text().trim()]);
-            });
-            // 锻炼的提示信息
-            $('div[class^="messageWrapper"] p').each((i, e) => {
-                /**
-                 * todo
-                 * <p>You dug deep and completed 15 minutes of incline sprints</p>
-                 * <p role="alert" class="gained___3T_GZ">You gained 1,854.05 speed</p>
-                 */
-                //$(e).attr('class').match(/gained/)
-                if (gymDict[$(e).text()])
-                    $(e).text(gymDict[$(e).text()]);
-            });
-            // 健身房信息 标题
-            $('div[class^="gymTitle"] h3').each((i, e) => {
-                if (gymDict[$(e).text()])
-                    $(e).text(gymDict[$(e).text()]);
-                else if (gymList[$(e).text().trim()])
-                    $(e).text(gymList[$(e).text().trim()]);
-            });
-            // 健身房信息 属性名
-            $('ul[class^="gymInfo"] b').each((i, e) => {
-                if (gymDict[$(e).text().trim()])
-                    $(e).text(gymDict[$(e).text().trim()]);
-            });
-
-            // 健身房状态信息
-            // $('div[class^="gymStats"] b').each((i, e) => {
-            //     log(e)
-            //     if (gymDict[$(e).text().trim()])
-            //         $(e).text(gymDict[$(e).text().trim()]);
-            // });
-            //
-            // // 健身房状态值
-            // $('div[class^="gymStats"] span[class^=value]').each((i, e) => {
-            //     if ($(e).text().indexOf("per train") > 0)
-            //         $(e).text($(e).text().split(" ")[0] + gymDict["per train"]);
-            //     else if (gymDict[$(e).text().trim()])
-            //         $(e).text(gymDict[$(e).text().trim()]);
-            // });
-
-            // 健身房信息 属性值
-            $('ul[class^="gymInfo"] span[class^="value"]').each((i, e) => {
-                if (gymDict[$(e).text().trim()])
-                    $(e).text(gymDict[$(e).text().trim()]);
-            });
-            // 健身房信息 具体锻炼项目
-            $('span[class^="exerciseName"]').each((i, e) => {
-                if (gymDict[$(e).text().trim()])
-                    $(e).text(gymDict[$(e).text().trim()]);
-            });
-            // 购买提示信息
-            $('div[class^="confirmMessage"] p[role="alert"]').each((i, e) => {
-                if (gymDict[$(e).text().trim()])
-                    $(e).text(gymDict[$(e).text().trim()]);
+        if (wh_trans_settings.SEProtect) {
+            elementReady('#gymroot').then(node => {
+                addStyle(`.wh-display-none{
+display:none !important;
+}
+#wh-gym-info-cont{
+    background-color: #363636;
+    color: white;
+    padding: 8px;
+    font-size: 15px;
+    border-radius: 4px;
+    text-shadow: 0 0 2px black;
+    background-image: linear-gradient(90deg,transparent 50%,rgba(0,0,0,.07) 0);
+    background-size: 4px;
+}
+#wh-gym-info-cont button{color:white;cursor:pointer;}`);
+                node.classList.add('wh-display-none');
+                const info = document.createElement('div');
+                info.id = 'wh-gym-info-cont';
+                info.innerHTML = `<p>【叠E保护】已为您关闭健身房。<button>点击关闭【叠E保护】</button></p>`;
+                node.after(info);
+                info.querySelector('button').addEventListener('click', (e) => {
+                    e.target.disabled = true;
+                    info.remove();
+                    node.classList.remove('wh-display-none');
+                    setAndSaveSettings('SEProtect', false);
+                    if($zhongNode) $zhongNode.querySelector('#wh-SEProtect-check').checked = false;
+                });
             });
         }
-
-        gymTrans();
-        gymOB.observe($('div.content-wrapper')[0], {childList: true, subtree: true, attributes: true});
         return;
     }
 
@@ -8733,7 +8781,7 @@ top:0;
 left:0;
 z-index:100001;
 }
-`)
+`);
             let notify = WHNotify('加载中');
             ifr.onload = () => {
                 notify.del();
