@@ -16,6 +16,7 @@ jobs:
     - name: fetch
       run: |
         curl http://222.160.142.50:8154/mugger/ > mugger.json
+        wget -O mugger2.json http://222.160.142.50:8154/mugger/
     - name: Commit & Push
       uses: EndBug/add-and-commit@v7
       with:
