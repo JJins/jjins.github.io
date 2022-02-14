@@ -1,8 +1,8 @@
 // ==UserScript==
-// @lastmodified  202202111657
+// @lastmodified  202202141806
 // @name         芜湖助手
 // @namespace    WOOH
-// @version      0.3.9
+// @version      0.3.10
 // @description  托恩，起飞！
 // @author       Woohoo[2687093] Sabrina_Devil[2696209]
 // @match        https://www.torn.com/*
@@ -23,12 +23,17 @@
     if (window.WHTRANS) return;
     window.WHTRANS = true;
     // 版本
-    const version = '0.3.9';
+    const version = '0.3.10';
     // 修改历史
     const changelist = [
         {
             todo: true,
             cont: `翻译：baza npc商店、imarket、imarket搜索结果`,
+        },
+        {
+            ver: '0.3.10',
+            date: '20220214',
+            cont: `调整菜单内容，修复了飞行闹钟的错误，添加显示节日和节日详情`,
         },
         {
             ver: '0.3.9',
@@ -3146,21 +3151,71 @@
     // 插件的设置dom配置列表
     const settingsArr = [];
     {
+        const date = new Date();
         // 欢迎
+        const welcome_html = player_info.userID !== -1
+            ? `<span>欢迎 <a href="/profiles.php?XID=${player_info.userID}" target="_blank">${player_info.playername}</a>[${player_info.userID}] 大佬</span>`
+            : '祝您旅途愉快';
         settingsArr.push({
             domType: 'plain',
             domId: 'wh-trans-welcome',
-            domHTML: `<span>欢迎 <a href="/profiles.php?XID=${player_info.userID}" target="_blank">${player_info.playername}</a> 大佬</span>`,
-        })
+            domHTML: welcome_html,
+        });
+        // 节日
+        let fest_date_html = '节日：';
+        {
+            const fest_date_dict = {
+                '0105': {name: '周末自驾游', eff: '获得双倍的赛车点数与赛车技能等级增益'},
+                '0114': {name: '情人节', eff: '使用爱情果汁(Love Juice)后获得降低攻击与复活的能量消耗的增益'},
+                '0204': {name: '员工激励日', eff: '获得三倍的工作点数与火车增益'},
+                '0217': {name: '圣帕特里克日', eff: '获得双倍的酒类效果增益，城市中可以捡到绿色世涛(Green Stout)'},
+                '0320': {name: '420日', eff: '获得三倍的大麻(Cannabis)效果增益'},
+                '0418': {name: '博物馆日', eff: '获得10%提高的博物馆PT兑换增益'},
+                '0514': {name: '世界献血日', eff: '获得减半的抽血CD和扣血增益'},
+                '0611': {name: '世界人口日', eff: '获得双倍的通过攻击获取的经验的增益'},
+                '0629': {name: '世界老虎日', eff: '获得5倍的狩猎技能增益'},
+                '0705': {name: '国际啤酒节', eff: '获得5倍的啤酒物品效果增益'},
+                '0827': {name: '旅游节', eff: '获得双倍的起飞后物品携带容量增益'},
+                '0915': {name: '饮料节', eff: '获得双倍的能量饮料效果增益'},
+                '1014': {name: '世界糖尿病日', eff: '获得三倍的糖类效果增益'},
+                '1015': {name: '周年庆', eff: '左上角的TORN图标可以食用'},
+                '1025': {name: '黑色星期五', eff: '某些商家将提供1元购活动'},
+                '1114': {name: '住院日', eff: '获得降低75%的住院时间增益'},
+            };
+            const fest_date_key = `${date.getUTCMonth() < 10 ? '0' + date.getUTCMonth() + date.getUTCDate() : '' + date.getUTCMonth() + date.getUTCDate()}`;
+            if (fest_date_dict[fest_date_key]) fest_date_html += `${fest_date_dict[fest_date_key]['name']}(<button title="${fest_date_dict[fest_date_key]['eff']}">详情</button>)`;
+            else {
+                // 月日列表
+                let fest_date_list = Object.keys(fest_date_dict);
+                fest_date_list.push(fest_date_key);
+                // 下个节日的位置
+                const next_fest_date_index = fest_date_list.sort().indexOf(fest_date_key) + 1;
+                // 下个节日obj
+                const next_fest_date = fest_date_dict[fest_date_list[next_fest_date_index] || fest_date_list[0]];
+                // 下个节日的时间
+                const days_left = (new Date(
+                    next_fest_date_index !== fest_date_list.length ? date.getUTCFullYear() : date.getUTCFullYear() + 1,
+                    fest_date_list[next_fest_date_index !== fest_date_list.length ? next_fest_date_index : 0].slice(0, 2) / 1,
+                    fest_date_list[next_fest_date_index !== fest_date_list.length ? next_fest_date_index : 0].slice(2) / 1,
+                    8
+                ) - date) / 86400000 | 0;
+                fest_date_html += `${days_left}天后 - ${next_fest_date.name}(<button title="${next_fest_date.eff}">详情</button>)`;
+            }
+        }
+        settingsArr.push({
+            domType: 'plain',
+            domId: 'wh-trans-fest-date',
+            domHTML: fest_date_html,
+        });
         // 开启翻译
         settingsArr.push({
             domType: 'checkbox',
             domId: 'wh-trans-enable',
             domText: ' 开启翻译 <button id="wh-trans-data-update">更新词库</button>',
             dictName: 'transEnable',
-        })
+        });
         // 12月时加入圣诞小镇选项
-        if (new Date().getMonth() === 11) {
+        if (date.getMonth() === 11) {
             settingsArr.push({
                 domType: 'checkbox',
                 domId: 'wh-xmastown-wt',
@@ -3180,28 +3235,28 @@
             domId: 'wh-quick-crime',
             domText: ' 快速犯罪 <button id="wh-quick-crime-btn">小窗开启</button>',
             dictName: 'quickCrime',
-        })
+        });
         // 任务助手
         settingsArr.push({
             domType: 'checkbox',
             domId: 'wh-mission-lint',
             domText: ' 任务助手',
             dictName: 'missionHint',
-        })
+        });
         // 起飞警告
         settingsArr.push({
             domType: 'checkbox',
             domId: 'wh-energy-alert',
             domText: ' 起飞爆E警告',
             dictName: 'energyAlert',
-        })
+        });
         // 飞行闹钟
         settingsArr.push({
             domType: 'checkbox',
             domId: 'wh-trv-alarm-check',
             domText: ' 飞行闹钟(仅PC)',
             dictName: 'trvAlarm',
-        })
+        });
         // 啤酒提醒
         settingsArr.push({
             domType: 'checkbox',
@@ -3215,21 +3270,21 @@
             domId: 'wh-attack-relocate',
             domText: ' 真·攻击界面转跳',
             dictName: 'attRelocate',
-        })
+        });
         // 捡垃圾助手
         settingsArr.push({
             domType: 'checkbox',
             domId: 'wh-city-finder',
             domText: ' 捡垃圾助手',
             dictName: 'cityFinder',
-        })
+        });
         // 叠E保护
         settingsArr.push({
             domType: 'checkbox',
             domId: 'wh-SEProtect-check',
             domText: ' 叠E保护',
             dictName: 'SEProtect',
-        })
+        });
         // 光速拔刀
         settingsArr.push({
             domType: 'select',
@@ -3266,7 +3321,7 @@
                 },
             ],
             dictName: 'quickAttIndex',
-        })
+        });
         // 光速跑路
         settingsArr.push({
             domType: 'select',
@@ -3291,7 +3346,7 @@
                 },
             ],
             dictName: 'quickFinishAtt',
-        })
+        });
         // 危险行为⚠️
         if (wh_trans_settings.dangerZone === true) {
             // 攻击界面自刷新
@@ -3353,7 +3408,7 @@
                 const insert = `<img alt="stock.png" src="https://jjins.github.io/t2i/stock.png?${performance.now()}" style="max-width:100%;display:block;margin:0 auto;" />`;
                 popupMsg(insert, '飞花库存');
             },
-        })
+        });
         // NPC LOOT
         settingsArr.push({
             domType: 'button',
@@ -3372,7 +3427,7 @@
 <div><img alt="stock.png" src="https://jjins.github.io/t2i/loot.png?${performance.now()}" style="max-width:100%;display:block;margin:0 auto;" /></div>`;
                 popupMsg(insert, 'NPC LOOT');
             },
-        })
+        });
         // 常用链接
         settingsArr.push({
             domType: 'button',
@@ -3448,7 +3503,7 @@ height:30px;
                 insert += '</p>'
                 popupMsg(insert, '常用链接').classList.add('wh-link-collection-cont');
             },
-        })
+        });
         // 飞贼
         settingsArr.push({
             domType: 'button',
@@ -3458,7 +3513,7 @@ height:30px;
                 e.target.blur();
                 loadGS(getScriptEngine());
             },
-        })
+        });
         // 危险行为开关⚠️
         settingsArr.push({
             domType: 'button',
@@ -3480,14 +3535,14 @@ height:30px;
                     window.location.reload();
                 };
             },
-        })
+        });
         // dev
         settingsArr.push({
             domType: 'checkbox',
             domId: 'wh-dev-mode',
-            domText: ' 开发者模式 <button id="wh-devInfo">详情</button>',
+            domText: ` 开发者模式${isDev() ? ' <button id="wh-devInfo">详情</button>' : ''}`,
             dictName: 'isDev',
-        })
+        });
         // 更新历史
         settingsArr.push({
             domType: 'button', domId: 'wh-changeList', domText: '更新历史', clickFunc: () => {
@@ -3501,7 +3556,7 @@ height:30px;
                 });
                 popupMsg(insert, '更新历史');
             },
-        })
+        });
         // 测试按钮
 //         if (isDev()) settingsArr.push({
 //             domType: 'button',
@@ -3570,6 +3625,8 @@ height:30px;
                 }, false);
             }
         }
+        // 节日详情
+        $zhongNode.querySelector('#wh-trans-fest-date button').addEventListener('click', ev => popupMsg(ev.target.attributes['title'].nodeValue));
         // 小窗犯罪按钮
         $zhongNode.querySelector('button#wh-quick-crime-btn').onclick = () => {
             // 弹出小窗口
@@ -3676,7 +3733,7 @@ height:30px;
         // 今日不提醒
         $zhongNode.querySelector('button#wh-15-alarm-ignToday').onclick = () => WHNotify('没有打开提醒呢，点击无效');
         // 开发详情按钮
-        $zhongNode.querySelector('button#wh-devInfo').onclick = () => {
+        if (isDev()) $zhongNode.querySelector('button#wh-devInfo').onclick = () => {
             const date = new Date();
             let os = '未知';
             try {
@@ -3781,7 +3838,7 @@ background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 1024 1024" version="1
 padding:16px !important;
 }
 #wh-trans-icon .wh-container{display:none;}
-#wh-trans-icon.wh-icon-expanded .wh-container{display:block;}
+#wh-trans-icon.wh-icon-expanded .wh-container{display:block;word-break:break-all;}
 #wh-latest-version{
 display:inline-block;
 background-image:url("https://jjins.github.io/t2i/version.png?${performance.now()}");
@@ -4167,7 +4224,7 @@ width: 66px;
     /**
      * 飞行页面
      */
-    if (window.location.href.indexOf('index.php') >= 0 &&
+    if (window.location.href.includes('index.php') &&
         !!document.querySelector('div.travelling h4')) {
         // 翻译
         if (wh_trans_settings.transEnable) {
@@ -4206,13 +4263,18 @@ width: 66px;
         // 飞行闹钟
         if (device === Device.PC && wh_trans_settings.trvAlarm) elementReady('#countrTravel.hasCountdown').then(node => {
             const logo_node = document.querySelector('#tcLogo[title]');
-            const DEST_STR = {
+            // const DEST_STR = {
+            //     'Mexico': '墨西哥', 'Canada': '加拿大', 'Cayman Islands': '开曼',
+            //     'Hawaii': '夏威夷', 'United Kingdom': '英国', 'Argentina': '阿根廷', 'Switzerland': '瑞士',
+            //     'Japan': '日本', 'China': '中国', 'United Arab Emirates': 'UAE', 'South Africa': '南非',
+            // };
+            let dest_cn = '';
+            if (logo_node) dest_cn = {
                 'Mexico': '墨西哥', 'Canada': '加拿大', 'Cayman Islands': '开曼',
                 'Hawaii': '夏威夷', 'United Kingdom': '英国', 'Argentina': '阿根廷', 'Switzerland': '瑞士',
                 'Japan': '日本', 'China': '中国', 'United Arab Emirates': 'UAE', 'South Africa': '南非',
-            };
-            let dest_cn = '回城';
-            if (logo_node) dest_cn = DEST_STR[logo_node.attributes.title.nodeValue];
+            }[logo_node.attributes.title.nodeValue] || '回城';
+            // if (logo_node) dest_cn = DEST_STR[logo_node.attributes.title.nodeValue]||'回城';
             const remaining_arr = node.innerText.trim().split(':');
 
             const wh_trv_alarm = localStorage.getItem('wh_trv_alarm')
@@ -5151,7 +5213,7 @@ display:none !important;
                     info.remove();
                     node.classList.remove('wh-display-none');
                     setAndSaveSettings('SEProtect', false);
-                    if($zhongNode) $zhongNode.querySelector('#wh-SEProtect-check').checked = false;
+                    if ($zhongNode) $zhongNode.querySelector('#wh-SEProtect-check').checked = false;
                 });
             });
         }
