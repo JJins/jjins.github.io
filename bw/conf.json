@@ -1,6 +1,14 @@
 {
   "latest": [
     {
+      "ver": "2.9.5",
+      "name": "冰蛙宝鉴_2.9.5.user.js.txt",
+      "replace": {
+        "with": "https://www.torn.com/*.php*",
+        "to": "https://www.torn.com/*"
+      }
+    },
+    {
       "ver": "2.9.4",
       "name": "冰蛙宝鉴_2.9.4.user.js.txt",
       "replace": {
