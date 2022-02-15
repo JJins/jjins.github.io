@@ -1,8 +1,8 @@
 // ==UserScript==
-// @lastmodified  202202141806
+// @lastmodified  202202151825
 // @name         芜湖助手
 // @namespace    WOOH
-// @version      0.3.10
+// @version      0.3.11
 // @description  托恩，起飞！
 // @author       Woohoo[2687093] Sabrina_Devil[2696209]
 // @match        https://www.torn.com/*
@@ -23,12 +23,17 @@
     if (window.WHTRANS) return;
     window.WHTRANS = true;
     // 版本
-    const version = '0.3.10';
+    const version = '0.3.11';
     // 修改历史
     const changelist = [
         {
             todo: true,
             cont: `翻译：baza npc商店、imarket、imarket搜索结果`,
+        },
+        {
+            ver: '0.3.11',
+            date: '20220215',
+            cont: `添加显示活动详情，啤酒提醒通知中添加了转跳链接`,
         },
         {
             ver: '0.3.10',
@@ -3151,6 +3156,7 @@
     // 插件的设置dom配置列表
     const settingsArr = [];
     {
+        // const date = new Date(2022, 11, 31, 23);
         const date = new Date();
         // 欢迎
         const welcome_html = player_info.userID !== -1
@@ -3162,7 +3168,7 @@
             domHTML: welcome_html,
         });
         // 节日
-        let fest_date_html = '节日：';
+        let fest_date_html = '<button>节日</button>: ';
         {
             const fest_date_dict = {
                 '0105': {name: '周末自驾游', eff: '获得双倍的赛车点数与赛车技能等级增益'},
@@ -3182,8 +3188,10 @@
                 '1025': {name: '黑色星期五', eff: '某些商家将提供1元购活动'},
                 '1114': {name: '住院日', eff: '获得降低75%的住院时间增益'},
             };
+            settingsArr.fest_date_dict = fest_date_dict;
+            settingsArr.fest_date_list = Object.keys(fest_date_dict);
             const fest_date_key = `${date.getUTCMonth() < 10 ? '0' + date.getUTCMonth() + date.getUTCDate() : '' + date.getUTCMonth() + date.getUTCDate()}`;
-            if (fest_date_dict[fest_date_key]) fest_date_html += `${fest_date_dict[fest_date_key]['name']}(<button title="${fest_date_dict[fest_date_key]['eff']}">详情</button>)`;
+            if (fest_date_dict[fest_date_key]) fest_date_html += `${fest_date_dict[fest_date_key]['name']}(<button title="${fest_date_dict[fest_date_key]['eff']}">效果</button>)`;
             else {
                 // 月日列表
                 let fest_date_list = Object.keys(fest_date_dict);
@@ -3199,13 +3207,92 @@
                     fest_date_list[next_fest_date_index !== fest_date_list.length ? next_fest_date_index : 0].slice(2) / 1,
                     8
                 ) - date) / 86400000 | 0;
-                fest_date_html += `${days_left}天后 - ${next_fest_date.name}(<button title="${next_fest_date.eff}">详情</button>)`;
+                fest_date_html += `${days_left}天后 - ${next_fest_date.name}(<button title="${next_fest_date.eff}">效果</button>)`;
             }
         }
         settingsArr.push({
             domType: 'plain',
             domId: 'wh-trans-fest-date',
             domHTML: fest_date_html,
+        });
+        // 活动
+        let eventObj = {};
+        eventObj.onEv = false;
+        eventObj.daysLeft = Infinity;
+        eventObj.events = [
+            {
+                start: [0, 17, 8], end: [0, 24, 8],
+                name: '捡垃圾周',
+                eff: '获得捡垃圾概率提升的增益',
+            },
+            {
+                start: [3, 5, 20], end: [3, 25, 20],
+                name: '复活节狩猎',
+                eff: '复活节彩蛋会随机出现，集齐10个可兑换金蛋和一个独特的头像框(章)。',
+            },
+            {
+                start: [4, 5, 20], end: [4, 25, 20],
+                name: '狗牌',
+                eff: '击败其他玩家以获得狗牌，小心保护你的狗牌。',
+            },
+            {
+                start: [6, 5, 20], end: [6, 25, 20],
+                name: '托恩先生和托恩女士',
+                eff: '上传你的真实图片，然后拿章',
+            },
+            {
+                start: [8, 5, 20], end: [8, 23, 20],
+                name: '大逃杀',
+                eff: '加入特定队伍后，攻击其他队伍玩家，存活下来的3个队伍可以拿章',
+            },
+            {
+                start: [9, 25, 20], end: [10, 1, 20],
+                name: '不给糖就捣蛋',
+                eff: '买篮子之后攻击其他玩家后会随机掉落糖果，可用于兑换许多高价值物品',
+            },
+            {
+                start: [11, 14, 20], end: [11, 31, 20],
+                name: '圣诞小镇',
+                eff: '在小镇中闲逛来获取随机掉落的物品',
+            },
+        ];
+        settingsArr.events = eventObj.events;
+        eventObj.events.forEach((obj, index) => {
+            if (eventObj.onEv) return;
+            // 当前年份
+            const nowYear = date.getFullYear();
+            // 当前遍历的活动开始时间
+            const start = new Date(nowYear, obj.start[0], obj.start[1], obj.start[2]);
+            // 当前遍历的活动结束时间
+            const end = new Date(nowYear, obj.end[0], obj.end[1], obj.end[2]);
+            // 当前处于活动中
+            if (start < date && date < end) {
+                eventObj.onEv = true;
+                eventObj.daysLeft = (end - date) / 86400000 | 0;
+                eventObj.current = obj;
+            }
+            // 当前没有活动
+            else {
+                // 当前遍历的活动如果已经经过了，那么下次活动就是遍历的下一个活动对象，否则为当前活动。
+                // 如果本年度活动都经过了，那么下次活动是列表的第一个活动对象
+                const next = end < date ? eventObj.events[index + 1] || eventObj.events[0] : obj;
+                // 经过了最后一个活动所以下次活动开始时间是第二年
+                const start = new Date(next !== obj && index === eventObj.events.length - 1 ? nowYear + 1 : nowYear, next.start[0], next.start[1], next.start[2]);
+                const daysLeft = (start - date) / 86400000 | 0;
+                if (0 <= daysLeft && daysLeft < eventObj.daysLeft) {
+                    eventObj.daysLeft = daysLeft;
+                    eventObj.next = next;
+                }
+            }
+        });
+        eventObj.html = '<button>活动</button>: ';
+        eventObj.onEv
+            ? eventObj.html += `${eventObj.current.name}(<button title="${eventObj.current.eff}">详情</button>) - 剩余${eventObj.daysLeft}天`
+            : eventObj.html += `${eventObj.daysLeft}天后 - ${eventObj.next.name}(<button title="${eventObj.next.eff}">详情</button>)`;
+        settingsArr.push({
+            domType: 'plain',
+            domId: 'wh-trans-event-cont',
+            domHTML: eventObj.html,
         });
         // 开启翻译
         settingsArr.push({
@@ -3625,8 +3712,26 @@ height:30px;
                 }, false);
             }
         }
-        // 节日详情
-        $zhongNode.querySelector('#wh-trans-fest-date button').addEventListener('click', ev => popupMsg(ev.target.attributes['title'].nodeValue));
+        // 节日
+        $zhongNode.querySelectorAll('#wh-trans-fest-date button').forEach((el, i) => i === 0
+            ? el.addEventListener('click', () => {
+                let html = '';
+                settingsArr.fest_date_list.sort().forEach(date => html += `${1 + (date.slice(0, 2) | 0)}月${date.slice(2)}日 ${settingsArr.fest_date_dict[date].name} - ${settingsArr.fest_date_dict[date].eff}<br/>`);
+                popupMsg(html, '节日');
+            })
+            : el.addEventListener('click', ev => popupMsg(ev.target.attributes['title'].nodeValue))
+        );
+        // 活动
+        $zhongNode.querySelectorAll('#wh-trans-event-cont button').forEach((el, i) => i === 0
+            ? el.addEventListener('click', () => {
+                let html = '';
+                settingsArr.events.forEach(el =>
+                    html += `<p>${el.start[0] + 1}月${el.start[1]}日${el.start[2]}:00~${el.end[0] + 1}月${el.end[1]}日${el.end[2]}:00【${el.name}】<br/>${el.eff}</p>`);
+                html += '<p>更多信息请关注群聊和公众号</p>'
+                popupMsg(html, '活动');
+            })
+            : el.addEventListener('click', ev => popupMsg(ev.target.attributes['title'].nodeValue))
+        );
         // 小窗犯罪按钮
         $zhongNode.querySelector('button#wh-quick-crime-btn').onclick = () => {
             // 弹出小窗口
@@ -3789,7 +3894,7 @@ color:black;
                     if (wh_trans_settings['_15_alarm_ignore'] &&
                         JSON.stringify([new Date().getUTCFullYear(), new Date().getUTCMonth(), new Date().getUTCDate()]) === JSON.stringify(wh_trans_settings['_15_alarm_ignore'])) return;
                     const notify = WHNotify(`<span style="background-color:green;color:white;border-radius:3px;">【啤酒小助手】</span><br/>
-提醒您：还有不到 50 秒 NPC 的商品就要刷新了，啤酒血包要抢的可以准备咯。<button id="wh-rd-btn-${getRandomInt(0, 100)}">[今日不再提醒]</button>`, 30);
+提醒您：还有不到 50 秒 NPC 的商品就要刷新了，啤酒血包要抢的可以准备咯。<button id="wh-rd-btn-${getRandomInt(0, 100)}">[今日不再提醒]</button><br/><a href="/shops.php?step=bitsnbobs" target="_blank">啤酒店</a> <a href="/shops.php?step=pharmacy" target="_blank">血包店</a>`, 30);
 
                     notify.querySelector('.wh-notify-msg button').addEventListener('click', ign);
                     window.setTimeout(audioPlay, 800);
@@ -3810,7 +3915,7 @@ top:5px;
 left:5px;
 z-index:100010;
 border-radius:4px;
-max-width: 200px;
+max-width: 220px;
 box-shadow: 0 0 3px 1px #8484848f;
 }
 #wh-trans-icon a {
@@ -3875,7 +3980,8 @@ width: 66px;
     padding: 0 1em 1em;
     max-height: 30em;
     overflow-y: auto;
-    font-size:13px;
+    font-size:14px;
+    line-height: 16px;
 }
 #wh-popup-cont p{padding:0.25em 0;}
 #wh-popup-cont a{color:red;text-decoration:none;}
