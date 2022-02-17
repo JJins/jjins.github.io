@@ -1,8 +1,8 @@
 // ==UserScript==
-// @lastmodified  202202151825
+// @lastmodified  202202172332
 // @name         芜湖助手
 // @namespace    WOOH
-// @version      0.3.11
+// @version      0.3.12
 // @description  托恩，起飞！
 // @author       Woohoo[2687093] Sabrina_Devil[2696209]
 // @match        https://www.torn.com/*
@@ -23,12 +23,17 @@
     if (window.WHTRANS) return;
     window.WHTRANS = true;
     // 版本
-    const version = '0.3.11';
+    const version = '0.3.12';
     // 修改历史
     const changelist = [
         {
             todo: true,
             cont: `翻译：baza npc商店、imarket、imarket搜索结果`,
+        },
+        {
+            ver: '0.3.12',
+            date: '20220217',
+            cont: `添加查看NNB功能，修复啤酒小助手的错误，调整显示飞花库存`,
         },
         {
             ver: '0.3.11',
@@ -302,10 +307,12 @@
     ];
     // iframe判断
     const isIframe = self !== top;
-    // jquery引入
+    // jQuery引入
     const $ = window.jQuery;
-    // pda api key
+    // PDA APIKey
     const PDA_APIKey = '###PDA-APIKEY###';
+    // isPDA
+    const isPDA = PDA_APIKey.slice(-1) !== '#';
 
     const titleDict = {
         'Home': '主页',
@@ -3158,15 +3165,14 @@
     {
         // const date = new Date(2022, 11, 31, 23);
         const date = new Date();
-        // 欢迎
-        const welcome_html = player_info.userID !== -1
-            ? `<span>欢迎 <a href="/profiles.php?XID=${player_info.userID}" target="_blank">${player_info.playername}</a>[${player_info.userID}] 大佬</span>`
-            : '祝您旅途愉快';
-        settingsArr.push({
-            domType: 'plain',
-            domId: 'wh-trans-welcome',
-            domHTML: welcome_html,
-        });
+        // 欢迎 显示玩家id
+        if (player_info.userID !== 0) {
+            settingsArr.push({
+                domType: 'plain',
+                domId: 'wh-trans-welcome',
+                domHTML: `<span>欢迎 <a href="/profiles.php?XID=${player_info.userID}" target="_blank">${player_info.playername}</a>[${player_info.userID}] 大佬</span>`,
+            });
+        }
         // 节日
         let fest_date_html = '<button>节日</button>: ';
         {
@@ -3347,8 +3353,8 @@
         // 啤酒提醒
         settingsArr.push({
             domType: 'checkbox',
-            domId: 'wh-15-alarm-check',
-            domText: ' 啤酒提醒 <button id="wh-15-alarm-ignToday">今日不提醒</button>',
+            domId: 'wh-qua-alarm-check',
+            domText: '<span> 啤酒提醒 </span><button id="wh-qua-alarm-check-btn">今日不提醒</button>',
             dictName: '_15Alarm',
         });
         // 攻击链接转跳
@@ -3475,10 +3481,7 @@
             });
             // 自动开打和结束
             settingsArr.push({
-                domType: 'checkbox',
-                domId: 'wh-auto-start-finish',
-                domText: ' ⚠️自动开打和结束',
-                dictName: 'autoStartFinish',
+                domType: 'checkbox', domId: 'wh-auto-start-finish', domText: ' ⚠️自动开打和结束', dictName: 'autoStartFinish',
             });
         } else {
             wh_trans_settings.autoStartFinish = false;
@@ -3492,8 +3495,72 @@
             domText: '飞花库存',
             clickFunc: function (e) {
                 e.target.blur();
-                const insert = `<img alt="stock.png" src="https://jjins.github.io/t2i/stock.png?${performance.now()}" style="max-width:100%;display:block;margin:0 auto;" />`;
-                popupMsg(insert, '飞花库存');
+                if (getScriptEngine() === UserScriptEngine.RAW) {
+                    const insert = `<img alt="stock.png" src="https://jjins.github.io/t2i/stock.png?${performance.now()}" style="max-width:100%;display:block;margin:0 auto;" />`;
+                    popupMsg(insert, '飞花库存');
+                } else {
+                    // addStyle('#wh-popup-cont td, #wh-popup-cont th{padding:4px;}');
+                    const popup = popupMsg(`请稍后<img style="height:16px;width:16px;" src="${loading_gif_base64()}" alt="loading"/>`, '飞花库存');
+                    let table = `<style>
+#wh-popup-cont table{width:100%;border-collapse:collapse;border:1px solid;}
+#wh-popup-cont td, #wh-popup-cont th{border-collapse:collapse;padding:4px;border:1px solid;}
+</style>
+<table><tr><th colspan="2">目的地 - 更新时间</th><th colspan="3">库存</th></tr>`;
+                    const url = 'https://yata.yt/api/v1/travel/export/';
+                    const dest = [{
+                        name: 'mex', show: '墨西哥', stocks: {'Dahlia': '花', 'Jaguar Plushie': '偶'}
+                    }, {
+                        name: 'cay', show: '开曼', stocks: {'Banana Orchid': '花', 'Stingray Plushie': '偶'}
+                    }, {
+                        name: 'can', show: '加拿大', stocks: {'Crocus': '花', 'Wolverine Plushie': '偶'}
+                    }, {
+                        name: 'haw', show: '夏威夷', stocks: {'Orchid': '花', 'Large Suitcase': '大箱'}
+                    }, {
+                        name: 'uni', show: '嘤国', stocks: {
+                            'Heather': '花', 'Red Fox Plushie': '赤狐', 'Nessie Plushie': '水怪'
+                        }
+                    }, {
+                        name: 'arg', show: '阿根廷', stocks: {
+                            'Ceibo Flower': '花', 'Monkey Plushie': '偶', 'Tear Gas': '催泪弹'
+                        },
+                    }, {
+                        name: 'swi', show: '瑞士', stocks: {'Edelweiss': '花', 'Chamois Plushie': '偶'},
+                    }, {
+                        name: 'jap', show: '日本', stocks: {'Cherry Blossom': '花'},
+                    }, {
+                        name: 'chi', show: '祖国', stocks: {'Peony': '花', 'Panda Plushie': '偶'},
+                    }, {
+                        name: 'uae', show: '迪拜', stocks: {'Tribulus Omanense': '花', 'Camel Plushie': '偶'},
+                    }, {
+                        name: 'sou', show: '南非', stocks: {
+                            'African Violet': '花', 'Lion Plushie': '偶', 'Xanax': 'XAN'
+                        },
+                    },];
+                    const now = new Date();
+                    COFetch(url).catch(err => log(err))
+                        .then(text => {
+                            const res = JSON.parse(text || '{}');
+                            if (!res['stocks']) return;
+                            dest.forEach(el => {
+                                const update = (now - new Date(res.stocks[el.name]['update'] * 1000)) / 1000 | 0
+                                table += `<tr><td>${el.show}</td><td>${update / 60 | 0}分${update % 60 | 0}秒前</td>`;
+                                let count = 0;
+                                res.stocks[el.name]['stocks'].forEach(stock => {
+                                    if (el.stocks[stock.name]) {
+                                        table += `<td${stock['quantity'] === 0 ? ' style="background-color:#f44336;color:white;border-color:#000;"' : ''}>${el.stocks[stock.name]} (${stock['quantity']})</td>`;
+                                        count++;
+                                    }
+                                });
+                                while (count < 3) {
+                                    count++;
+                                    table += '<td></td>';
+                                }
+                                table += '</tr>';
+                            });
+                            table += '</table>';
+                            popup.innerHTML = table;
+                        });
+                }
             },
         });
         // NPC LOOT
@@ -3513,6 +3580,79 @@
 </ul>
 <div><img alt="stock.png" src="https://jjins.github.io/t2i/loot.png?${performance.now()}" style="max-width:100%;display:block;margin:0 auto;" /></div>`;
                 popupMsg(insert, 'NPC LOOT');
+            },
+        });
+        // 查看NNB
+        settingsArr.push({
+            domType: 'button', domId: 'wh-nnb-info', domText: '查看NNB', clickFunc: function (e) {
+                e.target.blur();
+                const insert = `<style>
+#wh-popup-cont label p{padding:0 0 0 1em;}
+#wh-popup-cont label span{font-weight:bold;}
+</style>
+<p id="wh-nnb-info-container"></p>
+<p><b>NNB</b>, <b>N</b>atural <b>N</b>erve <b>B</b>ar, 意思是：扣除所有加成后，玩家本身的犯罪条上限，是衡量一个大佬犯罪技能等级的重要标准</p>
+<p>一般来说，左侧红色的犯罪条的上限都是包含加成的(称为<b>N</b>erve <b>B</b>ar <b>NB</b>, 与NNB是不一样的)，比如帮派、天赋等。额外的加成并不会影响玩家的犯罪技能</p>
+<p>查看NNB的方法很简单，在Torn主页面的最下方有一栏Perks，NB扣除增加的Nerve上限后就是NNB</p>
+<div>
+<p>不想算？</p>
+<label>
+<input type="radio" name="wh-nnb-check-select" value="bw" checked/><span> 冰蛙或PDA (推荐)</span>
+<p>需要用到APIKey</p>
+<p>即：正常运行的冰蛙，或设置过APIKey的PDA</p>
+</label>
+<label>
+<input type="radio" name="wh-nnb-check-select" value="ori"/><span> 普通方法</span>
+<p>该方法不需要APIKey，但是仅限在主页面（海外或飞行状态不可用）的时候</p>
+</label>
+</div>
+<button>查看NNB</button>
+`;
+                const popup = popupMsg(insert, '查看NNB');
+                const select = popup.querySelector('input');
+                const node = popup.querySelector('p');
+                popup.querySelector('button').addEventListener('click', ev => {
+                    ev.target.style.display = 'none';
+                    node.innerHTML = '加载中';
+                    // API 计算
+                    if (select.checked) {
+                        fetch(`https://api.torn.com/user/?selections=bars,perks&key=${window.localStorage.getItem('APIKey')}`)
+                            .then(res => res.json())
+                            .then(data => {
+                                if (data['error']) {
+                                    node.innerHTML = `出错了 ${Obj2Str(data['error'])}`;
+                                    ev.target.style.display = null;
+                                    return;
+                                }
+                                let nb = data['nerve']['maximum'];
+                                let perks = 0;
+                                Object.values(data).forEach(val => {
+                                    (val instanceof Array) && val.forEach(s => {
+                                        s = s.toLowerCase();
+                                        s.includes('maximum nerve') && (perks += /[0-9]./.exec(s)[0] | 0)
+                                    })
+                                });
+                                node.innerHTML = `NNB: ${nb - perks}`;
+                                ev.target.style.display = null;
+                            });
+                    }
+                    // 主页计算
+                    else {
+                        if (window.location.href.includes('index.php') && document.title.includes('Home')) {
+                            let nb = document.querySelector('#barNerve p[class^="bar-value___"]').innerText.split('/')[1] | 0;
+                            let perks = 0;
+                            document.querySelectorAll('#personal-perks li').forEach(elem => {
+                                const str = elem.innerText.toLowerCase();
+                                str.includes('maximum nerve') && (perks += /[0-9]./.exec(str)[0] | 0)
+                            });
+                            node.innerHTML = `NNB: ${nb - perks}`;
+                            ev.target.style.display = null;
+                            return;
+                        }
+                        node.innerHTML = '不在主页面，<a href="/index.php">点击前往</a>';
+                        ev.target.style.display = null;
+                    }
+                });
             },
         });
         // 常用链接
@@ -3595,7 +3735,7 @@ height:30px;
         settingsArr.push({
             domType: 'button',
             domId: 'wh-gs-btn',
-            domText: '飞贼小助手(by 伞佬)',
+            domText: '飞贼小助手 (by 伞佬)',
             clickFunc: function (e) {
                 e.target.blur();
                 loadGS(getScriptEngine());
@@ -3649,32 +3789,8 @@ height:30px;
 //             domType: 'button',
 //             domId: 'wh-test-btn',
 //             domText: '测试按钮',
-//             clickFunc: function () {
-//                 let count=0
-//                 let timeOutFunc = function () {
-//                     log(count++)
-//                     WHNotify(`<span style="background-color:green;color:white;border-radius:3px;">【啤酒小助手】</span><br/>
-// 提醒您：还有不到 50 秒 NPC 的商品就要刷新了，啤酒血包要抢的可以准备咯。`, 30);
-//                     window.setTimeout(audioPlay, 800);
-//                     window.setTimeout(audioPlay, 800 * 2);
-//                     window.setTimeout(audioPlay, 800 * 3);
-//                     window.setTimeout(timeOutFunc, 15 * 60 * 1000);
-//                 };
-//                 // 距离下一个15分的时间，0位分，1位秒
-//                 // let next15 = [4 - (dt.getMinutes() % 5), 60 - dt.getSeconds()];
-//                 // let next15 = [14 - (dt.getMinutes() % 15), 60 - dt.getSeconds()];
-//                 window.setTimeout(timeOutFunc, 200)
-//             },
+//             clickFunc: function () {},
 //         })
-        // // 测试按钮
-        // if (isDev()) settingsArr.push({
-        //     domType: 'button',
-        //     domId: 'wh-test2-btn',
-        //     domText: '测试按钮2',
-        //     clickFunc: function () {
-        //         let a = WHNotify('test', 10);
-        //     },
-        // })
     }
     // 左侧“中”标签
     const $zhongNode = initIcon();
@@ -3836,7 +3952,7 @@ height:30px;
             }, 1000);
         };
         // 今日不提醒
-        $zhongNode.querySelector('button#wh-15-alarm-ignToday').onclick = () => WHNotify('没有打开提醒呢，点击无效');
+        $zhongNode.querySelector('button#wh-qua-alarm-check-btn').onclick = () => WHNotify('没有打开提醒呢，点击无效');
         // 开发详情按钮
         if (isDev()) $zhongNode.querySelector('button#wh-devInfo').onclick = () => {
             const date = new Date();
@@ -3880,31 +3996,28 @@ color:black;
                 const notify = WHNotify(`明早8点前将不再提醒 <button id="wh-rd-btn-${getRandomInt(0, 100)}">取消</button>`);
                 notify.querySelector('.wh-notify-msg button').addEventListener('click', () => setAndSaveSettings('_15_alarm_ignore', undefined));
             };
-            // 中菜单里的今日不再提醒点击
-            $zhongNode.querySelector('button#wh-15-alarm-ignToday').onclick = ign;
+            // 菜单里的今日不再提醒点击
+            $zhongNode.querySelector('#wh-qua-alarm-check-btn').onclick = ign;
             // 主逻辑
             (() => {
                 let dt = new Date();
-                // 今日不再提醒
-                if (wh_trans_settings['_15_alarm_ignore'] &&
-                    [dt.getUTCFullYear(), dt.getUTCMonth(), dt.getUTCDate()] === wh_trans_settings['_15_alarm_ignore'])
-                    return;
-                // 每次的函数
-                const timeOutFunc = () => {
-                    if (wh_trans_settings['_15_alarm_ignore'] &&
-                        JSON.stringify([new Date().getUTCFullYear(), new Date().getUTCMonth(), new Date().getUTCDate()]) === JSON.stringify(wh_trans_settings['_15_alarm_ignore'])) return;
+                let onLoop = null;
+                // 循环函数
+                const loop = () => {
+                    const now = [new Date().getUTCFullYear(), new Date().getUTCMonth(), new Date().getUTCDate()];
+                    const ignore_date = wh_trans_settings['_15_alarm_ignore'] || '{}';
+                    if (JSON.stringify(now) === JSON.stringify(ignore_date)) return;
                     const notify = WHNotify(`<span style="background-color:green;color:white;border-radius:3px;">【啤酒小助手】</span><br/>
-提醒您：还有不到 50 秒 NPC 的商品就要刷新了，啤酒血包要抢的可以准备咯。<button id="wh-rd-btn-${getRandomInt(0, 100)}">[今日不再提醒]</button><br/><a href="/shops.php?step=bitsnbobs" target="_blank">啤酒店</a> <a href="/shops.php?step=pharmacy" target="_blank">血包店</a>`, 30);
-
+提醒您：还有不到 50 秒 NPC 的商品就要刷新了，啤酒血包要抢的可以准备咯。<button id="wh-rd-btn-${getRandomInt(0, 100)}">【今日不再提醒】</button><br/><a href="/shops.php?step=bitsnbobs" target="_blank">【啤酒店】</a> <a href="/shops.php?step=pharmacy" target="_blank">【血包店】</a>`, 30);
                     notify.querySelector('.wh-notify-msg button').addEventListener('click', ign);
                     window.setTimeout(audioPlay, 800);
                     window.setTimeout(audioPlay, 800 * 2);
                     window.setTimeout(audioPlay, 800 * 3);
-                    window.setTimeout(timeOutFunc, 15 * 60 * 1000);
+                    if (onLoop === null) onLoop = window.setInterval(loop, 900000);//15 * 60 * 1000
                 };
                 // 距离下一个15分的时间，[分,秒]
                 let next15 = [14 - (dt.getMinutes() % 15), 60 - dt.getSeconds()];
-                window.setTimeout(timeOutFunc, (next15[0] * 60 + next15[1] - 45) * 1000)
+                window.setTimeout(loop, (next15[0] * 60 + next15[1] - 45) * 1000)
             })();
         }
     }
@@ -4307,8 +4420,6 @@ width: 66px;
         const opt = {
             childList: true,
             subtree: true,
-            // attributes: true,
-            // attributeFilter: ['class']
         };
         const psbtOB = new MutationObserver(mutation => {
             const $people_cat = $('ul.ac-options li a');
@@ -5241,7 +5352,6 @@ display:inline-block;
                      * <p>You dug deep and completed 15 minutes of incline sprints</p>
                      * <p role="alert" class="gained___3T_GZ">You gained 1,854.05 speed</p>
                      */
-                    //$(e).attr('class').match(/gained/)
                     if (gymDict[$(e).text()])
                         $(e).text(gymDict[$(e).text()]);
                 });
@@ -5508,11 +5618,10 @@ display:none !important;
     if (wh_trans_settings.transEnable && window.location.href.contains(/(shops|bigalgunshop)\.php/)) {
         // 标题和右边的链接
         const $cont_title = document.querySelector('.content-title');
-        initOB($cont_title, {childList: true, subtree: true},
-            () => {
-                titleTrans();
-                contentTitleLinksTrans();
-            });
+        initOB($cont_title, {childList: true, subtree: true}, () => {
+            titleTrans();
+            contentTitleLinksTrans();
+        });
         const $wrapper = document.querySelector('.content-wrapper');
         // [购买部分]
         const $buy_items_wrapper = $wrapper.querySelector('.buy-items-wrap');
@@ -6633,17 +6742,14 @@ display:none !important;
                     else if (spl.length === 1) {
                         const upgraded = e.nodeValue.trim().slice(0, 60);
                         const desc = e.nodeValue.trim().slice(61);
-                        if (awDict[upgraded])
-                            e.nodeValue = awDict[upgraded];
-                        if (awDict[desc])
-                            e.nodeValue += awDict[desc];
+                        if (awDict[upgraded]) e.nodeValue = awDict[upgraded];
+                        if (awDict[desc]) e.nodeValue += awDict[desc];
                     }
                 }
             });
             // spend cancel按钮
             $('ul#merits-list div.confirm-cont a').each((i, e) => {
-                if (awDict[$(e).text().trim()])
-                    $(e).text(awDict[$(e).text().trim()]);
+                if (awDict[$(e).text().trim()]) $(e).text(awDict[$(e).text().trim()]);
             });
         };
         awTrans();
@@ -6783,10 +6889,7 @@ display:none !important;
             contentTitleLinksTrans();
 
             // 顶部提示信息
-            $('div[class^="msg right-round"]').contents().each((i, e) => {
-                if (hosDict[e.nodeValue.trim()])
-                    e.nodeValue = hosDict[e.nodeValue.trim()];
-            });
+            $('div[class^="msg right-round"]').contents().each((i, e) => (hosDict[e.nodeValue.trim()]) && (e.nodeValue = hosDict[e.nodeValue.trim()]));
 
             //玩家列表标题
             $('div[class^="users-list-title  title-black top-round m-top10"] span').contents().each((i, e) => {
@@ -7017,11 +7120,10 @@ display:none !important;
         if (wh_trans_settings.transEnable) {
             const $title_wrapper = $root.querySelector('div[class^="appHeaderWrapper___"]');
             // 标题和右边的链接
-            initOB($title_wrapper, {childList: true, subtree: true},
-                () => {
-                    titleTransReact();
-                    contentTitleLinksTransReact();
-                });
+            initOB($title_wrapper, {childList: true, subtree: true}, () => {
+                titleTransReact();
+                contentTitleLinksTransReact();
+            });
         }
         // 解密攻略
         if (wh_trans_settings.xmasTownWT) {
@@ -7690,8 +7792,7 @@ margin: 0 0 3px;
                 }
 
                 e.childNodes[2].nodeValue += '你的最佳圈速是 ' + bestLap;
-                if (isBeat)
-                    e.childNodes[2].nodeValue += '，比之前最佳 ' + record + ' 快 ' + bestBy;
+                if (isBeat) e.childNodes[2].nodeValue += '，比之前最佳 ' + record + ' 快 ' + bestBy;
                 e.childNodes[2].nodeValue += '。'
 
 
@@ -8200,8 +8301,7 @@ margin: 0 0 3px;
              * LSD od
              */
             if ($(e).text().contains(/LSD .+ overdosed/)) {
-                if (eventsDict[$(e).text().trim()])
-                    $(e).text(eventsDict[$(e).text().trim()]);
+                if (eventsDict[$(e).text().trim()]) $(e).text(eventsDict[$(e).text().trim()]);
                 return;
             }
 
@@ -8408,8 +8508,7 @@ margin: 0 0 3px;
     function titleTrans() {
         const $title = $('h4#skip-to-content').length === 0 ? $('h4[class^="title"]') : $('h4#skip-to-content');
         const title = titleDict[$title.text().trim()] || cityDict[$title.text().trim()];
-        if (title && $title.css('display') !== 'none')
-            $title.after($title.clone().text(title)).css('display', 'none');
+        if (title && $title.css('display') !== 'none') $title.after($title.clone().text(title)).css('display', 'none');
     }
 
     function titleTransReact(dom = document.querySelectorAll('h4[class^="title___"]')) {
@@ -8697,8 +8796,7 @@ margin: 0 0 3px;
         if (hasPopup()) return null;
         const popup = document.createElement('div');
         popup.id = 'wh-popup';
-        popup.innerHTML =
-            `<div id="wh-popup-container">
+        popup.innerHTML = `<div id="wh-popup-container">
 <div id="wh-popup-title"><p>${title}</p></div>
 <div id="wh-popup-cont">${innerHTML}</div>
 </div>`;
@@ -8742,10 +8840,7 @@ margin: 0 0 3px;
                     observer.disconnect();
                 });
             })
-                .observe(content.documentElement, {
-                    childList: true,
-                    subtree: true
-                });
+                .observe(content.documentElement, {childList: true, subtree: true});
         });
     }
 
@@ -8768,7 +8863,7 @@ margin: 0 0 3px;
             ? Device.PC : window.innerWidth <= 600 ? Device.MOBILE : Device.TABLET;
     }
 
-    // 跨域get请求
+    // 跨域get请求 返回text
     function COFetch(url) {
         const engine = getScriptEngine();
         switch (engine) {
@@ -8812,11 +8907,12 @@ margin: 0 0 3px;
 
     // 简单 object 转字符串
     function Obj2Str(obj) {
-        let rs = '{\n';
-        Object.keys(obj).forEach(el => {
-            rs += '    ' + el + ': ' + obj[el] + ',\n'
-        });
-        return rs += '}';
+        // let rs = '{\n';
+        // Object.keys(obj).forEach(el => {
+        //     rs += '    ' + el + ': ' + obj[el] + ',\n'
+        // });
+        // return rs += '}';
+        return JSON.stringify(obj);
     }
 
     // console.log改写
@@ -8894,6 +8990,10 @@ margin: 0 0 3px;
     width: 360px;
     z-index: 200000;
     color:#333;
+}
+#${node_id} a{
+color:red;
+text-decoration:none;
 }
 #${node_id} .wh-notify-item {
     /*height: 50px;*/
@@ -9070,9 +9170,9 @@ z-index:100001;
 
     // 返回玩家信息的对象 user
     function getPlayerInfo() {
-        const node = document.querySelector('#websocketConnectionData');
-        if (!node) return {'playername': '未知', 'userID': -1};
-        const obj = JSON.parse(node.innerHTML)
-        return {'playername': obj['playername'], 'userID': obj['userID']};
+        const node = document.querySelector('script[src*="chats.js"]');
+        if (!node) return {'playername': '未知', 'userID': 0};
+        // const obj = JSON.parse(node.innerHTML)
+        return {'playername': node.getAttribute('name'), 'userID': node.getAttribute('uid')};
     }
 }());
