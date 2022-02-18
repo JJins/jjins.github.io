@@ -1,8 +1,8 @@
 // ==UserScript==
-// @lastmodified  202202172332
+// @lastmodified  202202181647
 // @name         芜湖助手
 // @namespace    WOOH
-// @version      0.3.12
+// @version      0.3.13
 // @description  托恩，起飞！
 // @author       Woohoo[2687093] Sabrina_Devil[2696209]
 // @match        https://www.torn.com/*
@@ -23,12 +23,17 @@
     if (window.WHTRANS) return;
     window.WHTRANS = true;
     // 版本
-    const version = '0.3.12';
+    const version = '0.3.13';
     // 修改历史
     const changelist = [
         {
             todo: true,
             cont: `翻译：baza npc商店、imarket、imarket搜索结果`,
+        },
+        {
+            ver: '0.3.13',
+            date: '20220218',
+            cont: `调整本地数据查询方式，修复啤酒小助手的错误`,
         },
         {
             ver: '0.3.12',
@@ -3076,8 +3081,8 @@
     // 加载中html
     const loading_gif_html = `<img src="${loading_gif_base64()}" alt="lgif" style="width:14px;height:14px;" />`;
 
-    // 默认设置
-    const default_settings = [
+    // 对新值应用默认设置
+    [
         // 开启翻译
         {key: 'transEnable', val: false},
         // 快速犯罪
@@ -3113,54 +3118,14 @@
 
         // 危险行为⚠️
         {key: 'dangerZone', val: false},
-    ];
-    // 插件的全局设置
-    const wh_trans_settings = localStorage.getItem('wh_trans_settings')
-        ? JSON.parse(localStorage.getItem('wh_trans_settings'))
-        : {
-            // 开启翻译
-            transEnable: undefined,
-            // 快速犯罪
-            quickCrime: undefined,
-            // 任务助手
-            missionHint: undefined,
-            // 小镇攻略
-            xmasTownWT: undefined,
-            // 小镇提醒
-            xmasTownNotify: undefined,
-            // 起飞爆e
-            energyAlert: undefined,
-            // 飞行闹钟
-            trvAlarm: undefined,
-            // 啤酒提醒
-            _15Alarm: true,
-            // 捡垃圾助手
-            cityFinder: false,
-            // 叠E保护
-            SEProtect: false,
-            // 光速拔刀 6-关闭
-            quickAttIndex: undefined,
-            // 光速跑路 0-leave 1-mug 2-hos 3-关闭
-            quickFinishAtt: undefined,
-            // 自动开打和结束
-            autoStartFinish: undefined,
-            // 废弃
-            attRelocate: undefined,
-            // 攻击自刷新 0-无间隔 1-5s 6-关闭
-            attReload: undefined,
-            // 开发者模式
-            isDev: undefined,
-
-            // 危险行为⚠️
-            dangerZone: undefined,
-        };
-    // 对新值应用默认
-    default_settings.forEach(_default => {
-        if (typeof wh_trans_settings[_default.key] !== typeof _default.val) wh_trans_settings[_default.key] = _default.val;
+    ].forEach(_default => {
+        if (typeof getWhSetting()[_default.key] !== typeof _default.val) setWhSetting(_default.key, _default.val);
     });
-    saveSettings(true);
 
-    // 插件的设置dom配置列表
+    // 是否开启翻译
+    const isTransEnabled = getWhSetting()['transEnable'];
+
+    // 菜单配置列表
     const settingsArr = [];
     {
         // const date = new Date(2022, 11, 31, 23);
@@ -3347,7 +3312,7 @@
         settingsArr.push({
             domType: 'checkbox',
             domId: 'wh-trv-alarm-check',
-            domText: ' 飞行闹钟(仅PC)',
+            domText: ' 飞行闹钟 (仅PC)',
             dictName: 'trvAlarm',
         });
         // 啤酒提醒
@@ -3441,7 +3406,7 @@
             dictName: 'quickFinishAtt',
         });
         // 危险行为⚠️
-        if (wh_trans_settings.dangerZone === true) {
+        if (getWhSetting().dangerZone === true) {
             // 攻击界面自刷新
             settingsArr.push({
                 domType: 'select',
@@ -3484,9 +3449,8 @@
                 domType: 'checkbox', domId: 'wh-auto-start-finish', domText: ' ⚠️自动开打和结束', dictName: 'autoStartFinish',
             });
         } else {
-            wh_trans_settings.autoStartFinish = false;
-            wh_trans_settings.attReload = 6;
-            saveSettings(true);
+            setWhSetting('autoStartFinish', false, false)
+            setWhSetting('attReload', 6, false)
         }
         // 飞花库存
         settingsArr.push({
@@ -3499,8 +3463,7 @@
                     const insert = `<img alt="stock.png" src="https://jjins.github.io/t2i/stock.png?${performance.now()}" style="max-width:100%;display:block;margin:0 auto;" />`;
                     popupMsg(insert, '飞花库存');
                 } else {
-                    // addStyle('#wh-popup-cont td, #wh-popup-cont th{padding:4px;}');
-                    const popup = popupMsg(`请稍后<img style="height:16px;width:16px;" src="${loading_gif_base64()}" alt="loading"/>`, '飞花库存');
+                    const popup = popupMsg(`请稍后${loading_gif_html}`, '飞花库存');
                     let table = `<style>
 #wh-popup-cont table{width:100%;border-collapse:collapse;border:1px solid;}
 #wh-popup-cont td, #wh-popup-cont th{border-collapse:collapse;padding:4px;border:1px solid;}
@@ -3584,16 +3547,19 @@
         });
         // 查看NNB
         settingsArr.push({
-            domType: 'button', domId: 'wh-nnb-info', domText: '查看NNB', clickFunc: function (e) {
+            domType: 'button',
+            domId: 'wh-nnb-info',
+            domText: '查看NNB',
+            clickFunc: function (e) {
                 e.target.blur();
                 const insert = `<style>
 #wh-popup-cont label p{padding:0 0 0 1em;}
 #wh-popup-cont label span{font-weight:bold;}
 </style>
 <p id="wh-nnb-info-container"></p>
-<p><b>NNB</b>, <b>N</b>atural <b>N</b>erve <b>B</b>ar, 意思是：扣除所有加成后，玩家本身的犯罪条上限，是衡量一个大佬犯罪技能等级的重要标准</p>
-<p>一般来说，左侧红色的犯罪条的上限都是包含加成的(称为<b>N</b>erve <b>B</b>ar <b>NB</b>, 与NNB是不一样的)，比如帮派、天赋等。额外的加成并不会影响玩家的犯罪技能</p>
-<p>查看NNB的方法很简单，在Torn主页面的最下方有一栏Perks，NB扣除增加的Nerve上限后就是NNB</p>
+<p><b>NNB</b>, <b>N</b>atural <b>N</b>erve <b>B</b>ar, 意思是：扣除所有加成后，玩家本身的犯罪条上限，可用于衡量大佬隐藏的犯罪技能等级</p>
+<p>一般来说，左侧红色的犯罪条(称为<b>N</b>erve <b>B</b>ar/<b>NB</b>, 与NNB不同)的上限都是包含加成的，如来自帮派、天赋的加成等。额外的加成并不会影响玩家的犯罪技能</p>
+<p>查看NNB的方法很简单，在Torn主页面的最下方有一栏Perks，NB上限扣除加成的犯罪条上限后就是NNB</p>
 <div>
 <p>不想算？</p>
 <label>
@@ -3616,7 +3582,8 @@
                     node.innerHTML = '加载中';
                     // API 计算
                     if (select.checked) {
-                        fetch(`https://api.torn.com/user/?selections=bars,perks&key=${window.localStorage.getItem('APIKey')}`)
+                        const api_key = isPDA ? PDA_APIKey : window.localStorage.getItem('APIKey');
+                        fetch(`https://api.torn.com/user/?selections=bars,perks&key=${api_key}`)
                             .then(res => res.json())
                             .then(data => {
                                 if (data['error']) {
@@ -3749,7 +3716,7 @@ height:30px;
             clickFunc: function (e) {
                 e.target.blur();
                 const insert = `<p>即将打开危险功能，使用这些功能可能会造成账号封禁。请自行考虑是否使用。</p>
-<p><label><input type="checkbox" id="wh-danger-warning-check" ${wh_trans_settings.dangerZone ? 'checked ' : ' '}/> 知道了，开启</label></p>
+<p><label><input type="checkbox" id="wh-danger-warning-check" ${getWhSetting().dangerZone ? 'checked ' : ' '}/> 知道了，开启</label></p>
 <div><button disabled>保存</button></div>`;
                 popupMsg(insert, '⚠️警告');
                 // const close_btn = document.querySelector('#wh-popup-close');
@@ -3757,8 +3724,8 @@ height:30px;
                 const ok_btn = document.querySelector('#wh-popup-cont button');
                 warning_check.onchange = () => ok_btn.disabled = false;
                 ok_btn.onclick = () => {
-                    wh_trans_settings.dangerZone = warning_check.checked;
-                    saveSettings();
+                    getWhSetting()['dangerZone'] = warning_check.checked;
+                    // saveSettings();
                     window.location.reload();
                 };
             },
@@ -3792,9 +3759,9 @@ height:30px;
 //             clickFunc: function () {},
 //         })
     }
-    // 左侧“中”标签
+    // 菜单node
     const $zhongNode = initIcon();
-    // 标签中的按钮
+    // 菜单中额外的按钮
     if ($zhongNode) {
         // 更新词库按钮
         $zhongNode.querySelector('button#wh-trans-data-update').onclick = function () {
@@ -3988,13 +3955,14 @@ color:black;
             popupMsg(insert, '开发者详情');
         };
         // 啤酒提醒
-        if (wh_trans_settings._15Alarm) {
+        if (getWhSetting()['_15Alarm']) {
             // 今日不再提醒
             const ign = () => {
                 const date = new Date();
-                setAndSaveSettings('_15_alarm_ignore', [date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()], true);
+                setWhSetting('_15_alarm_ignore', [date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()], false);
+                // setAndSaveSettings('_15_alarm_ignore', [date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()], true);
                 const notify = WHNotify(`明早8点前将不再提醒 <button id="wh-rd-btn-${getRandomInt(0, 100)}">取消</button>`);
-                notify.querySelector('.wh-notify-msg button').addEventListener('click', () => setAndSaveSettings('_15_alarm_ignore', undefined));
+                notify.querySelector('.wh-notify-msg button').addEventListener('click', () => setWhSetting('_15_alarm_ignore', undefined));
             };
             // 菜单里的今日不再提醒点击
             $zhongNode.querySelector('#wh-qua-alarm-check-btn').onclick = ign;
@@ -4005,7 +3973,7 @@ color:black;
                 // 循环函数
                 const loop = () => {
                     const now = [new Date().getUTCFullYear(), new Date().getUTCMonth(), new Date().getUTCDate()];
-                    const ignore_date = wh_trans_settings['_15_alarm_ignore'] || '{}';
+                    const ignore_date = getWhSetting()['_15_alarm_ignore'] || '{}';
                     if (JSON.stringify(now) === JSON.stringify(ignore_date)) return;
                     const notify = WHNotify(`<span style="background-color:green;color:white;border-radius:3px;">【啤酒小助手】</span><br/>
 提醒您：还有不到 50 秒 NPC 的商品就要刷新了，啤酒血包要抢的可以准备咯。<button id="wh-rd-btn-${getRandomInt(0, 100)}">【今日不再提醒】</button><br/><a href="/shops.php?step=bitsnbobs" target="_blank">【啤酒店】</a> <a href="/shops.php?step=pharmacy" target="_blank">【血包店】</a>`, 30);
@@ -4150,7 +4118,7 @@ width: 66px;
      * 边栏
      * 目前默认所有页面调用边栏翻译
      */
-    if (wh_trans_settings.transEnable) {
+    if (isTransEnabled) {
         let sidebarTimeOut = 60;
         const sidebarInterval = setInterval(() => {
             // 60秒后取消定时
@@ -4268,12 +4236,12 @@ width: 66px;
         //     }
         // }, 1000);
     };
-    if (wh_trans_settings.transEnable) miniProfile();
+    if (isTransEnabled) miniProfile();
 
     /**
      * header
      */
-    if (wh_trans_settings.transEnable && document.querySelector('div#header-root')) {
+    if (isTransEnabled && document.querySelector('div#header-root')) {
         const headerOB = new MutationObserver(_ => {
             headerOB.disconnect();
             headerTrans();
@@ -4356,7 +4324,7 @@ width: 66px;
     /**
      * chatbox
      */
-    if (wh_trans_settings.transEnable && document.querySelector('div#chatRoot')) {
+    if (isTransEnabled && document.querySelector('div#chatRoot')) {
         const chatOB = new MutationObserver(_ => {
             chatOB.disconnect();
             chatTrans();
@@ -4436,7 +4404,7 @@ width: 66px;
         });
         psbtOB.observe(document.body, opt);
     }
-    if (wh_trans_settings.transEnable) playerSearchBoxTrans();
+    if (isTransEnabled) playerSearchBoxTrans();
 
     /**
      * 飞行页面
@@ -4444,7 +4412,7 @@ width: 66px;
     if (window.location.href.includes('index.php') &&
         !!document.querySelector('div.travelling h4')) {
         // 翻译
-        if (wh_trans_settings.transEnable) {
+        if (isTransEnabled) {
             const travelOB = new MutationObserver(travelOBInit);
 
             function travelOBInit() {
@@ -4475,10 +4443,10 @@ width: 66px;
             }
 
             travelTrans();
-            travelOB.observe($('div.content-wrapper')[0], {childList: true, subtree: true});
+            travelOB.observe(document.querySelector('div.content-wrapper'), {childList: true, subtree: true});
         }
         // 飞行闹钟
-        if (device === Device.PC && wh_trans_settings.trvAlarm) elementReady('#countrTravel.hasCountdown').then(node => {
+        if (device === Device.PC && getWhSetting().trvAlarm) elementReady('#countrTravel.hasCountdown').then(node => {
             const logo_node = document.querySelector('#tcLogo[title]');
             // const DEST_STR = {
             //     'Mexico': '墨西哥', 'Canada': '加拿大', 'Cayman Islands': '开曼',
@@ -4712,7 +4680,7 @@ display:none;
     /**
      * 主页 todo
      */
-    if (wh_trans_settings.transEnable &&
+    if (isTransEnabled &&
         window.location.href.contains(/index\.php/) &&
         document.querySelector('h4#skip-to-content').innerText.contains(/Home/)) {
         titleTrans();
@@ -4770,7 +4738,7 @@ display:none;
      */
     if (window.location.href.contains(/travelagency\.php/)) {
         const $$ = $('.content-wrapper');
-        if (wh_trans_settings.energyAlert) {
+        if (getWhSetting().energyAlert) {
             const OB = new MutationObserver(() => {
                 OB.disconnect();
                 titleTrans();
@@ -4823,9 +4791,9 @@ display:none;
     if (window.location.href.contains(/loader\.php\?sid=attack/)) {
         let stop_reload = false;
         // 光速拔刀
-        if (wh_trans_settings.quickAttIndex !== 6) {
-            const selectedId = ['weapon_main', 'weapon_second', 'weapon_melee', 'weapon_temp', 'weapon_fists', 'weapon_boots']
-                [wh_trans_settings.quickAttIndex];
+        if (getWhSetting().quickAttIndex !== 6) {
+            // const selectedId = ['weapon_main', 'weapon_second', 'weapon_melee', 'weapon_temp', 'weapon_fists', 'weapon_boots']
+            //     [getWhSetting().quickAttIndex];
             elementReady('div[class^="modal___"] button').then(btn => {
                 if (!(btn.innerText.toLowerCase().includes('start fight') || btn.innerText.toLowerCase().includes('join'))) return;
                 // 判断是否存在脚踢
@@ -4841,7 +4809,7 @@ display:none;
                         modal.style.display = 'none';
                         // 根据选择的武器调整css
                         let css_top = '0';
-                        switch (wh_trans_settings.quickAttIndex) {
+                        switch (getWhSetting().quickAttIndex) {
                             case 1: { // weapon_second
                                 css_top = '97px';
                                 break;
@@ -4871,7 +4839,7 @@ display:none;
                         document.body.classList.toggle('wh-move-btn');
                         // 绑定点击事件
                         btn.onclick = () => {
-                            if (wh_trans_settings.quickFinishAtt !== 3) {
+                            if (getWhSetting().quickFinishAtt !== 3) {
                                 btn.remove();
                                 // 停止自动刷新
                                 stop_reload = true;
@@ -4889,7 +4857,7 @@ display:none;
                         // 判断有没有脚踢
                         if (hasKick) {
                             // 根据选择的武器调整
-                            switch (wh_trans_settings.quickAttIndex) {
+                            switch (getWhSetting().quickAttIndex) {
                                 case 1: { // weapon_second
                                     css_top = '76px';
                                     break;
@@ -4916,7 +4884,7 @@ display:none;
                             const height = slot.offsetHeight + 1;
                             slot_height = height;
                             // 根据选择的武器调整
-                            switch (wh_trans_settings.quickAttIndex) {
+                            switch (getWhSetting().quickAttIndex) {
                                 case 1: { // weapon_second
                                     css_top = `${height}px`;
                                     break;
@@ -4949,7 +4917,7 @@ display:none;
                         addStyle(css_rule);
                         document.body.classList.toggle('wh-move-btn');
                         btn.onclick = () => {
-                            if (wh_trans_settings.quickFinishAtt !== 3) {
+                            if (getWhSetting().quickFinishAtt !== 3) {
                                 btn.remove();
                                 // 停止自动刷新
                                 stop_reload = true;
@@ -4964,7 +4932,7 @@ display:none;
                     }
                 }
                 // 自动开打
-                if (wh_trans_settings.autoStartFinish === true) {
+                if (getWhSetting().autoStartFinish === true) {
                     if (btn.innerText.includes('(')) {
                         let interval_id = window.setInterval(() => {
                             if (!btn) {
@@ -4998,8 +4966,8 @@ display:none;
             }
         }
         // 光速跑路
-        if (wh_trans_settings.quickFinishAtt !== 3) {
-            const user_btn_select = ['leave', 'mug', 'hosp'][wh_trans_settings.quickFinishAtt];
+        if (getWhSetting().quickFinishAtt !== 3) {
+            const user_btn_select = ['leave', 'mug', 'hosp'][getWhSetting().quickFinishAtt];
             const wrap = document.querySelector('#react-root');
             log('光速跑路选项选中：', user_btn_select);
             new MutationObserver(() => {
@@ -5009,7 +4977,7 @@ display:none;
                     log('按钮内容：', btn.innerText, '，是否包含选中：', flag);
                     if (!flag) btn.style.display = 'none';
                     // 自动结束
-                    else if (wh_trans_settings.autoStartFinish === true) {
+                    else if (getWhSetting().autoStartFinish === true) {
                         try {
                             btn.click();
                         } catch {
@@ -5020,7 +4988,7 @@ display:none;
         }
         // 自刷新
         let audio_played_flag;
-        if (wh_trans_settings.attReload !== 6 && stop_reload !== true) {
+        if (getWhSetting().attReload !== 6 && stop_reload !== true) {
             const selector_device_map = {
                 'pc': '#defender div[class^="modal___"]',
                 'mobile': '#attacker div[class^="modal___"]',
@@ -5029,11 +4997,11 @@ display:none;
             const selector = selector_device_map[device];
             elementReady(selector).then(elem => {
                 if (!elem.querySelector('button')) {
-                    if (wh_trans_settings.attReload === 0 && stop_reload !== true) {
+                    if (getWhSetting().attReload === 0 && stop_reload !== true) {
                         window.location.reload();
                     } else {
                         let reload_flag;
-                        const timeout = wh_trans_settings.attReload * 1000 + getRandomInt(-500, 500);
+                        const timeout = getWhSetting().attReload * 1000 + getRandomInt(-500, 500);
                         log(`[WH] ${timeout / 1000}s 后自动刷新`);
                         window.setInterval(() => {
                             if (reload_flag === undefined) {
@@ -5060,7 +5028,7 @@ display:none;
     }
 
     // 错误的攻击页面
-    if (wh_trans_settings.attRelocate && window.location.href.includes('loader2.php')) {
+    if (getWhSetting().attRelocate && window.location.href.includes('loader2.php')) {
         const spl = window.location.href.trim().split('=');
         const uid = spl[spl.length - 1];
         if (!/^[0-9]+$/.test(uid)) return;
@@ -5072,7 +5040,7 @@ display:none;
      * city
      */
     if (window.location.href.includes('city.php')) {
-        if (wh_trans_settings.transEnable) {
+        if (isTransEnabled) {
             const cityOB = new MutationObserver(cityOBInit);
 
             function cityOBInit() {
@@ -5148,10 +5116,10 @@ display:none;
             }
 
             cityTrans();
-            cityOB.observe($('div.content-wrapper')[0], {childList: true, subtree: true});
+            cityOB.observe(document.querySelector('div.content-wrapper'), {childList: true, subtree: true});
         }
         // 捡垃圾
-        if (wh_trans_settings.cityFinder) {
+        if (getWhSetting().cityFinder) {
             addStyle(`
 .wh-city-finds .leaflet-marker-pane img[src*="torn.com/images/items/"]{
 display: block !important;
@@ -5291,7 +5259,7 @@ display:inline-block;
      * gym健身房页面
      */
     if (window.location.href.includes('gym.php')) {
-        if (wh_trans_settings.transEnable) {
+        if (isTransEnabled) {
             const gymOB = new MutationObserver(gymOBInit);
 
             function gymOBInit() {
@@ -5403,7 +5371,7 @@ display:inline-block;
             gymTrans();
             gymOB.observe($('div.content-wrapper')[0], {childList: true, subtree: true, attributes: true});
         }
-        if (wh_trans_settings.SEProtect) {
+        if (getWhSetting().SEProtect) {
             elementReady('#gymroot').then(node => {
                 addStyle(`.wh-display-none{
 display:none !important;
@@ -5428,7 +5396,7 @@ display:none !important;
                     e.target.disabled = true;
                     info.remove();
                     node.classList.remove('wh-display-none');
-                    setAndSaveSettings('SEProtect', false);
+                    setWhSetting('SEProtect', false);
                     if ($zhongNode) $zhongNode.querySelector('#wh-SEProtect-check').checked = false;
                 });
             });
@@ -5486,7 +5454,7 @@ display:none !important;
             const is_captcha = $$.querySelector('div#tab-menu.captcha') !== null;
             const $title = $('div.content-title');
             const $info = $('.info-msg-cont');
-            if (!is_wh_translate && !is_captcha && wh_trans_settings.quickCrime) {
+            if (!is_wh_translate && !is_captcha && getWhSetting().quickCrime) {
                 if ($title.length > 0) $title.before(dom);
                 else if ($info.length > 0) $info.before(dom);
             }
@@ -5504,7 +5472,7 @@ display:none !important;
     /**
      * 物品页面
      */
-    if (wh_trans_settings.transEnable && window.location.href.contains(/item\.php/)) {
+    if (isTransEnabled && window.location.href.contains(/item\.php/)) {
         // 标题和右边的链接
         initOB(document.querySelector('.content-title'), {childList: true},
             () => {
@@ -5615,7 +5583,7 @@ display:none !important;
     /*
     npc商店
      */
-    if (wh_trans_settings.transEnable && window.location.href.contains(/(shops|bigalgunshop)\.php/)) {
+    if (isTransEnabled && window.location.href.contains(/(shops|bigalgunshop)\.php/)) {
         // 标题和右边的链接
         const $cont_title = document.querySelector('.content-title');
         initOB($cont_title, {childList: true, subtree: true}, () => {
@@ -5750,7 +5718,7 @@ display:none !important;
      */
     if (window.location.href.contains(/loader\.php\?sid=missions/)) {
         const $$ = $('.content-wrapper');
-        if (wh_trans_settings.missionHint) {
+        if (getWhSetting()['missionHint']) {
             const OB = new MutationObserver(() => {
                 OB.disconnect();
                 titleTrans();
@@ -5800,7 +5768,7 @@ display:none !important;
     /**
      * 股票
      */
-    if (wh_trans_settings.transEnable && window.location.href.contains(/page\.php\?sid=stocks/)) {
+    if (isTransEnabled && window.location.href.contains(/page\.php\?sid=stocks/)) {
         const stockOB = new MutationObserver(() => {
             stockOB.disconnect();
             titleTrans();
@@ -5917,7 +5885,7 @@ display:none !important;
     /**
      * 教育页面
      */
-    if (wh_trans_settings.transEnable && window.location.href.indexOf('education.php') >= 0) {
+    if (isTransEnabled && window.location.href.indexOf('education.php') >= 0) {
         const eduOB = new MutationObserver(eduOBInit);
 
         function eduOBInit() {
@@ -6015,7 +5983,7 @@ display:none !important;
     /**
      * profile 玩家资料页面
      */
-    if (wh_trans_settings.transEnable && window.location.href.contains(/profiles\.php\?XID=[0-9]+/)) {
+    if (isTransEnabled && window.location.href.contains(/profiles\.php\?XID=[0-9]+/)) {
         const $wrapper = document.querySelector('.content-wrapper');
         const profileOB = new MutationObserver(() => {
             profileOB.disconnect();
@@ -6240,7 +6208,7 @@ display:none !important;
      * 报纸
      */
     if (window.location.href.contains(/(newspaper|joblist|freebies|newspaper_class|personals|bounties|comics)\.php/)) {
-        if (wh_trans_settings.transEnable) {
+        if (isTransEnabled) {
             const newspaperOB = new MutationObserver(() => {
                 newspaperOB.disconnect();
                 newspaperTrans();
@@ -6431,7 +6399,7 @@ display:none !important;
     /**
      * npc买房 estateagents
      */
-    if (wh_trans_settings.transEnable && window.location.href.indexOf('estateagents.php') >= 0) {
+    if (isTransEnabled && window.location.href.indexOf('estateagents.php') >= 0) {
         titleTrans();
         contentTitleLinksTrans();
         $('div.estate-info div.title').each((i, e) => {
@@ -6445,7 +6413,7 @@ display:none !important;
     /**
      * properties房屋页面 todo
      */
-    if (wh_trans_settings.transEnable && window.location.href.indexOf('properties.php') >= 0) {
+    if (isTransEnabled && window.location.href.indexOf('properties.php') >= 0) {
         const isRent = window.location.href.indexOf('rent') >= 0;
         // const isRentOrSell = isRent || window.location.href.indexOf('sell') >= 0;
         // const isOption = window.location.href.indexOf('p=options') >= 0;
@@ -6588,7 +6556,7 @@ display:none !important;
     /**
      * 通知页面
      */
-    if (wh_trans_settings.transEnable && window.location.href.indexOf('events.php') >= 0) {
+    if (isTransEnabled && window.location.href.indexOf('events.php') >= 0) {
         const ob = new MutationObserver(() => {
             ob.disconnect();
             titleTrans();
@@ -6623,7 +6591,7 @@ display:none !important;
     /**
      * awards.php
      */
-    if (wh_trans_settings.transEnable && window.location.href.indexOf('awards.php') >= 0) {
+    if (isTransEnabled && window.location.href.indexOf('awards.php') >= 0) {
         const awOB = new MutationObserver(() => {
             awOB.disconnect();
             awTrans();
@@ -6760,7 +6728,7 @@ display:none !important;
     /**
      * preferences设置
      */
-    if (wh_trans_settings.transEnable && window.location.href.contains(/preferences\.php/)) {
+    if (isTransEnabled && window.location.href.contains(/preferences\.php/)) {
         const $$ = $('.content-wrapper');
         const OB = new MutationObserver(() => {
             OB.disconnect();
@@ -6831,7 +6799,7 @@ display:none !important;
     /*
     展柜
      */
-    if (wh_trans_settings.transEnable && window.location.href.contains(/displaycase\.php/)) {
+    if (isTransEnabled && window.location.href.contains(/displaycase\.php/)) {
         const $page_wrapper = document.querySelector('#display-page-wrap');
         initOB($page_wrapper, {
                 subtree: true,
@@ -6869,13 +6837,13 @@ display:none !important;
     /**
      * 升级页面
      */
-    if (wh_trans_settings.transEnable && window.location.href.indexOf('level2.php') >= 0) {
+    if (isTransEnabled && window.location.href.indexOf('level2.php') >= 0) {
     }
 
     /**
      *  医院页面
      */
-    if (wh_trans_settings.transEnable && window.location.href.indexOf("hospitalview.php") >= 0) {
+    if (isTransEnabled && window.location.href.indexOf("hospitalview.php") >= 0) {
         const hospitalOB = new MutationObserver(hosOBInit);
 
         function hosOBInit() {
@@ -6935,7 +6903,7 @@ display:none !important;
     /**
      * 帮派页面
      */
-    if (wh_trans_settings.transEnable && window.location.href.indexOf("actions.php") >= 0) {
+    if (isTransEnabled && window.location.href.indexOf("actions.php") >= 0) {
         const factionOB = new MutationObserver(factionOBInit);
 
         function factionOBInit() {
@@ -7058,7 +7026,7 @@ display:none !important;
     /**
      * pc电脑
      */
-    if (wh_trans_settings.transEnable && window.location.href.contains(/pc\.php/)) {
+    if (isTransEnabled && window.location.href.contains(/pc\.php/)) {
         const $$ = $('.content-wrapper');
         const OB = new MutationObserver(() => {
             OB.disconnect();
@@ -7092,9 +7060,9 @@ display:none !important;
     /*
     日历
      */
-    if (wh_trans_settings.transEnable && window.location.href.contains(/calendar\.php/)) {
+    if (window.location.href.contains(/calendar\.php/)) {
         const $root = document.querySelectorAll('#calendar-root');
-        if (wh_trans_settings.transEnable) $root.forEach(el => {
+        if (isTransEnabled) $root.forEach(el => {
             initOB(el, {childList: true, subtree: true}, () => {
                 // 页标题
                 const $h4_title = el.querySelectorAll('h4[class^="title___"]');
@@ -7117,7 +7085,7 @@ display:none !important;
      */
     if (window.location.href.contains(/christmas_town\.php/)) {
         let $root = document.querySelector('#christmastownroot');
-        if (wh_trans_settings.transEnable) {
+        if (isTransEnabled) {
             const $title_wrapper = $root.querySelector('div[class^="appHeaderWrapper___"]');
             // 标题和右边的链接
             initOB($title_wrapper, {childList: true, subtree: true}, () => {
@@ -7126,7 +7094,7 @@ display:none !important;
             });
         }
         // 解密攻略
-        if (wh_trans_settings.xmasTownWT) {
+        if (getWhSetting().xmasTownWT) {
             const insert_html = `<div id="wh-xmas-cont">
 <div class="title-black"><span>水晶球解密地图攻略</span><span><button style="color: white">[隐藏]</button></span></div>
 <div class="cont-gray select-wrap dropdown-new dropdown-default">
@@ -7429,7 +7397,7 @@ margin: 0 0 3px;
             });
         }
         // 宝箱检测
-        if (wh_trans_settings.xmasTownNotify) {
+        if (getWhSetting().xmasTownNotify) {
             const chestTypeDict = {'1': '金', '2': '银', '3': '铜',};
             const chestTypeColorDict = {'1': 'gold', '2': 'silver', '3': 'sandybrown',};
             const lootTypeDict = {'chests': '钥匙箱', 'gifts': '礼物', 'combinationChest': '密码箱', 'keys': '钥匙',};
@@ -8694,11 +8662,11 @@ margin: 0 0 3px;
             const newNode = document.createElement('div');
             switch (setting.domType) {
                 case 'checkbox': {
-                    newNode.innerHTML += `<label><input type="checkbox" id="${setting.domId}" ${wh_trans_settings[setting.dictName] ? "checked" : ''} />${setting.domText}</label>`;
+                    newNode.innerHTML += `<label><input type="checkbox" id="${setting.domId}" ${getWhSetting()[setting.dictName] ? "checked" : ''} />${setting.domText}</label>`;
                     settingNode.appendChild(newNode);
                     settingNode.querySelector(`#${setting.domId}`).onchange = (elem) => {
-                        wh_trans_settings[setting.dictName] = elem.target.checked;
-                        saveSettings();
+                        setWhSetting(setting.dictName, elem.target.checked);
+                        // saveSettings();
                     };
                     break;
                 }
@@ -8711,14 +8679,13 @@ margin: 0 0 3px;
                 case 'select': {
                     let optHtml = '';
                     setting.domSelectOpt.forEach((optObj, i) => {
-                        const selected = i === wh_trans_settings[setting.dictName] ? 'selected' : '';
+                        const selected = i === getWhSetting()[setting.dictName] ? 'selected' : '';
                         optHtml += `<option value="${optObj.domVal}" ${selected}>${optObj.domText}</option>`;
                     });
                     newNode.innerHTML += `<label>${setting.domText}<select id="${setting.domId}">${optHtml}</select></label>`;
                     settingNode.appendChild(newNode);
                     settingNode.querySelector(`#${setting.domId}`).onchange = (elem) => {
-                        wh_trans_settings[setting.dictName] = elem.target.selectedIndex;
-                        saveSettings();
+                        setWhSetting(setting.dictName, elem.target.selectedIndex);
                     };
                     break;
                 }
@@ -8765,26 +8732,26 @@ margin: 0 0 3px;
         return zhongNode;
     }
 
-    /*
-    保存脚本的配置
-     */
-    function saveSettings(not_notify = false) {
-        // 通知
-        if (!not_notify) WHNotify('已保存设置', 3)
-
-        localStorage.setItem('wh_trans_settings', JSON.stringify(wh_trans_settings));
-    }
+    // /*
+    // 保存脚本的配置
+    //  */
+    // function saveSettings(not_notify = false) {
+    //     // 通知
+    //     if (!not_notify) WHNotify('已保存设置', 3)
+    //
+    //     localStorage.setItem('wh_trans_settings', JSON.stringify(wh_trans_settings));
+    // }
 
     // 设置并保存设置
-    function setAndSaveSettings(k, v, not_notify = false) {
-        wh_trans_settings[k] = v;
-        saveSettings(not_notify);
-    }
+    // function setAndSaveSettings(k, v, not_notify = false) {
+    //     wh_trans_settings[k] = v;
+    //     saveSettings(not_notify);
+    // }
 
     // bool 返回当前是否dev状态
     function isDev() {
         try {
-            return wh_trans_settings.isDev || false;
+            return getWhSetting().isDev || false;
         } catch (e) {
             console.error(`[wh] dev状态错误 ${e}`);
             return false;
@@ -9174,5 +9141,20 @@ z-index:100001;
         if (!node) return {'playername': '未知', 'userID': 0};
         // const obj = JSON.parse(node.innerHTML)
         return {'playername': node.getAttribute('name'), 'userID': node.getAttribute('uid')};
+    }
+
+    // 插件的配置 getter
+    function getWhSetting() {
+        return JSON.parse(localStorage.getItem('wh_trans_settings')) || {}
+    }
+
+    // 插件的配置 setter
+    function setWhSetting(key, value, notify = true) {
+        const obj = getWhSetting()
+        obj[key] = value
+        localStorage.setItem('wh_trans_settings', JSON.stringify(obj))
+
+        // 通知
+        if (notify) WHNotify('已保存设置', 3)
     }
 }());
