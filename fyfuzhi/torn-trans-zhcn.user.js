@@ -1,8 +1,8 @@
 // ==UserScript==
-// @lastmodified  202202181647
+// @lastmodified  202202201643
 // @name         芜湖助手
 // @namespace    WOOH
-// @version      0.3.13
+// @version      0.3.14
 // @description  托恩，起飞！
 // @author       Woohoo[2687093] Sabrina_Devil[2696209]
 // @match        https://www.torn.com/*
@@ -23,12 +23,18 @@
     if (window.WHTRANS) return;
     window.WHTRANS = true;
     // 版本
-    const version = '0.3.13';
+    const version = '0.3.14';
     // 修改历史
     const changelist = [
         {
             todo: true,
             cont: `翻译：baza npc商店、imarket、imarket搜索结果`,
+        },
+        {
+            ver: '0.3.14',
+            date: '20220220',
+            cont: `调整啤酒小助手的通知样式，修复危险功能开关的错误，加入系统通知支持；
+替换PDA下飞贼助手的数据源，现在同样使用实时数据`,
         },
         {
             ver: '0.3.13',
@@ -318,6 +324,13 @@
     const PDA_APIKey = '###PDA-APIKEY###';
     // isPDA
     const isPDA = PDA_APIKey.slice(-1) !== '#';
+    // 请求通知权限
+    Notification.requestPermission().then(status => {
+        // 这将使我们能在 Chrome/Safari 中使用 Notification.permission
+        if (Notification.permission !== status) {
+            Notification.permission = status;
+        }
+    });
 
     const titleDict = {
         'Home': '主页',
@@ -3469,36 +3482,52 @@
 #wh-popup-cont td, #wh-popup-cont th{border-collapse:collapse;padding:4px;border:1px solid;}
 </style>
 <table><tr><th colspan="2">目的地 - 更新时间</th><th colspan="3">库存</th></tr>`;
-                    const url = 'https://yata.yt/api/v1/travel/export/';
-                    const dest = [{
-                        name: 'mex', show: '墨西哥', stocks: {'Dahlia': '花', 'Jaguar Plushie': '偶'}
-                    }, {
-                        name: 'cay', show: '开曼', stocks: {'Banana Orchid': '花', 'Stingray Plushie': '偶'}
-                    }, {
-                        name: 'can', show: '加拿大', stocks: {'Crocus': '花', 'Wolverine Plushie': '偶'}
-                    }, {
-                        name: 'haw', show: '夏威夷', stocks: {'Orchid': '花', 'Large Suitcase': '大箱'}
-                    }, {
-                        name: 'uni', show: '嘤国', stocks: {
-                            'Heather': '花', 'Red Fox Plushie': '赤狐', 'Nessie Plushie': '水怪'
-                        }
-                    }, {
-                        name: 'arg', show: '阿根廷', stocks: {
-                            'Ceibo Flower': '花', 'Monkey Plushie': '偶', 'Tear Gas': '催泪弹'
+                    const url = `https://yata.yt/api/v1/travel/export/?${performance.now()}`;
+                    const dest = [
+                        {
+                            name: 'mex', show: '墨西哥',
+                            stocks: {'Dahlia': '花', 'Jaguar Plushie': '偶'}
                         },
-                    }, {
-                        name: 'swi', show: '瑞士', stocks: {'Edelweiss': '花', 'Chamois Plushie': '偶'},
-                    }, {
-                        name: 'jap', show: '日本', stocks: {'Cherry Blossom': '花'},
-                    }, {
-                        name: 'chi', show: '祖国', stocks: {'Peony': '花', 'Panda Plushie': '偶'},
-                    }, {
-                        name: 'uae', show: '迪拜', stocks: {'Tribulus Omanense': '花', 'Camel Plushie': '偶'},
-                    }, {
-                        name: 'sou', show: '南非', stocks: {
-                            'African Violet': '花', 'Lion Plushie': '偶', 'Xanax': 'XAN'
+                        {
+                            name: 'cay', show: '开曼',
+                            stocks: {'Banana Orchid': '花', 'Stingray Plushie': '偶'}
                         },
-                    },];
+                        {
+                            name: 'can', show: '加拿大',
+                            stocks: {'Crocus': '花', 'Wolverine Plushie': '偶'}
+                        },
+                        {
+                            name: 'haw', show: '夏威夷',
+                            stocks: {'Orchid': '花', 'Large Suitcase': '大箱'}
+                        },
+                        {
+                            name: 'uni', show: '嘤国',
+                            stocks: {'Heather': '花', 'Red Fox Plushie': '赤狐', 'Nessie Plushie': '水怪'}
+                        },
+                        {
+                            name: 'arg', show: '阿根廷',
+                            stocks: {'Ceibo Flower': '花', 'Monkey Plushie': '偶', 'Tear Gas': '催泪弹'},
+                        },
+                        {
+                            name: 'swi', show: '瑞士',
+                            stocks: {'Edelweiss': '花', 'Chamois Plushie': '偶'},
+                        },
+                        {
+                            name: 'jap', show: '日本',
+                            stocks: {'Cherry Blossom': '花'},
+                        },
+                        {
+                            name: 'chi', show: '祖国',
+                            stocks: {'Peony': '花', 'Panda Plushie': '偶'},
+                        },
+                        {
+                            name: 'uae', show: '迪拜',
+                            stocks: {'Tribulus Omanense': '花', 'Camel Plushie': '偶'},
+                        },
+                        {
+                            name: 'sou', show: '南非',
+                            stocks: {'African Violet': '花', 'Lion Plushie': '偶', 'Xanax': 'XAN'},
+                        }];
                     const now = new Date();
                     COFetch(url).catch(err => log(err))
                         .then(text => {
@@ -3716,16 +3745,14 @@ height:30px;
             clickFunc: function (e) {
                 e.target.blur();
                 const insert = `<p>即将打开危险功能，使用这些功能可能会造成账号封禁。请自行考虑是否使用。</p>
-<p><label><input type="checkbox" id="wh-danger-warning-check" ${getWhSetting().dangerZone ? 'checked ' : ' '}/> 知道了，开启</label></p>
+<p><label><input type="checkbox" ${getWhSetting()['dangerZone'] ? 'checked ' : ' '}/> 知道了，开启</label></p>
 <div><button disabled>保存</button></div>`;
-                popupMsg(insert, '⚠️警告');
-                // const close_btn = document.querySelector('#wh-popup-close');
-                const warning_check = document.querySelector('#wh-popup-cont input');
-                const ok_btn = document.querySelector('#wh-popup-cont button');
+                const popup = popupMsg(insert, '⚠️警告');
+                const warning_check = popup.querySelector('input');
+                const ok_btn = popup.querySelector('button');
                 warning_check.onchange = () => ok_btn.disabled = false;
                 ok_btn.onclick = () => {
-                    getWhSetting()['dangerZone'] = warning_check.checked;
-                    // saveSettings();
+                    setWhSetting('dangerZone', warning_check.checked);
                     window.location.reload();
                 };
             },
@@ -3975,8 +4002,12 @@ color:black;
                     const now = [new Date().getUTCFullYear(), new Date().getUTCMonth(), new Date().getUTCDate()];
                     const ignore_date = getWhSetting()['_15_alarm_ignore'] || '{}';
                     if (JSON.stringify(now) === JSON.stringify(ignore_date)) return;
-                    const notify = WHNotify(`<span style="background-color:green;color:white;border-radius:3px;">【啤酒小助手】</span><br/>
-提醒您：还有不到 50 秒 NPC 的商品就要刷新了，啤酒血包要抢的可以准备咯。<button id="wh-rd-btn-${getRandomInt(0, 100)}">【今日不再提醒】</button><br/><a href="/shops.php?step=bitsnbobs" target="_blank">【啤酒店】</a> <a href="/shops.php?step=pharmacy" target="_blank">【血包店】</a>`, 30);
+                    const notify = WHNotify(
+                        `<span style="background-color:green;color:white;border-radius:3px;font-size:14px;line-height:16px;padding:2px 4px;">啤酒小助手</span><br/>
+提醒您：还有不到 50 秒 NPC 的商品就要刷新了，啤酒血包要抢的可以准备咯。<button id="wh-rd-btn-${getRandomInt(0, 100)}">【今日不再提醒】</button><br/><a href="/shops.php?step=bitsnbobs" target="_blank">【啤酒店】</a> <a href="/shops.php?step=pharmacy" target="_blank">【血包店】</a>`,
+                        30,
+                        null,
+                        true);
                     notify.querySelector('.wh-notify-msg button').addEventListener('click', ign);
                     window.setTimeout(audioPlay, 800);
                     window.setTimeout(audioPlay, 800 * 2);
@@ -4160,11 +4191,11 @@ width: 66px;
                     e.firstChild.nodeValue = sidebarDict[e.firstChild.nodeValue];
             });
             // [use]按钮
-            if ($('#pointsMerits').length !== 0)
+            if (document.querySelector('#pointsMerits'))
                 $('#pointsMerits')[0].firstChild.nodeValue = '[使用]';
-            if ($('#pointsPoints').length !== 0)
+            if (document.querySelector('#pointsPoints'))
                 $('#pointsPoints')[0].firstChild.nodeValue = '[使用]';
-            if ($('#pointsLevel').length !== 0)
+            if (document.querySelector('#pointsLevel'))
                 $('#pointsLevel')[0].firstChild.nodeValue = '[升级]';
 
             // 手机 区域菜单
@@ -4250,7 +4281,7 @@ width: 66px;
 
         const headerTrans = function headerTrans() {
             // 搜索内容下拉框中的文字 已选中
-            if (headerDict[$('div.find button.toggler.down').text()])
+            if (headerDict[document.querySelector('div.find button.toggler.down').innerText])
                 $('div.find button.toggler.down').text(headerDict[$('div.find button.toggler.down').text()]);
             // pc端 搜索下拉框点击后的搜索类型文字
             $('div.find li.item').each((i, e) => {
@@ -4267,7 +4298,7 @@ width: 66px;
                 $('input[class^="searchInput"]').attr('placeholder',
                     headerDict[$('input[class^="searchInput"]').attr('placeholder')]);
             // 高级搜索框 search by
-            if (headerDict[$('div#header-root legend.title').text()])
+            if (headerDict[document.querySelector('div#header-root legend.title').innerText])
                 $('div#header-root legend.title').text(headerDict[$('div#header-root legend.title').text()]);
             // 高级搜索框的条件 左 键
             $('ul.advancedSearchFormBody label.label').each((i, e) => {
@@ -4305,7 +4336,7 @@ width: 66px;
                     $(e).text(headerDict[$(e).text()]);
             });
             // log按钮“view log”
-            if (headerDict[$('div.recentHistory a[class^="link"] span[class^="text"]').text().trim()])
+            if (headerDict[document.querySelector('div.recentHistory a[class^="link"] span[class^="text"]').innerText.trim()])
                 $('div.recentHistory a[class^="link"] span[class^="text"]')
                     .text(headerDict[$('div.recentHistory a[class^="link"] span[class^="text"]').text().trim()]);
             // 点击头像打开的菜单
@@ -4370,10 +4401,10 @@ width: 66px;
                     $(e).attr('placeholder', chatDict[$(e).attr('placeholder')]);
             });
             //
-            if (eventsDict[$('div#chatRoot div[class^="overview"] > div > div:nth-child(2)').text().trim()]) {
+            if (eventsDict[document.querySelector('div#chatRoot div[class^="overview"] > div > div:nth-child(2)').innerText.trim()]) {
                 $('div#chatRoot div[class^="overview"] > div > div:nth-child(2)')
                     .text(
-                        eventsDict[$('div#chatRoot div[class^="overview"] > div > div:nth-child(2)').text().trim()]
+                        eventsDict[document.querySelector('div#chatRoot div[class^="overview"] > div > div:nth-child(2)').innerText.trim()]
                     );
             }
         };
@@ -4426,7 +4457,7 @@ width: 66px;
                 contentTitleLinksTrans();
 
                 // 气泡
-                if (tipsDict[$('div.inner-popup').text().trim()])
+                if (tipsDict[document.querySelector('div.inner-popup').innerText.trim()])
                     $('div.inner-popup').text(tipsDict[$('div.inner-popup').text().trim()]);
                 // Remaining Flight Time -
                 $('div.destination-title span').contents().each((i, e) => {
@@ -4436,7 +4467,7 @@ width: 66px;
                         e.nodeValue = travelingDict[e.nodeValue.trim()];
                 });
                 // torntools扩展插件落地时间
-                if ($('div.tt-landing-time span.description').text().split(' ')[0] === 'Landing') {
+                if (document.querySelector('div.tt-landing-time span.description').innerText.split(' ')[0] === 'Landing') {
                     const landingTime = $('div.tt-landing-time span.description').text().slice(11, 19);
                     $('div.tt-landing-time span.description').text('于 ' + landingTime + ' 降落');
                 }
@@ -5028,7 +5059,7 @@ display:none;
     }
 
     // 错误的攻击页面
-    if (getWhSetting().attRelocate && window.location.href.includes('loader2.php')) {
+    if (getWhSetting()['attRelocate'] && window.location.href.includes('loader2.php')) {
         const spl = window.location.href.trim().split('=');
         const uid = spl[spl.length - 1];
         if (!/^[0-9]+$/.test(uid)) return;
@@ -8623,7 +8654,7 @@ margin: 0 0 3px;
 
     /**
      * 添加全局style
-     * @param CSS
+     * @param {String} CSS
      * @returns undefined
      */
     function addStyle(CSS) {
@@ -8890,12 +8921,13 @@ margin: 0 0 3px;
     /**
      * 通知
      *
-     * @param msg 通知上显示的内容，默认为空
-     * @param timeout 停留的时间，默认3秒
-     * @param callback 通知结束后执行的函数
-     * @returns HTMLElement 通知的node
+     * @param {String?} msg 通知上显示的内容，默认为空
+     * @param {Number?} timeout 停留的时间，默认3秒
+     * @param {Function?} callback 通知结束后执行的函数
+     * @param {Boolean?} sysNotify 是否显示系统通知
+     * @returns {HTMLElement} 通知的node
      */
-    function WHNotify(msg = '', timeout = 3, callback = null) {
+    function WHNotify(msg = '', timeout = 3, callback = null, sysNotify = false) {
         const date = new Date();
         // 通知的唯一id
         const uid = `${date.getHours()}${date.getSeconds()}${date.getMilliseconds()}${getRandomInt(1000, 9999)}`;
@@ -8915,6 +8947,7 @@ margin: 0 0 3px;
     <div class="wh-notify-msg"><p>${msg}</p></div>
 </div>`;
             notify_contain.append(new_node);
+            notify_contain.msgInnerText = new_node.querySelector('.wh-notify-msg').innerText;
             // 进度条node
             const progressBar = new_node.querySelector('.wh-notify-bar');
             // 是否hover
@@ -8991,7 +9024,13 @@ text-decoration:none;
 `);
             document.body.append(notify_contain);
         }
-        return add_notify();
+        const notify_obj = add_notify();
+        // 浏览器通知
+        if (Notification.permission === 'granted' && sysNotify) {
+            const date_local_string = `[${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}]\r`
+            new Notification('芜湖助手', {body: date_local_string + notify_contain.msgInnerText, requireInteraction: true});
+        }
+        return notify_obj;
     }
 
     // gs loader
@@ -9050,7 +9089,7 @@ z-index:100001;
                         notify = WHNotify('加载飞贼小助手');
                         COFetch(`https://gitee.com/ameto_kasao/tornjs/raw/master/GoldenSnitch.js?${performance.now()}`)
                             .then(res => {
-                                _window.eval(res.replace('http://222.160.142.50:8154/mugger', `https://jjins.github.io/mugger.json?${performance.now()}`));
+                                _window.eval(res.replace('http://222.160.142.50:8154/mugger', `https://api.ljs-lyt.com/mugger`));
                                 _window.GM_setValue("gsp_x", 10);
                                 _window.GM_setValue("gsp_y", 10);
                                 notify.del();
