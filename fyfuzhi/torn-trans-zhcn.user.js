@@ -1,8 +1,8 @@
 // ==UserScript==
-// @lastmodified  202202201643
+// @lastmodified  202202202117
 // @name         芜湖助手
 // @namespace    WOOH
-// @version      0.3.14
+// @version      0.3.15
 // @description  托恩，起飞！
 // @author       Woohoo[2687093] Sabrina_Devil[2696209]
 // @match        https://www.torn.com/*
@@ -23,12 +23,17 @@
     if (window.WHTRANS) return;
     window.WHTRANS = true;
     // 版本
-    const version = '0.3.14';
+    const version = '0.3.15';
     // 修改历史
     const changelist = [
         {
             todo: true,
             cont: `翻译：baza npc商店、imarket、imarket搜索结果`,
+        },
+        {
+            ver: '0.3.15',
+            date: '20220220',
+            cont: `修复通知错误`,
         },
         {
             ver: '0.3.14',
@@ -325,12 +330,17 @@
     // isPDA
     const isPDA = PDA_APIKey.slice(-1) !== '#';
     // 请求通知权限
-    Notification.requestPermission().then(status => {
-        // 这将使我们能在 Chrome/Safari 中使用 Notification.permission
-        if (Notification.permission !== status) {
-            Notification.permission = status;
-        }
-    });
+    try {
+        Notification.requestPermission().then(status => {
+            // 这将使我们能在 Chrome/Safari 中使用 Notification.permission
+            if (Notification.permission !== status) {
+                Notification.permission = status;
+            }
+        })
+    } catch (e) {
+        window.Notification = undefined;
+        log(e)
+    }
 
     const titleDict = {
         'Home': '主页',
@@ -9026,7 +9036,7 @@ text-decoration:none;
         }
         const notify_obj = add_notify();
         // 浏览器通知
-        if (Notification.permission === 'granted' && sysNotify) {
+        if (Notification && Notification.permission === 'granted' && sysNotify) {
             const date_local_string = `[${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}]\r`
             new Notification('芜湖助手', {body: date_local_string + notify_contain.msgInnerText, requireInteraction: true});
         }
