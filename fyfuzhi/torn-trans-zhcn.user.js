@@ -1,8 +1,8 @@
 // ==UserScript==
-// @lastmodified  202202231723
+// @lastmodified  202202252131
 // @name         芜湖助手
 // @namespace    WOOH
-// @version      0.3.20
+// @version      0.3.21
 // @description  托恩，起飞！
 // @author       Woohoo[2687093] Sabrina_Devil[2696209]
 // @match        https://www.torn.com/*
@@ -23,12 +23,17 @@
     if (window.WHTRANS) return;
     window.WHTRANS = true;
     // 版本
-    const version = '0.3.20';
+    const version = '0.3.21';
     // 修改历史
     const changelist = [
         {
             todo: true,
             cont: `翻译：baza npc商店、imarket、imarket搜索结果`,
+        },
+        {
+            ver: '0.3.21',
+            date: '20220225',
+            cont: `修改了样式`,
         },
         {
             ver: '0.3.20',
@@ -354,8 +359,6 @@
     const PDA_APIKey = '###PDA-APIKEY###';
     // isPDA
     const isPDA = PDA_APIKey.slice(-1) !== '#';
-    // uuid
-    window.whuuid = uuidv4();
     // 请求通知权限
     if (window.Notification) {
         Notification.requestPermission().then(status => {
@@ -3064,6 +3067,16 @@
     };
     const CC_set = /[\u4e00-\u9fa5]/;
 
+    // regexp test
+    String.prototype.contains = function contains(keywords) {
+        if ('string' === typeof keywords) {
+            return new RegExp(keywords).test(this);
+        }
+        if (keywords.test) {
+            return keywords.test(this);
+        }
+    };
+
     // const transDict = {};
     // transDict.titleDict = titleDict;
     // transDict.titleLinksDict = titleLinksDict;
@@ -3131,7 +3144,7 @@
         return `<img src="${gif_base64}" alt="lgif" style="width:14px;height:14px;" />`;
     }
 
-    // 对当前窗口记录唯一id
+    // 记录当前窗口唯一id
     const isWindowActive = getWindowActiveState();
 
     // 对新值应用默认设置
@@ -3176,9 +3189,6 @@
     ].forEach(_default => {
         if (typeof getWhSettingObj()[_default.key] !== typeof _default.val) setWhSetting(_default.key, _default.val);
     });
-
-    // 是否开启翻译
-    const isTransEnabled = getWhSettingObj()['transEnable'];
 
     // 菜单配置列表
     const settingsArr = [];
@@ -3786,8 +3796,8 @@ height:30px;
 </style>
 <p>输入需要监视的价格，低于该价格发出通知，-1为关闭</p>
 <p>注：需要APIKey，当前可用APIKey为<br/>
-<input readonly value="${localStorage.getItem('APIKey')||'不可用'}">(来自冰蛙)<br/>
-<input readonly value="${isPDA?PDA_APIKey:'不可用'}">(来自PDA)
+<input readonly value="${localStorage.getItem('APIKey') || '不可用'}">(来自冰蛙)<br/>
+<input readonly value="${isPDA ? PDA_APIKey : '不可用'}">(来自PDA)
 </p>
 <p><b>PT</b><label> $ <input type="number" value="${watcher_conf['pt'] || -1}" /></label></p>
 <p><b>XAN</b><label> $ <input type="number" value="${watcher_conf['xan'] || -1}" /></label></p>
@@ -3856,37 +3866,7 @@ height:30px;
     // 菜单中额外的按钮
     if ($zhongNode) {
         // 更新词库按钮
-        $zhongNode.querySelector('button#wh-trans-data-update').onclick = function () {
-            if (this.intervalID) return;
-            const url = isDev() ? 'http://192.168.1.7:8080/' : 'https://jjins.github.io/gengxin/';
-            const popup = window.open(url);
-            let hsCount = 0;
-            this.intervalID = window.setInterval(() => {
-                if (hsCount > 20) {
-                    clearInterval(this.intervalID);
-                    this.intervalID = null;
-                    return;
-                }
-                popup.postMessage("connect", '*');
-                hsCount++;
-            }, 500);
-            let connected = false;
-            if (!this.msgEventCreated) {
-                window.addEventListener("message", (e) => {
-                    this.msgEventCreated = true;
-                    if (e.data === 'connected') {
-                        connected = true;
-                        clearInterval(this.intervalID);
-                        this.intervalID = null;
-                        return;
-                    }
-                    if (connected) {
-                        // 传回的动态内容
-                        log(e.data);
-                    }
-                }, false);
-            }
-        }
+        $zhongNode.querySelector('button#wh-trans-data-update').onclick = () => popupMsg('计划中');
         // 节日
         $zhongNode.querySelectorAll('#wh-trans-fest-date button').forEach((el, i) => i === 0
             ? el.addEventListener('click', () => {
@@ -3941,8 +3921,6 @@ height:30px;
             // if对象加载后运行
             let cIframe = $popup.querySelector('iframe');
 
-            // log(cIframe.contentWindow.document.readyState);
-            // cIframe.contentWindow.document.onreadystatechange = () => log(cIframe.contentWindow.document.readyState);
             // 加载状态
             const if_onload_func = () => {
                 // if内部文档对象
@@ -3979,10 +3957,11 @@ height:30px;
                         })
                             .observe(elem, {childList: true, subtree: true});
                     });
+                    // 隐藏返回顶部按钮
+                    elementReady('#go-to-top-btn button', ifDocu).then(e => e.style.display = 'none');
                 }
             };
             cIframe.onload = if_onload_func;
-            // window.whif=cIframe;
 
             // 超时判断
             let time_counter = 0;
@@ -4095,6 +4074,11 @@ border-radius:4px;
 max-width: 220px;
 box-shadow: 0 0 3px 1px #8484848f;
 }
+@media screen and (max-width: 601px) {
+  #wh-trans-icon{
+    top:0;left:112px;
+  }
+}
 #wh-trans-icon a {
 text-decoration: none;
 color: #006599;
@@ -4191,390 +4175,21 @@ div#wh-popup::after {
 #wh-popup-cont td, #wh-popup-cont th{border-collapse:collapse;padding:4px;border:1px solid;}
 `);
 
-    /**
-     * 时分秒转换
-     */
-    String.prototype.replaceHMS = function replaceHMS() {
-        return this.replace('and', '')
-            .replace('days', '天')
-            .replace('days', '天')
-            .replace('hours', '小时')
-            .replace('hour', '小时')
-            .replace('minutes', '分钟')
-            .replace('minute', '分钟')
-            .replace('seconds', '秒钟')
-            .replace('second', '秒钟');
-    };
+    const href = window.location.href;
+    // 开启翻译
+    transToZhCN(href, getWhSettingObj()['transEnable']);
 
-    /**
-     * regexp test
-     */
-    String.prototype.contains = function contains(keywords) {
-        if ('string' === typeof keywords) {
-            return new RegExp(keywords).test(this);
-        }
-        if (keywords.test) {
-            return keywords.test(this);
-        }
-    }
-
-    /**
-     * 数词转换 a an some
-     */
-    String.prototype.numWordTrans = function numWordTrans() {
-        return this.replace(/\ban\b/, '1 个')
-            .replace(/\ba\b/, '1 个')
-            .replace(/\bsome\b/, '1 个')
-            .replace(/([0-9])x\b/, '$1 个');
-    };
-
-    /**
-     * 边栏
-     * 目前默认所有页面调用边栏翻译
-     */
-    if (isTransEnabled) {
-        let sidebarTimeOut = 60;
-        const sidebarInterval = setInterval(() => {
-            // 60秒后取消定时
-            if ($('div[class^="sidebar"]').length === 0) {
-                sidebarTimeOut--;
-                if (sidebarTimeOut < 0) {
-                    clearInterval(sidebarInterval);
-                }
-                return;
-            }
-            // 边栏块标题
-            $('h2[class^="header"]').each((i, e) => {
-                if (!sidebarDict[e.firstChild.nodeValue]) return;
-                e.firstChild.nodeValue = sidebarDict[e.firstChild.nodeValue];
-                // if ($(e).css('display')!=='none' && sidebarDict[e.firstChild.nodeValue]) {
-                //     let original=$(e).clone(true);
-                //     original.text(original.text().replace(e.firstChild.nodeValue,sidebarDict[e.firstChild.nodeValue]));
-                //     $(e).css('display', 'none').after(original);
-                //     $(original).append($(e).children('i'));
-                // }
-            });
-            // 边栏人物名字
-            $('span[class^="menu-name"]').each((i, e) => {
-                e.firstChild.nodeValue = '名字:';
-            });
-            // 钱 等级 pt 天赋点
-            $('p[class^="point-block"]').each((i, e) => {
-                if (sidebarDict[e.firstChild.firstChild.nodeValue])
-                    e.firstChild.firstChild.nodeValue = sidebarDict[e.firstChild.firstChild.nodeValue];
-            });
-            // 4条 状态条
-            $('p[class^="bar-name"]').each((i, e) => {
-                if (sidebarDict[e.firstChild.nodeValue])
-                    e.firstChild.nodeValue = sidebarDict[e.firstChild.nodeValue];
-            });
-            // 边栏菜单
-            $('span[class^="linkName"]').each((i, e) => {
-                if (sidebarDict[e.firstChild.nodeValue])
-                    e.firstChild.nodeValue = sidebarDict[e.firstChild.nodeValue];
-            });
-            // [use]按钮
-            if (document.querySelector('#pointsMerits'))
-                $('#pointsMerits')[0].firstChild.nodeValue = '[使用]';
-            if (document.querySelector('#pointsPoints'))
-                $('#pointsPoints')[0].firstChild.nodeValue = '[使用]';
-            if (document.querySelector('#pointsLevel'))
-                $('#pointsLevel')[0].firstChild.nodeValue = '[升级]';
-
-            // 手机 区域菜单
-            $('div[class*="areas-mobile"] span:nth-child(2)').contents().each((i, e) => {
-                //log(e);
-                if (sidebarDict[e.nodeValue])
-                    e.nodeValue = sidebarDict[e.nodeValue];
-            });
-
-            // let barDescr = $('div[class^="tooltip"]').children('p[class^="bar-descr"]');
-            // if (barDescr.length !== 0) {
-            //     barDescr[0].childNodes.forEach(i => {
-            //         if (tooltipDict[i.nodeValue]) i.nodeValue = tooltipDict[i.nodeValue];
-            //     })
-            // }
-
-            clearInterval(sidebarInterval);
-        }, 1000);
-    }
-
-    /**
-     * 迷你资料卡 全局 todo
-     */
-    const miniProfile = function miniprof() {
-        const miniprofOB = new MutationObserver(_ => {
-            miniprofOB.disconnect();
-            miniprofTrans();
-            miniprofOB.observe($('div.profile-mini-root').get(0), {attributes: true, childList: true, subtree: true});
-        });
-        const miniprofTrans = function miniprofTrans() {
-            // 迷你资料卡状态
-            playerStatusTrans($('div.profile-mini-root div.description span'));
-            // 转钱
-            sendCashTrans('div.profile-mini-root');
-        };
-        if ($('div.profile-mini-root').length > 0)
-            miniprofTrans();
-        else {
-            const intervalInit = setInterval(() => {
-                const miniProfileFirst = $('div.profile-mini-root').get(0);
-                if (miniProfileFirst) {
-                    clearInterval(intervalInit);
-                    miniprofTrans();
-                    miniprofOB.observe(miniProfileFirst, {attributes: true, childList: true, subtree: true});
-                }
-            }, 1000);
-        }
-        // let tooltip = $('div.ToolTipPortal')[0];
-        // let intervalID = setInterval(() => {
-        //     tooltip = $('div.ToolTipPortal')[0];
-        //     if (tooltip) {
-        //         clearInterval(intervalID);
-        //         new MutationObserver(mutations => {
-        //             let barDescr = $('div[class^="tooltip"]').children('p[class^="bar-descr"]');
-        //             if (barDescr.length !== 0) {
-        //                 barDescr[0].childNodes.forEach(i => {
-        //                     if (tooltipDict[i.nodeValue]) i.nodeValue = tooltipDict[i.nodeValue];
-        //                 })
-        //             }
-        //             let miniprof_tooltip = $("#body > div.ToolTipPortal > div > div:nth-child(2)");
-        //             if (miniprof_tooltip.length !== 0) {
-        //                 if (tooltipDict[miniprof_tooltip[0].firstChild.nodeValue]) {
-        //                     miniprof_tooltip[0].firstChild.nodeValue = tooltipDict[miniprof_tooltip[0].firstChild.nodeValue];
-        //                 }
-        //             } else {
-        //                 //todo 通配符匹配
-        //             }
-        //         }).observe(tooltip, {attributes: true, childList: true, subtree: true});
-        //     }
-        // }, 1000);
-    };
-    if (isTransEnabled) miniProfile();
-
-    /**
-     * header
-     */
-    if (isTransEnabled && document.querySelector('div#header-root')) {
-        const headerOB = new MutationObserver(_ => {
-            headerOB.disconnect();
-            headerTrans();
-            headerOB.observe($('div#header-root')[0], {childList: true, subtree: true, attributes: true});
-        });
-
-        const headerTrans = function headerTrans() {
-            // 搜索内容下拉框中的文字 已选中
-            if (headerDict[$('div.find button.toggler.down').text()])
-                $('div.find button.toggler.down').text(headerDict[$('div.find button.toggler.down').text()]);
-            // pc端 搜索下拉框点击后的搜索类型文字
-            $('div.find li.item').each((i, e) => {
-                if (headerDict[$(e).text()])
-                    $(e).text(headerDict[$(e).text()]);
-            });
-            // 手机端 搜索下拉框点击后的搜索类型文字
-            $('li[class^="search-type-"] label').each((i, e) => {
-                if (headerDict[$(e).text()])
-                    $(e).text(headerDict[$(e).text()]);
-            });
-            // 搜索框placeholder
-            if (headerDict[$('input[class^="searchInput"]').attr('placeholder')])
-                $('input[class^="searchInput"]').attr('placeholder',
-                    headerDict[$('input[class^="searchInput"]').attr('placeholder')]);
-            // 高级搜索框 search by
-            if (headerDict[document.querySelector('div#header-root legend.title').innerText])
-                $('div#header-root legend.title').text(headerDict[$('div#header-root legend.title').text()]);
-            // 高级搜索框的条件 左 键
-            $('ul.advancedSearchFormBody label.label').each((i, e) => {
-                if (headerDict[$(e).text()])
-                    $(e).text(headerDict[$(e).text()]);
-            });
-            // 高级搜索框的已选中
-            $('ul.advancedSearchFormBody div.select-wrapper button.toggler.down').each((i, e) => {
-                // log($(e).text())
-                if (headerDict[$(e).text().trim()])
-                    $(e).text(headerDict[$(e).text().trim()]);
-                else if (propertyDict[$(e).text().trim()])
-                    $(e).text(propertyDict[$(e).text().trim()]);
-            });
-            // 高级搜索的下拉选项
-            $('ul.advancedSearchFormBody li.item').each((i, e) => {
-                if (headerDict[$(e).text()])
-                    $(e).text(headerDict[$(e).text()]);
-                else if (propertyDict[$(e).text()])
-                    $(e).text(propertyDict[$(e).text()]);
-            });
-            // 高级搜索的"Not"
-            $('ul.advancedSearchFormBody label.search-condition-not').each((i, e) => {
-                if (headerDict[$(e).text()])
-                    $(e).text(headerDict[$(e).text()]);
-            });
-            // 高级搜索的"to"
-            $('ul.advancedSearchFormBody label[for*="To"]').each((i, e) => {
-                if (headerDict[$(e).text()])
-                    $(e).text(headerDict[$(e).text()]);
-            });
-            // 高级搜索的reset search按钮
-            $('form.form-search-extend div.bottom button').each((i, e) => {
-                if (headerDict[$(e).text()])
-                    $(e).text(headerDict[$(e).text()]);
-            });
-            // log按钮“view log”
-            const $view_log = $('div.recentHistory a[class^="link"] span[class^="text"]')
-            if (headerDict[$view_log.text().trim()])
-                $view_log
-                    .text(headerDict[$view_log.text().trim()]);
-            // 点击头像打开的菜单
-            $('ul.settings-menu span').each((i, e) => {
-                if (headerDict[$(e).text()] && e.childNodes.length === 1)
-                    $(e).text(headerDict[$(e).text()]);
-                else if (e.childNodes.length === 3)
-                    if (headerDict[e.firstChild.nodeValue])
-                        e.firstChild.nodeValue = headerDict[e.firstChild.nodeValue];
-            });
-        };
-        headerTrans();
-        headerOB.observe($('div#header-root')[0], {childList: true, subtree: true, attributes: true});
-    }
-
-    /**
-     * chatbox
-     */
-    if (isTransEnabled && document.querySelector('div#chatRoot')) {
-        const chatOB = new MutationObserver(_ => {
-            chatOB.disconnect();
-            chatTrans();
-            chatOB.observe($('div#chatRoot').get(0), {childList: true, subtree: true, attributes: true});
-        });
-        const chatTrans = function chatTrans() {
-            // 聊天框的标题
-            $('div#chatRoot div[class^="chat-box-title"] span[class^="name"]').each((i, e) => {
-                if (chatDict[$(e).text().trim()])
-                    $(e).text(chatDict[$(e).text().trim()]);
-            });
-            // 聊天设置的左边label
-            $('div[class^="chat-settings-opts"] div[class*="label"]').each((i, e) => {
-                if ($(e).next().children('div.rc-slider').length > 0) {
-                    // 高度和宽度有响应式的%
-                    if (chatDict[$(e).text().split(' ')[0]]) {
-                        $(e).text($(e).text().replace($(e).text().split(' ')[0], chatDict[$(e).text().split(' ')[0]]));
-                    }
-                    return;
-                }
-                if (chatDict[$(e).text().trim()])
-                    $(e).text(chatDict[$(e).text().trim()]);
-            });
-            // 选项下拉栏
-            $('div[class^="dropdown-root"]').find('*').contents().each((i, e) => {
-                if (e.nodeType !== 3) return;
-                if (chatDict[e.nodeValue])
-                    e.nodeValue = chatDict[e.nodeValue];
-            });
-            // 设置的两个选项
-            $('label[class^="privacy-label"]').each((i, e) => {
-                if (chatDict[$(e).text().trim()])
-                    $(e).text(chatDict[$(e).text().trim()]);
-            });
-            // people中的5个分类 faction friend...
-            $('ul[class^="type-list"] li a').each((i, e) => {
-                if (chatDict[$(e).text().trim()])
-                    $(e).text(chatDict[$(e).text().trim()]);
-            });
-            // people中的列表添加框placeholder
-            $('div.ac-wrapper input.ac-search').each((i, e) => {
-                if (chatDict[$(e).attr('placeholder')])
-                    $(e).attr('placeholder', chatDict[$(e).attr('placeholder')]);
-            });
-            //
-            if (eventsDict[$('div#chatRoot div[class^="overview"] > div > div:nth-child(2)').text().trim()]) {
-                $('div#chatRoot div[class^="overview"] > div > div:nth-child(2)')
-                    .text(
-                        eventsDict[document.querySelector('div#chatRoot div[class^="overview"] > div > div:nth-child(2)').innerText.trim()]
-                    );
-            }
-        };
-        chatTrans();
-        chatOB.observe($('div#chatRoot').get(0), {childList: true, subtree: true, attributes: true});
-    }
-
-    /**
-     * 搜索玩家的4个分类按钮
-     */
-    const playerSearchBoxTrans = function playerSearchBoxTrans() {
-        const opt = {
-            childList: true,
-            subtree: true,
-        };
-        const psbtOB = new MutationObserver(mutation => {
-            const $people_cat = $('ul.ac-options li a');
-            psbtOB.disconnect();
-            mutation.forEach((e) => {
-                if (e.target.className === 'ac-wrapper') {
-                    $people_cat.each((i, e) => {
-                        if (chatDict[$(e).text().trim()])
-                            $(e).text(chatDict[$(e).text().trim()]);
-                    });
-                }
-            })
-            psbtOB.observe(document.body, opt);
-        });
-        psbtOB.observe(document.body, opt);
-    }
-    if (isTransEnabled) playerSearchBoxTrans();
-
-    /**
-     * 飞行页面
-     */
-    if (window.location.href.includes('index.php') &&
-        !!document.querySelector('div.travelling h4')) {
-        // 翻译
-        if (isTransEnabled) {
-            const travelOB = new MutationObserver(travelOBInit);
-
-            function travelOBInit() {
-                travelOB.disconnect();
-                travelTrans();
-                travelOB.observe($('div.content-wrapper')[0], {childList: true, subtree: true});
-            }
-
-            function travelTrans() {
-                titleTrans();
-                contentTitleLinksTrans();
-
-                // 气泡
-                if (tipsDict[document.querySelector('div.inner-popup').innerText.trim()])
-                    $('div.inner-popup').text(tipsDict[$('div.inner-popup').text().trim()]);
-                // Remaining Flight Time -
-                $('div.destination-title span').contents().each((i, e) => {
-                    if (e.childNodes.length !== 0) return;
-                    if (!e.nodeValue) return;
-                    if (travelingDict[e.nodeValue.trim()])
-                        e.nodeValue = travelingDict[e.nodeValue.trim()];
-                });
-                // torntools扩展插件落地时间
-                if (document.querySelector('div.tt-landing-time span.description').innerText.split(' ')[0] === 'Landing') {
-                    const landingTime = $('div.tt-landing-time span.description').text().slice(11, 19);
-                    $('div.tt-landing-time span.description').text('于 ' + landingTime + ' 降落');
-                }
-            }
-
-            travelTrans();
-            travelOB.observe(document.querySelector('div.content-wrapper'), {childList: true, subtree: true});
-        }
-        // 飞行闹钟
-        if (device === Device.PC && getWhSettingObj().trvAlarm) elementReady('#countrTravel.hasCountdown').then(node => {
+    // 飞行闹钟
+    if (href.includes('index.php') && !!document.querySelector('div.travelling h4') &&
+        device === Device.PC && getWhSettingObj()['trvAlarm']) {
+        elementReady('#countrTravel.hasCountdown').then(node => {
             const logo_node = document.querySelector('#tcLogo[title]');
-            // const DEST_STR = {
-            //     'Mexico': '墨西哥', 'Canada': '加拿大', 'Cayman Islands': '开曼',
-            //     'Hawaii': '夏威夷', 'United Kingdom': '英国', 'Argentina': '阿根廷', 'Switzerland': '瑞士',
-            //     'Japan': '日本', 'China': '中国', 'United Arab Emirates': 'UAE', 'South Africa': '南非',
-            // };
             let dest_cn = '';
             if (logo_node) dest_cn = {
                 'Mexico': '墨西哥', 'Canada': '加拿大', 'Cayman Islands': '开曼',
                 'Hawaii': '夏威夷', 'United Kingdom': '英国', 'Argentina': '阿根廷', 'Switzerland': '瑞士',
                 'Japan': '日本', 'China': '中国', 'United Arab Emirates': 'UAE', 'South Africa': '南非',
             }[logo_node.attributes.title.nodeValue] || '回城';
-            // if (logo_node) dest_cn = DEST_STR[logo_node.attributes.title.nodeValue]||'回城';
             const remaining_arr = node.innerText.trim().split(':');
 
             const wh_trv_alarm = localStorage.getItem('wh_trv_alarm')
@@ -4789,108 +4404,15 @@ display:none;
                 flying_index = (flying_index + 1) % flying_arr.length;
             }, 1000);
         });
-        return;
     }
 
-    /**
-     * 主页 todo
-     */
-    if (isTransEnabled &&
-        window.location.href.contains(/index\.php/) &&
-        document.querySelector('h4#skip-to-content').innerText.contains(/Home/)) {
-        titleTrans();
-        contentTitleLinksTrans();
-
-        //let homeEvents = null;
-
-        // 主页黑框标题文字翻译
-        $('h5.box-title').each((i, e) => {
-            if (!homeDict[e.firstChild.nodeValue]) return;
-            // 翻译最近5条通知
-            if (e.firstChild.nodeValue === 'Latest Events') {
-                //homeEvents = $(e).parent().next().find('span');
-                eventsTrans($(e).parent().next().find('span'));
-            }
-            // 翻译最近5个攻击
-            else if (e.firstChild.nodeValue === 'Latest Attacks') {
-                $(e).parent().next().find('span').each(function () {
-                    let nodes = $(this)[0].childNodes;
-                    nodes.forEach((v, i) => {
-                        if (v.nodeValue !== null) {
-                            let waitToTsf = v.nodeValue.toString().indexOf(" ");
-                            let words = v.nodeValue.replace("\n", "").toString().split(" ");
-                            words.forEach((word, j) => {
-                                if (attackDict.hasOwnProperty(word)) {
-                                    if (word === "Someone") {
-                                        $(this)[0].childNodes[i].nodeValue = $(this)[0].childNodes[i].nodeValue.replace(" ", "");
-                                    }
-                                    let change = $(this)[0].childNodes[i].nodeValue.replace(word, attackDict[word]);
-                                    $(this)[0].childNodes[i].nodeValue = change;
-
-                                }
-                            })
-                        }
-                    }, this);
-                });
-            }
-            //e.firstChild.nodeValue = homeDict[e.firstChild.nodeValue];
-            // 隐藏原dom元素避免与torntools发生冲突
-            if ($(e).css('display') !== 'none')
-                $(e).css('display', 'none').after(`<h5 class="box-title">` + homeDict[e.firstChild.nodeValue] + `</h5>`);
-        });
-
-        // 各表格左边的键
-        $('span.divider span').each((i, e) => {
-            if (homeDict[$(e).text()])
-                $(e).text(homeDict[$(e).text()]);
-        });
-
-        return;
-    }
-
-    /**
-     * 起飞页面
-     */
-    if (window.location.href.contains(/travelagency\.php/)) {
+    // 起飞提醒
+    if (href.contains(/travelagency\.php/) && getWhSettingObj()['energyAlert']) {
         const $$ = $('.content-wrapper');
-        if (getWhSettingObj().energyAlert) {
-            const OB = new MutationObserver(() => {
-                OB.disconnect();
-                titleTrans();
-                contentTitleLinksTrans();
-                trans();
-                OB.observe($$.get(0), {
-                    characterData: true,
-                    attributes: true,
-                    subtree: true,
-                    childList: true
-                });
-            });
-            const trans = () => {
-                // 当前能量e
-                const energyBarStr = $('#barEnergy p[class^="bar-value__"]').text().trim();
-                const [curE, maxE] = energyBarStr.split('/').length === 2
-                    ? [parseInt(energyBarStr.split('/')[0]), parseInt(energyBarStr.split('/')[1])]
-                    : [NaN, NaN];
-                const incTime = maxE === 150 ? 10 : 15;
-                const fullEnergyTime = !(isNaN(curE) || isNaN(maxE)) ? (maxE - 5 - curE) / 5 * incTime
-                    + (incTime - new Date().getMinutes() % incTime) : NaN;
-                // 起飞前提示
-                $('.travel-confirm .travel-question .q-wrap span:nth-of-type(2)').each((i, e) => {
-                    if (isNaN(fullEnergyTime)) return;
-                    const spl = e.innerText.trim().split(' ');
-                    const [hours, minutes] = spl.length === 5
-                        ? [parseInt(spl[0]), parseInt(spl[3])]
-                        : [0, parseInt(spl[0])];
-                    if (fullEnergyTime < (hours * 60 + minutes) * 2) {
-                        if (!$(e).parent().hasClass('wh-translated')) {
-                            $(e).parent()
-                                .prepend(`<div style="color: red">警告：该次飞行往返时间大于体力回复时间，将会爆体！</div>`)
-                                .addClass('wh-translated');
-                        }
-                    }
-                });
-            };
+        const OB = new MutationObserver(() => {
+            OB.disconnect();
+            titleTrans();
+            contentTitleLinksTrans();
             trans();
             OB.observe($$.get(0), {
                 characterData: true,
@@ -4898,15 +4420,47 @@ display:none;
                 subtree: true,
                 childList: true
             });
-        }
-        return;
+        });
+        const trans = () => {
+            // 当前能量e
+            const energyBarStr = $('#barEnergy p[class^="bar-value__"]').text().trim();
+            const [curE, maxE] = energyBarStr.split('/').length === 2
+                ? [parseInt(energyBarStr.split('/')[0]), parseInt(energyBarStr.split('/')[1])]
+                : [NaN, NaN];
+            const incTime = maxE === 150 ? 10 : 15;
+            const fullEnergyTime = !(isNaN(curE) || isNaN(maxE)) ? (maxE - 5 - curE) / 5 * incTime
+                + (incTime - new Date().getMinutes() % incTime) : NaN;
+            // 起飞前提示
+            $('.travel-confirm .travel-question .q-wrap span:nth-of-type(2)').each((i, e) => {
+                if (isNaN(fullEnergyTime)) return;
+                const spl = e.innerText.trim().split(' ');
+                const [hours, minutes] = spl.length === 5
+                    ? [parseInt(spl[0]), parseInt(spl[3])]
+                    : [0, parseInt(spl[0])];
+                if (fullEnergyTime < (hours * 60 + minutes) * 2) {
+                    if (!$(e).parent().hasClass('wh-translated')) {
+                        $(e).parent()
+                            .prepend(`<div style="color: red">警告：该次飞行往返时间大于体力回复时间，将会爆体！</div>`)
+                            .addClass('wh-translated');
+                    }
+                }
+            });
+        };
+        trans();
+        OB.observe($$.get(0), {
+            characterData: true,
+            attributes: true,
+            subtree: true,
+            childList: true
+        });
     }
 
     // 攻击页面
-    if (window.location.href.contains(/loader\.php\?sid=attack/)) {
+    if (href.contains(/loader\.php\?sid=attack/)) {
         let stop_reload = false;
+        const {quickAttIndex, quickFinishAtt, attReload} = getWhSettingObj();
         // 光速拔刀
-        if (getWhSettingObj().quickAttIndex !== 6) {
+        if (quickAttIndex !== 6) {
             // const selectedId = ['weapon_main', 'weapon_second', 'weapon_melee', 'weapon_temp', 'weapon_fists', 'weapon_boots']
             //     [getWhSettingObj().quickAttIndex];
             elementReady('div[class^="modal___"] button').then(btn => {
@@ -5081,7 +4635,7 @@ display:none;
             }
         }
         // 光速跑路
-        if (getWhSettingObj().quickFinishAtt !== 3) {
+        if (quickFinishAtt !== 3) {
             const user_btn_select = ['leave', 'mug', 'hosp'][getWhSettingObj().quickFinishAtt];
             const wrap = document.querySelector('#react-root');
             log('光速跑路选项选中：', user_btn_select);
@@ -5103,7 +4657,7 @@ display:none;
         }
         // 自刷新
         let audio_played_flag;
-        if (getWhSettingObj().attReload !== 6 && stop_reload !== true) {
+        if (attReload !== 6 && stop_reload !== true) {
             const selector_device_map = {
                 'pc': '#defender div[class^="modal___"]',
                 'mobile': '#attacker div[class^="modal___"]',
@@ -5143,99 +4697,17 @@ display:none;
     }
 
     // 错误的攻击页面
-    if (getWhSettingObj()['attRelocate'] && window.location.href.includes('loader2.php')) {
+    if (getWhSettingObj()['attRelocate'] && href.includes('loader2.php')) {
         const spl = window.location.href.trim().split('=');
         const uid = spl[spl.length - 1];
-        if (!/^[0-9]+$/.test(uid)) return;
+        if (!/^\d+$/.test(uid)) return;
         window.location.href = `https://www.torn.com/loader.php?sid=attack&user2ID=${uid}`;
         return;
     }
 
-    /**
-     * city
-     */
-    if (window.location.href.includes('city.php')) {
-        if (isTransEnabled) {
-            const cityOB = new MutationObserver(cityOBInit);
-
-            function cityOBInit() {
-                cityOB.disconnect();
-                cityTrans();
-                cityOB.observe($('div.content-wrapper')[0], {childList: true, subtree: true});
-            }
-
-            function cityTrans() {
-                titleTrans();
-                contentTitleLinksTrans();
-
-                // Map or Quick Links
-                $('a.ui-tabs-anchor span').each((i, e) => {
-                    if (cityDict[$(e).text()])
-                        $(e).text(cityDict[$(e).text()]);
-                });
-
-                // 标志建筑 标题
-                if (cityDict[$('div.title-black').text()])
-                    $('div.title-black').text(cityDict[$('div.title-black').text()]);
-
-                // 标志建筑 6个分类
-                $('ul.map-symbols span').each((i, e) => {
-                    if (cityDict[$(e).text()])
-                        $(e).text(cityDict[$(e).text()]);
-                });
-
-                // 地图显示模式
-                // 不完全显示 文字
-                $('span.inactive-mode').html(cityDict['inactive-mode1'] + `<br>` + cityDict['inactive-mode2']);
-                // 完全显示 文字
-                $('span.active-mode').text(cityDict['active-mode']);
-                // 开关
-                $('div.on-label').text('已开启');
-                $('div.off-label').text('已关闭');
-
-                // 快速链接中的分类标题
-                $('li.title').each((i, e) => {
-                    if (cityDict[$(e).text()])
-                        $(e).text(cityDict[$(e).text()]);
-                });
-
-                // 快速链接中的区域
-                $('li a[class^="font-num-"] span').each((i, e) => {
-                    // log($(e).prev().attr('class')==='cql-gym')
-                    if (cityDict[$(e).text()]) {
-                        $(e).text(cityDict[$(e).text()]);
-                    } else if ($(e).prev().attr('class') === 'cql-your-property') {
-                        if (propertyDict[$(e).text().trim().slice(5)]) {
-                            $(e).text('你的' + propertyDict[$(e).text().trim().slice(5)]);
-                        }
-                    } else if ($(e).prev().attr('class') === 'cql-gym') {
-                        if (gymList[$(e).text().trim()]) {
-                            $(e).text(gymList[$(e).text()]);
-                        } else if (gymList[$(e).text().trim().split(' ').slice(0, 2).join(' ')]) {
-                            $(e).text(gymList[$(e).text().trim().split(' ').slice(0, 2).join(' ')]);
-                        }
-                    }
-                });
-
-                // 快速链接中的分类选择
-                $('div.sort-by label.marker-css').each((i, e) => {
-                    if (cityDict[$(e).text()])
-                        $(e).text(cityDict[$(e).text()]);
-                });
-
-                // 快速链接中的sort by
-                $('span#wai-sort-by').each((i, e) => {
-                    if (cityDict[$(e).text()])
-                        $(e).text(cityDict[$(e).text()]);
-                });
-            }
-
-            cityTrans();
-            cityOB.observe(document.querySelector('div.content-wrapper'), {childList: true, subtree: true});
-        }
-        // 捡垃圾
-        if (getWhSettingObj().cityFinder) {
-            addStyle(`
+    // 捡垃圾助手
+    if (getWhSettingObj()['cityFinder'] && href.includes('city.php')) {
+        addStyle(`
 .wh-city-finds .leaflet-marker-pane img[src*="torn.com/images/items/"]{
 display: block !important;
 box-sizing: border-box;
@@ -5281,214 +4753,97 @@ color:white;
 display:inline-block;
 }
 `);
-            // 物品名与价格
-            let items = null;
-            const base = document.createElement('div');
-            base.id = 'wh-city-finder';
-            const container = document.createElement('div');
-            container.id = 'wh-city-finder-cont';
-            const header = document.createElement('div');
-            header.id = 'wh-city-finder-header';
-            header.innerHTML = '捡垃圾助手';
-            const info = document.createElement('div');
-            info.innerHTML = '已找到物品：';
-            container.append(info);
-            base.append(header);
-            base.append(container);
-            COFetch('https://jjins.github.io/item_price_raw.json')
-                .catch(err => {
-                    log(err)
-                    items = undefined
-                })
-                .then(r => items = JSON.parse(r));
-            elementReady('div.leaflet-marker-pane').then(elem => {
-                document.querySelector('#map').classList.add('wh-city-finds');
-                document.querySelector('.content-wrapper').prepend(base);
-                // 发现的物品id与map img node
-                const founds = [];
-                elem.querySelectorAll('img.map-user-item-icon').forEach(node => {
-                    const item_id = node.src.split('/')[5];
-                    const finder_item = document.createElement('span');
-                    finder_item.id = 'wh-city-finder-item' + item_id;
-                    finder_item.innerHTML = item_id;
-                    founds.push({'id': item_id, 'node': finder_item, 'map_item': node});
-                    container.append(finder_item);
-                });
-                // 未发现物品 返回
-                if (founds.length === 0) {
-                    // header.innerHTML = '捡垃圾助手';
-                    info.innerHTML = '空空如也，请大佬明天再来';
-                    return;
-                }
-                // 将id显示为物品名与价格的函数
-                const displayNamePrice = () => {
-                    // 总价
-                    let total = 0;
-                    founds.forEach(el => {
-                        const value = items[el.id]['price'];
-                        el.node.innerHTML = `<img src="${el.map_item.src}" alt="" />${items[el.id]['name']} ($${toThousands(value)})`;
-                        // 灰色 100k以下
-                        if (value < 100000) el.node.style.backgroundColor = '#9e9e9e';
-                        // 绿色 1m以下
-                        else if (value < 1000000) el.node.style.backgroundColor = '#4caf50';
-                        // 蓝色 25m以下
-                        else if (value < 25000000) el.node.style.backgroundColor = '#03a9f4';
-                        // 橙色 500m以下
-                        else if (value < 500000000) el.node.style.backgroundColor = '#ffc107';
-                        // 红色 >500m
-                        else if (value >= 500000000) el.node.style.backgroundColor = '#f44336';
-                        total += items[el.id]['price'];
-                    });
-                    header.innerHTML = `捡垃圾助手 - ${founds.length} 个物品，总价值 $${toThousands(total)}`;
-                };
-                // 未取到数据时添加循环来调用函数
-                if (items === null) {
-                    // 15s超时
-                    let timeout = 30;
-                    const interval = window.setInterval(() => {
-                        timeout--;
-                        if (items !== null) {
-                            displayNamePrice();
-                            clearInterval(interval);
-                        }
-                        if (0 === timeout) {
-                            log('获取物品名称与价格信息超时')
-                            clearInterval(interval)
-                        }
-                    }, 500);
-                }
-                // 无法跨域获取数据时
-                else if (items === undefined) {
-                    info.innerHTML += '(当前平台暂不支持查询价格)';
-                }
-                // 调用函数
-                else {
-                    displayNamePrice();
-                }
+        // 物品名与价格
+        let items = null;
+        const base = document.createElement('div');
+        base.id = 'wh-city-finder';
+        const container = document.createElement('div');
+        container.id = 'wh-city-finder-cont';
+        const header = document.createElement('div');
+        header.id = 'wh-city-finder-header';
+        header.innerHTML = '捡垃圾助手';
+        const info = document.createElement('div');
+        info.innerHTML = '已找到物品：';
+        container.append(info);
+        base.append(header);
+        base.append(container);
+        COFetch('https://jjins.github.io/item_price_raw.json')
+            .catch(err => {
+                log(err)
+                items = undefined
             })
-        }
-        return;
+            .then(r => items = JSON.parse(r));
+        elementReady('div.leaflet-marker-pane').then(elem => {
+            document.querySelector('#map').classList.add('wh-city-finds');
+            document.querySelector('.content-wrapper').prepend(base);
+            // 发现的物品id与map img node
+            const founds = [];
+            elem.querySelectorAll('img.map-user-item-icon').forEach(node => {
+                const item_id = node.src.split('/')[5];
+                const finder_item = document.createElement('span');
+                finder_item.id = 'wh-city-finder-item' + item_id;
+                finder_item.innerHTML = item_id;
+                founds.push({'id': item_id, 'node': finder_item, 'map_item': node});
+                container.append(finder_item);
+            });
+            // 未发现物品 返回
+            if (founds.length === 0) {
+                // header.innerHTML = '捡垃圾助手';
+                info.innerHTML = '空空如也，请大佬明天再来';
+                return;
+            }
+            // 将id显示为物品名与价格的函数
+            const displayNamePrice = () => {
+                // 总价
+                let total = 0;
+                founds.forEach(el => {
+                    const value = items[el.id]['price'];
+                    el.node.innerHTML = `<img src="${el.map_item.src}" alt="" />${items[el.id]['name']} ($${toThousands(value)})`;
+                    // 灰色 100k以下
+                    if (value < 100000) el.node.style.backgroundColor = '#9e9e9e';
+                    // 绿色 1m以下
+                    else if (value < 1000000) el.node.style.backgroundColor = '#4caf50';
+                    // 蓝色 25m以下
+                    else if (value < 25000000) el.node.style.backgroundColor = '#03a9f4';
+                    // 橙色 500m以下
+                    else if (value < 500000000) el.node.style.backgroundColor = '#ffc107';
+                    // 红色 >500m
+                    else if (value >= 500000000) el.node.style.backgroundColor = '#f44336';
+                    total += items[el.id]['price'];
+                });
+                header.innerHTML = `捡垃圾助手 - ${founds.length} 个物品，总价值 $${toThousands(total)}`;
+            };
+            // 未取到数据时添加循环来调用函数
+            if (items === null) {
+                // 15s超时
+                let timeout = 30;
+                const interval = window.setInterval(() => {
+                    timeout--;
+                    if (items !== null) {
+                        displayNamePrice();
+                        clearInterval(interval);
+                    }
+                    if (0 === timeout) {
+                        log('获取物品名称与价格信息超时')
+                        clearInterval(interval)
+                    }
+                }, 500);
+            }
+            // 无法跨域获取数据时
+            else if (items === undefined) {
+                info.innerHTML += '(当前平台暂不支持查询价格)';
+            }
+            // 调用函数
+            else {
+                displayNamePrice();
+            }
+        })
     }
 
-    /**
-     * gym健身房页面
-     */
-    if (window.location.href.includes('gym.php')) {
-        if (isTransEnabled) {
-            const gymOB = new MutationObserver(gymOBInit);
-
-            function gymOBInit() {
-                gymOB.disconnect();
-                gymTrans();
-                gymOB.observe($('div.content-wrapper')[0], {childList: true, subtree: true, attributes: true});
-            }
-
-            function gymTrans() {
-                titleTrans();
-                contentTitleLinksTrans();
-                const gymName = $('div[class^="notificationText"] b').text();
-
-                // 顶部提示信息
-                $('div[class^="notificationText"] p').contents().each((i, e) => {
-                    if (e.nodeName === 'B' && gymList[$(e).text().trim()]) {
-                        $(e).text(gymList[$(e).text().trim()]);
-                        return;
-                    }
-                    if (e.childNodes.length === 0 && gymDict[e.nodeValue.trim()])
-                        e.nodeValue = gymDict[e.nodeValue.trim()];
-                });
-                // 4属性标题
-                $('h3[class^="title"]').each((i, e) => {
-                    if (gymDict[$(e).text().trim()])
-                        $(e).text(gymDict[$(e).text().trim()]);
-                });
-                // 4属性的介绍 与冰蛙冲突
-                $('div[class^="description"] p:nth-child(1)').each((i, e) => {
-                    if (gymDict[$(e).text().trim()])
-                        $(e).text(gymDict[$(e).text().trim()]);
-                });
-                // 每次锻炼的花销
-                $('div[class^="description"] p:nth-child(2)').each((i, e) => {
-                    if (e.childNodes.length === 1) {
-                        if (gymDict[$(e).text().trim()])
-                            $(e).text(gymDict[$(e).text().trim()]);
-                    } else if (e.childNodes.length === 2) {
-                        if (gymDict[e.lastChild.nodeValue.trim()]) {
-                            e.lastChild.nodeValue = gymDict[e.lastChild.nodeValue.trim()];
-                        }
-                    }
-                });
-                // 锻炼页面所有按钮
-                $('button[class^="button"]').each((i, e) => {
-                    if (gymDict[$(e).text().trim()])
-                        $(e).text(gymDict[$(e).text().trim()]);
-                });
-                // cancel按钮
-                $('button[class^="cancel"]').each((i, e) => {
-                    if (gymDict[$(e).text().trim()])
-                        $(e).text(gymDict[$(e).text().trim()]);
-                });
-                // 锻炼的提示信息
-                $('div[class^="messageWrapper"] p').each((i, e) => {
-                    /**
-                     * todo
-                     * <p>You dug deep and completed 15 minutes of incline sprints</p>
-                     * <p role="alert" class="gained___3T_GZ">You gained 1,854.05 speed</p>
-                     */
-                    if (gymDict[$(e).text()])
-                        $(e).text(gymDict[$(e).text()]);
-                });
-                // 健身房信息 标题
-                $('div[class^="gymTitle"] h3').each((i, e) => {
-                    if (gymDict[$(e).text()])
-                        $(e).text(gymDict[$(e).text()]);
-                    else if (gymList[$(e).text().trim()])
-                        $(e).text(gymList[$(e).text().trim()]);
-                });
-                // 健身房信息 属性名
-                $('ul[class^="gymInfo"] b').each((i, e) => {
-                    if (gymDict[$(e).text().trim()])
-                        $(e).text(gymDict[$(e).text().trim()]);
-                });
-
-                // 健身房状态信息
-                // $('div[class^="gymStats"] b').each((i, e) => {
-                //     log(e)
-                //     if (gymDict[$(e).text().trim()])
-                //         $(e).text(gymDict[$(e).text().trim()]);
-                // });
-                //
-                // // 健身房状态值
-                // $('div[class^="gymStats"] span[class^=value]').each((i, e) => {
-                //     if ($(e).text().indexOf("per train") > 0)
-                //         $(e).text($(e).text().split(" ")[0] + gymDict["per train"]);
-                //     else if (gymDict[$(e).text().trim()])
-                //         $(e).text(gymDict[$(e).text().trim()]);
-                // });
-
-                // 健身房信息 属性值
-                $('ul[class^="gymInfo"] span[class^="value"]').each((i, e) => {
-                    if (gymDict[$(e).text().trim()])
-                        $(e).text(gymDict[$(e).text().trim()]);
-                });
-                // 健身房信息 具体锻炼项目
-                $('span[class^="exerciseName"]').each((i, e) => {
-                    if (gymDict[$(e).text().trim()])
-                        $(e).text(gymDict[$(e).text().trim()]);
-                });
-                // 购买提示信息
-                $('div[class^="confirmMessage"] p[role="alert"]').each((i, e) => {
-                    if (gymDict[$(e).text().trim()])
-                        $(e).text(gymDict[$(e).text().trim()]);
-                });
-            }
-
-            gymTrans();
-            gymOB.observe($('div.content-wrapper')[0], {childList: true, subtree: true, attributes: true});
-        }
-        if (getWhSettingObj().SEProtect) {
-            elementReady('#gymroot').then(node => {
-                addStyle(`.wh-display-none{
+    // 叠e助手
+    if (href.includes('gym.php') && getWhSettingObj()['SEProtect']) {
+        elementReady('#gymroot').then(node => {
+            addStyle(`.wh-display-none{
 display:none !important;
 }
 #wh-gym-info-cont{
@@ -5502,27 +4857,23 @@ display:none !important;
     background-size: 4px;
 }
 #wh-gym-info-cont button{color:white;cursor:pointer;}`);
-                node.classList.add('wh-display-none');
-                const info = document.createElement('div');
-                info.id = 'wh-gym-info-cont';
-                info.innerHTML = `<p>【叠E保护】已为您关闭健身房。<button>点击关闭【叠E保护】</button></p>`;
-                node.after(info);
-                info.querySelector('button').addEventListener('click', (e) => {
-                    e.target.disabled = true;
-                    info.remove();
-                    node.classList.remove('wh-display-none');
-                    setWhSetting('SEProtect', false);
-                    if ($zhongNode) $zhongNode.querySelector('#wh-SEProtect-check').checked = false;
-                });
+            node.classList.add('wh-display-none');
+            const info = document.createElement('div');
+            info.id = 'wh-gym-info-cont';
+            info.innerHTML = `<p>【叠E保护】已为您关闭健身房。<button>点击关闭【叠E保护】</button></p>`;
+            node.after(info);
+            info.querySelector('button').addEventListener('click', (e) => {
+                e.target.disabled = true;
+                info.remove();
+                node.classList.remove('wh-display-none');
+                setWhSetting('SEProtect', false);
+                if ($zhongNode) $zhongNode.querySelector('#wh-SEProtect-check').checked = false;
             });
-        }
-        return;
+        });
     }
 
-    /**
-     * crime
-     */
-    if (window.location.href.contains(/crimes\.php/)) {
+    // 快速crime
+    if (href.contains(/crimes\.php/) && getWhSettingObj()['quickCrime']) {
         if (isIframe) {
             const isValidate = document.querySelector('h4#skip-to-content').innerText.toLowerCase().includes('validate');
             elementReady('#header-root').then(e => e.style.display = 'none');
@@ -5534,6 +4885,7 @@ display:none !important;
                 e.style.position = 'absolute';
                 e.style.top = '-35px';
             });
+            elementReady('#go-to-top-btn button').then(e => e.style.display = 'none');
         }
         const $$ = document.querySelector('.content-wrapper');
         const OB = new MutationObserver(() => {
@@ -5569,7 +4921,7 @@ display:none !important;
             const is_captcha = $$.querySelector('div#tab-menu.captcha') !== null;
             const $title = $('div.content-title');
             const $info = $('.info-msg-cont');
-            if (!is_wh_translate && !is_captcha && getWhSettingObj().quickCrime) {
+            if (!is_wh_translate && !is_captcha) {
                 if ($title.length > 0) $title.before(dom);
                 else if ($info.length > 0) $info.before(dom);
             }
@@ -5581,1270 +4933,10 @@ display:none !important;
             subtree: true,
             childList: true
         });
-        return;
     }
 
-    /**
-     * 物品页面
-     */
-    if (isTransEnabled && window.location.href.contains(/item\.php/)) {
-        // 标题和右边的链接
-        initOB(document.querySelector('.content-title'), {childList: true},
-            () => {
-                titleTrans();
-                contentTitleLinksTrans();
-            });
-        // 套装预览中间的文字
-        const $loadouts_root = document.getElementById('loadoutsRoot');
-        if ($loadouts_root) {
-            initOB($loadouts_root, {subtree: true, attributes: true}, () => {
-                const el = $loadouts_root.querySelector('div[class^="type___"]');
-                if (el && itemPageDict[el.innerText.trim()]) {
-                    el.innerText = itemPageDict[el.innerText.trim()];
-                }
-            });
-        }
-        // 手机选项按钮 物品名 物品详情
-        const options = {
-            attributes: true,
-            subtree: true,
-            attributeFilter: ["aria-hidden",]
-        };
-        const translated = {cat: '', count: -1};
-        const translatedOnce = {item_opt: -1, opt_icon_count: -1};
-        initOB(document.getElementById('category-wrap'), options, () => {
-            // 手机操作选项
-            const $item_opt = document.querySelectorAll(`ul.itemsList span.opt-name`);
-            if (translatedOnce.item_opt !== $item_opt.length - 1) {
-                let count = -1;
-                $item_opt.forEach((e, i) => {
-                    if (itemPageDict[e.firstChild.nodeValue.trim()]) {
-                        e.firstChild.nodeValue = itemPageDict[e.firstChild.nodeValue.trim()];
-                    }
-                    count = i;
-                });
-                translatedOnce.item_opt = count !== -1 ? count : -1;
-            }
-            // 物品名
-            const $active_tab = document.querySelector('ul.itemsList[aria-expanded="true"]');
-            if (!$active_tab) return;
-            const $active_item_list = $active_tab.querySelectorAll('span.name');
-            const itemCat = $active_tab.id;
-            if ($active_item_list.length - 1 !== translated.count || itemCat !== translated.cat) {
-                let count = -1;
-                // 物品名
-                $active_item_list.forEach((e, i) => {
-                    if (!e.classList.contains('wh-translated')) {
-                        if (itemNameDict[e.innerText.trim()]) {
-                            e.classList.add('wh-translated');
-                            const trans_dom = document.createElement('span');
-                            trans_dom.classList.add('wh-translate');
-                            trans_dom.setAttribute('style', 'margin: 0 0 0 1em');
-                            trans_dom.append(itemNameDict[e.innerText.trim()]);
-                            e.after(trans_dom);
-                            // .after(`<span class="wh-translate" style="margin: 0 0 0 1em">${itemNameDict[$(e).text().trim()]}</span>`);
-                        }
-                    }
-                    count = i;
-                });
-
-                if (count !== -1) {
-                    translated.cat = itemCat;
-                    translated.count = count;
-                }
-            }
-            // 物品详情
-            const $show_item_info = $active_tab.querySelector('li.show-item-info');
-            showItemInfoTrans($show_item_info);
-            // 物品右操作按钮
-            const $opt_icon_tooltip = $('ul.actions-wrap span.icon-h');
-            if (translatedOnce.opt_icon_count !== $opt_icon_tooltip.length - 1) {
-                let count = -1
-                $opt_icon_tooltip.each((i, e) => {
-                    if (itemPageDict[e.attributes.title.nodeValue]) {
-                        e.attributes.title.nodeValue = itemPageDict[e.attributes.title.nodeValue];
-                    }
-                    count = i;
-                });
-                if (count !== -1) {
-                    translatedOnce.opt_icon_count = count;
-                }
-            }
-        });
-        // 黑框
-        const $title_black = document.querySelector('div.title-black');
-        if ($title_black) {
-            const $your_items = $title_black.querySelector('span.m-hide');
-            if (itemPageDict[$your_items.innerText.trim()]) {
-                $your_items.innerText = itemPageDict[$your_items.innerText.trim()];
-            }
-            // 黑框分类标题
-            const $items_type_name = $title_black.querySelector('span.items-name');
-            initOB($items_type_name, {childList: true}, () => {
-                if (itemPageDict[$items_type_name.innerText.trim()]) {
-                    $items_type_name.innerText = itemPageDict[$items_type_name.innerText.trim()];
-                }
-            });
-        }
-        // 分类浮动文字
-        const $data_type = document.querySelectorAll('li#categoriesItem a');
-        $data_type.forEach((e) => {
-            if (itemPageDict[e.getAttribute('title')]) {
-                e.setAttribute('title', itemPageDict[e.attributes.title.nodeValue]);
-            }
-        });
-        return;
-    }
-
-    /*
-    npc商店
-     */
-    if (isTransEnabled && window.location.href.contains(/(shops|bigalgunshop)\.php/)) {
-        // 标题和右边的链接
-        const $cont_title = document.querySelector('.content-title');
-        initOB($cont_title, {childList: true, subtree: true}, () => {
-            titleTrans();
-            contentTitleLinksTrans();
-        });
-        const $wrapper = document.querySelector('.content-wrapper');
-        // [购买部分]
-        const $buy_items_wrapper = $wrapper.querySelector('.buy-items-wrap');
-        if ($buy_items_wrapper) {
-            // 黑框标题
-            const $buy_black_title = $buy_items_wrapper.querySelector('.title-black');
-            if ($buy_black_title && npcShopDict[$buy_black_title.firstChild.nodeValue.trim()]) {
-                $buy_black_title.firstChild.nodeValue = npcShopDict[$buy_black_title.firstChild.nodeValue.trim()];
-            }
-            // 各个物品
-            const $items = $buy_items_wrapper.querySelectorAll('ul.items-list > li.torn-divider');
-            $items.forEach(e => {
-                // 物品名
-                const $item_name = e.querySelector('span.desc span.name.bold');
-                if ($item_name && itemNameDict[$item_name.innerText.trim()]) {
-                    $item_name.innerText = `${itemNameDict[$item_name.innerText.trim()]}(${$item_name.innerText.trim()})`;
-                }
-                // 类型和存货
-                const $item_stock = e.querySelector('span.desc span.stock');
-                if ($item_stock) $item_stock.childNodes.forEach(e => {
-                    if (e.nodeType === 1) {
-                        if (npcShopDict[e.innerText.trim()]) e.innerText = npcShopDict[e.innerText.trim()];
-                    } else {
-                        if (npcShopDict[e.nodeValue.trim()]) e.nodeValue = npcShopDict[e.nodeValue.trim()];
-                    }
-                });
-                // buy按钮
-                const $buy_btn = e.querySelector('button.wai-support');
-                if ($buy_btn && npcShopDict[$buy_btn.childNodes[0].nodeValue.trim()]) {
-                    $buy_btn.childNodes[0].nodeValue = npcShopDict[$buy_btn.childNodes[0].nodeValue.trim()];
-                }
-                // 买前确认
-                const $confirm = e.querySelector('span.confirm');
-                const $confirm_msg = $confirm.querySelector('span');
-                if ($confirm_msg && npcShopDict[$confirm_msg.innerText.trim()]) {
-                    $confirm_msg.innerText = npcShopDict[$confirm_msg.innerText.trim()];
-                }
-                const $amount_item_name = $confirm.querySelector('span.count').nextSibling;
-                if ($amount_item_name && !$amount_item_name.nodeValue.contains(CC_set)) {
-                    const item_name = $amount_item_name.nodeValue.trim().split(' ').slice(1, -1).join(' ');
-                    const item_name_trans = itemNameDict[item_name] || item_name;
-                    $amount_item_name.nodeValue = `个[${item_name_trans}]，总计$`;
-                }
-                const $confirm_a = $confirm.querySelectorAll('span.confirm-act a');
-                $confirm_a.forEach(e => {
-                    if (npcShopDict[e.innerText.trim()]) e.innerText = npcShopDict[e.innerText.trim()];
-                });
-            });
-            // 展开的物品详情
-            initOB($wrapper, {childList: true, subtree: true}, () => {
-                const $item_desc = $wrapper.querySelector('.show-item-info') || $wrapper.querySelector('.view-item-info');
-                showItemInfoTrans($item_desc);
-            });
-        }
-        // [卖出部分]
-        const $sell_items_wrapper = $wrapper.querySelector('.sell-items-wrap');
-        if ($sell_items_wrapper) {
-            // 黑框标题
-            const $title = $sell_items_wrapper.querySelectorAll('ul.title li');
-            $title.forEach(el => {
-                el.childNodes.forEach(e => {
-                    if (e.nodeType === 1) {
-                        if (npcShopDict[e.innerText.trim()]) {
-                            e.innerText = npcShopDict[e.innerText.trim()];
-                            return;
-                        }
-                        const spl = e.innerText.trim().split(' ');
-                        if (spl.length > 3) {
-                            const shop_name = spl[2] === 'the' ? spl.slice(3).join(' ') : spl.slice(2).join(' ');
-                            const shop_name_trans = npcShopDict[shop_name] || titleDict[shop_name] || cityDict[shop_name] || null;
-                            e.innerText = `物品给${shop_name_trans || shop_name}`;
-                        }
-                    } else {
-                        if (npcShopDict[e.nodeValue.trim()]) e.nodeValue = npcShopDict[e.nodeValue.trim()];
-                    }
-                });
-            });
-            // 物品名
-            const $items_name = $sell_items_wrapper.querySelectorAll('span.name');
-            $items_name.forEach(el => {
-                if (itemNameDict[el.innerText.trim()]) el.innerText +=
-                    ` ${itemNameDict[el.innerText.trim()]}`;
-            });
-            // 按钮
-            const $btn = $sell_items_wrapper.querySelectorAll('button');
-            $btn.forEach(e => {
-                if (npcShopDict[e.innerText.trim()]) e.innerText = npcShopDict[e.innerText.trim()];
-            });
-            // select btn
-            const $select_btn = $sell_items_wrapper.querySelector('li.select button.wai-btn');
-            if ($select_btn) {
-                initOB($select_btn, {childList: true}, () => {
-                    if ($select_btn && npcShopDict[$select_btn.innerText.trim()]) {
-                        $select_btn.innerText = npcShopDict[$select_btn.innerText.trim()];
-                    }
-                });
-            }
-            // 取消按钮
-            const $cancel = $sell_items_wrapper.querySelector('span.cancel a');
-            if ($cancel && npcShopDict[$cancel.innerText.trim()]) {
-                $cancel.innerText = npcShopDict[$cancel.innerText.trim()];
-            }
-            // 卖出确认文字
-            const $sell_confirm = $sell_items_wrapper.querySelector('div.sell-confirm');
-            if ($sell_confirm) {
-                const $msg = $sell_confirm.childNodes[0];
-                if (npcShopDict[$msg.nodeValue.trim()]) $msg.nodeValue = npcShopDict[$msg.nodeValue.trim()];
-                const $total_value = $sell_confirm.querySelector('span.profit').childNodes[0];
-                if (npcShopDict[$total_value.nodeValue.trim()]) $total_value.nodeValue = npcShopDict[$total_value.nodeValue.trim()];
-            }
-        }
-        // [出售PT部分]
-        const $sell_pt_wrapper = $wrapper.querySelector('.sell-points-wrap');
-        if ($sell_pt_wrapper) {
-            // 黑框
-            const $title_black = $sell_pt_wrapper.querySelector('.title-black');
-            if (npcShopDict[$title_black.innerText.trim()]) {
-                $title_black.innerText = npcShopDict[$title_black.innerText.trim()];
-            }
-        }
-        return;
-    }
-
-    /**
-     * 任务
-     */
-    if (window.location.href.contains(/loader\.php\?sid=missions/)) {
-        const $$ = $('.content-wrapper');
-        if (getWhSettingObj()['missionHint']) {
-            const OB = new MutationObserver(() => {
-                OB.disconnect();
-                titleTrans();
-                contentTitleLinksTrans();
-                trans();
-                OB.observe($$.get(0), {
-                    characterData: true,
-                    attributes: true,
-                    subtree: true,
-                    childList: true
-                });
-            });
-            const taskList = {};
-            const trans = () => {
-                $('ul#giver-tabs a.ui-tabs-anchor').each((i, e) => {
-                    if ($(e).children().hasClass('mission-complete-icon')) {
-                        taskList[i] = e.innerText.trim();
-                    } else {
-                        taskList[i] = $(e).clone().children().remove().end().text().trim();
-                    }
-                });
-                // 助手注入
-                $('div.max-height-fix.info').each((i, e) => {
-                    if ($(e).find('.wh-translated').length !== 0) return;
-                    $(e).append(`<div class="wh-translated"><h6 style="color:green"><b>任务助手</b></h6><p>${getTaskHint(taskList[i])}</p></div>`);
-                });
-                // 任务目标
-                $('ul.tasks-list span.title-wrap').contents().each((i, e) => {
-                    if (e.nodeType === 3) {
-                        if (missionDict[e.nodeValue.trim()]) {
-                            e.nodeValue = missionDict[e.nodeValue.trim()];
-                        }
-                    }
-                });
-            };
-            trans();
-            OB.observe($$.get(0), {
-                characterData: true,
-                attributes: true,
-                subtree: true,
-                childList: true
-            });
-        }
-        return;
-    }
-
-    /**
-     * 股票
-     */
-    if (isTransEnabled && window.location.href.contains(/page\.php\?sid=stocks/)) {
-        const stockOB = new MutationObserver(() => {
-            stockOB.disconnect();
-            titleTrans();
-            contentTitleLinksTrans();
-            stockTrans();
-            stockOB.observe($('.content-wrapper').get(0), {
-                characterData: true,
-                attributes: true,
-                subtree: true,
-                childList: true
-            });
-        });
-        const stockTrans = function stockTrans() {
-            // 表头
-            $('ul.title-black').find('*').contents().each((i, e) => {
-                if (e.nodeType === 3 && stockDict[e.nodeValue.trim()]) {
-                    e.nodeValue = stockDict[e.nodeValue.trim()];
-                }
-            });
-            // 名称
-            $('div[class^="nameContainer"]').each((i, e) => {
-                if (e.childNodes[0].nodeValue && stockDict[e.childNodes[0].nodeValue.trim()]) {
-                    e.childNodes[0].nodeValue = stockDict[e.childNodes[0].nodeValue.trim()];
-                }
-            });
-            // 右侧bb名
-            $('div[class^="dividendInfo"] p').each((i, e) => {
-                const spl = $(e).text().trim().split(' ');
-                if (stockDict[$(e).text().trim()]) {
-                    $(e).text(stockDict[$(e).text().trim()]);
-                } else if (/[0-9]x$/.test(spl[0])) {
-                    const itemName = spl.slice(1).join(' ');
-                    const num = spl[0].slice(0, -1);
-                    $(e).text(`${num}个${itemNameDict[itemName] ? itemNameDict[itemName] : itemName}`);
-                }
-            });
-            // 股价详情
-            $('#panel-priceTab ul[role="tablist"] label span:last-child').each((i, e) => {
-                if (stockDict[$(e).text()]) {
-                    $(e).text(stockDict[$(e).text()]);
-                }
-            });
-            $('ul[class^="priceInfoList___"] li').contents().each((i, e) => {
-                if (e.nodeType === 3) {
-                    if (stockDict[e.nodeValue.trim()]) {
-                        e.nodeValue = stockDict[e.nodeValue.trim()];
-                    }
-                }
-            });
-            // 点开购买后
-            $('div#panel-ownedTab div[class^="manageBlock"] *').contents().each((i, e) => {
-                if (e.nodeType === 1) {
-                    if (stockDict[$(e).text().trim()]) {
-                        $(e).text(stockDict[$(e).text().trim()]);
-                    }
-                } else if (e.nodeType === 3) {
-                    if (stockDict[e.nodeValue.trim()]) e.nodeValue = stockDict[e.nodeValue.trim()];
-                    else if (/\$[0-9]+ after the 0\.1% fee of \$[0-9]+$/.test(e.nodeValue.trim())) {
-                        e.nodeValue = e.nodeValue.trim()
-                            .replace('after the', stockDict['after the'])
-                            .replace('fee of', stockDict['fee of']);
-                    }
-                }
-            });
-            // 点开购买后的历史栏
-            $('div#panel-ownedTab div[class^="transactionsContainer"] li').each((i, e) => {
-                e = e.childElementCount === 0 ? e : e.children[0];
-                if (stockDict[$(e).text().trim()]) {
-                    $(e).text(stockDict[$(e).text().trim()]);
-                }
-            });
-            // 历史购买show more
-            const $show_more = document.querySelector('li[class^="showMore___"] button');
-            if ($show_more && $show_more.innerText.trim().contains(/^Show [0-9]+ more$/)) {
-                const number = $show_more.innerText.trim().split(' ')[1];
-                $show_more.innerText = `显示另外${number}条`;
-            }
-            // 点开bb后
-            $('div#panel-dividendTab div[class^="message"] *').contents().each((i, e) => {
-                if (e.nodeType !== 3) return;
-                if (!e.nodeValue.trim()) return;
-                if (stockDict[e.nodeValue.trim()]) {
-                    e.nodeValue = stockDict[e.nodeValue.trim()];
-                }
-                // 第n个increment 1st 2nd 3rd 4th
-                else if (/[0-9][snrt][tdh]$/.test(e.nodeValue.trim())) {
-                    e.nodeValue = `第${e.nodeValue.trim().slice(0, -2)}个`;
-                }
-                // 物品
-                else if (/[0-9]x$/.test(e.nodeValue.trim().split(' ')[0])) {
-                    const spl = e.nodeValue.trim().split(' ');
-                    const itemName = spl.slice(1).join(' ');
-                    e.nodeValue =
-                        ` ${spl[0].replace('x', '个')
-                        } ${itemNameDict[itemName] ? itemNameDict[itemName] : itemName
-                        }`;
-                } else {
-                    if (/[\u4e00-\u9fa5]/.test(e.nodeValue)) return;
-                    if (/\b\$?[0-9,]+$/.test(e.nodeValue)) return;
-                    log(`未找到翻译：[${e.nodeValue.trim()}]`);
-                }
-            });
-        };
-        stockTrans();
-        stockOB.observe($('.content-wrapper').get(0), {
-            characterData: true,
-            attributes: true,
-            subtree: true,
-            childList: true
-        });
-        return;
-    }
-
-    /**
-     * 教育页面
-     */
-    if (isTransEnabled && window.location.href.indexOf('education.php') >= 0) {
-        const eduOB = new MutationObserver(eduOBInit);
-
-        function eduOBInit() {
-            eduOB.disconnect();
-            eduTrans();
-            eduOB.observe($('div.content-wrapper')[0], {childList: true, subtree: true});
-        }
-
-        function eduTrans() {
-            titleTrans();
-            contentTitleLinksTrans();
-
-            // 大科目、学院标题
-            $('div.content-wrapper div.title').each((i, e) => {
-                if (eduDict[$(e).text().trim()])
-                    e.firstChild.nodeValue = eduDict[$(e).text().trim()];
-            });
-            // 教育主页提示内容 和 学院详情 小课程提示信息
-            $('div.content-wrapper div[class^="msg"]').find('*').contents().each((i, e) => {
-                if (e.nodeValue === null) return;
-                if (eduDict[e.nodeValue.trim()]) {
-                    e.nodeValue = eduDict[e.nodeValue.trim()];
-                } else if (e.nodeValue.indexOf('second') >= 0 ||
-                    e.nodeValue.indexOf('minute') >= 0 ||
-                    e.nodeValue.indexOf('hour') >= 0 ||
-                    e.nodeValue.indexOf('day') >= 0) {
-                    e.nodeValue = e.nodeValue
-                        .replace('days', '天')
-                        .replace('day', '天')
-                        .replace('hours', '时')
-                        .replace('hour', '时')
-                        .replace('minutes', '分')
-                        .replace('minute', '分')
-                        .replace('and', '和')
-                        .replace('seconds', '秒')
-                        .replace('second', '秒');
-                }
-            });
-            // 学院详情标题
-            $('div.content-wrapper div.title-black').each((i, e) => {
-                if (e.childNodes.length === 3)
-                    if (eduDict[e.lastChild.nodeValue.trim()])
-                        e.lastChild.nodeValue = ' ' + eduDict[e.lastChild.nodeValue.trim()];
-                if (eduDict[$(e).text().trim()])
-                    $(e).text(eduDict[$(e).text().trim()]);
-            });
-            // 学院详情 小课程标题
-            $('div.content-wrapper span.module-name').each((i, e) => {
-                if (eduDict[$(e).text().trim()])
-                    $(e).text(eduDict[$(e).text().trim()]);
-            });
-            // 学院详情 课程的描述
-            $('div.content-wrapper p.desc').each((i, e) => {
-                if (eduDict[$(e).text().trim()])
-                    $(e).text(eduDict[$(e).text().trim()]);
-            });
-            // 课程详情 7 标题
-            $('div.module-desc p.title').each((i, e) => {
-                if (eduDict[$(e).text().trim()])
-                    $(e).text(eduDict[$(e).text().trim()]);
-            });
-            // 课程介绍中的所有li元素
-            $('div.module-desc ul.info').find('*').contents().each((i, e) => {
-                if (e.nodeValue === null) return;
-                if (eduDict[e.nodeValue.trim()])
-                    e.nodeValue = eduDict[e.nodeValue.trim()];
-                else if (e.nodeValue.indexOf('Length') >= 0) {
-                    e.nodeValue = e.nodeValue.replace('Length', eduDict['Length'])
-                        .replace('d ', '日')
-                        .replace('h ', '时')
-                        .replace('m ', '分');
-                } else if (e.nodeValue.indexOf('Cost') >= 0) {
-                    e.nodeValue = e.nodeValue.replace('Cost', eduDict['Cost']);
-                } else if (e.nodeValue.indexOf('manual labor') >= 0) {
-                    e.nodeValue = e.nodeValue.replace('manual labor', eduDict['manual labor'])
-                        .replace('Gain', eduDict['Gain'])
-                        .replace('upon completion', eduDict['upon completion']);
-                } else if (e.nodeValue.indexOf('endurance') >= 0) {
-                    e.nodeValue = e.nodeValue.replace('endurance', eduDict['endurance'])
-                        .replace('Gain', '获得')
-                        .replace('upon completion', eduDict['upon completion']);
-                } else if (e.nodeValue.indexOf('intelligence') >= 0) {
-                    e.nodeValue = e.nodeValue.replace('intelligence', eduDict['intelligence'])
-                        .replace('Gain', '获得')
-                        .replace('upon completion', eduDict['upon completion']);
-                }
-            });
-        }
-
-        eduTrans();
-        eduOB.observe($('div.content-wrapper')[0], {childList: true, subtree: true});
-        return;
-    }
-
-    /**
-     * profile 玩家资料页面
-     */
-    if (isTransEnabled && window.location.href.contains(/profiles\.php\?XID=[0-9]+/)) {
-        const $wrapper = document.querySelector('.content-wrapper');
-        const profileOB = new MutationObserver(() => {
-            profileOB.disconnect();
-            titleTrans();
-            contentTitleLinksTrans();
-            profileTrans();
-            profileOB.observe($wrapper, {
-                characterData: true,
-                attributes: true,
-                subtree: true,
-                childList: true
-            });
-        });
-        const profileTrans = function profileTrans() {
-            const playerName = document.title.trim().contains(/('s |s' )/)
-                ? document.title.trim().split(/('s |s' )/)[0]
-                : null;
-            if (!playerName) {
-                console.error('翻译助手错误：获取用户名失败。');
-                try {
-                    profileOB.disconnect()
-                } catch {
-                }
-                return;
-            }
-
-            // 黑框标题
-            $('.content-wrapper .title-black').each((i, e) => {
-                if (i === 1) {
-                    if (profileDict[e.firstChild.nodeValue.trim().replace(playerName, '{$}')]) {
-                        e.firstChild.nodeValue = (
-                            profileDict[$(e).text().trim().replace(playerName, '{$}')]
-                                .replace('{$}', playerName)
-                        );
-                    }
-                    return;
-                }
-                if (profileDict[$(e).text().trim()]) {
-                    $(e).text(profileDict[$(e).text().trim()]);
-                }
-            });
-            // level rank age
-            $('.profile-information-wrapper .box-info .box-name').each((i, e) => {
-                if (profileDict[e.innerText.trim()]) e.innerText = profileDict[e.innerText.trim()];
-            });
-            // todo player title
-            // todo player rank title
-            // 行动框的描述
-            const action_desc = $('#profile-container-description.profile-container-description');
-            if (profileDict[action_desc.text().trim()]) {
-                action_desc.html(`<span class="wh-translated">${profileDict[action_desc.text().trim()]}</span>`);
-            } else if (profileDict[action_desc.text().trim().replace(playerName, '{$}')]) {
-                action_desc.html(
-                    `<span class="wh-translated">${profileDict[action_desc.text().trim().replace(playerName, '{$}')]
-                        .replace('{$}', playerName)}</span>`
-                );
-            } else if (action_desc.text().contains(/is on your (friend|enemy) list/)) {
-                const spl = action_desc.text().trim().split(' ');
-                const mark = spl.length === 6
-                    ? null
-                    : spl.slice(7).join(' ');
-                switch (spl[4]) {
-                    case 'friend':
-                        if (profileDict['{$} is on your friend list']) {
-                            action_desc.html(
-                                `<span class="wh-translated">${profileDict['{$} is on your friend list']
-                                    .replace('{$}', playerName)
-                                }${mark ? ' : ' + mark : ''
-                                }</span>`
-                            );
-                        }
-                        break;
-                    case 'enemy':
-                        if (profileDict['{$} is on your enemy list']) {
-                            action_desc.html(
-                                `<span class="wh-translated">${profileDict['{$} is on your enemy list']
-                                    .replace('{$}', playerName)
-                                }${mark ? ' : ' + mark : ''
-                                }</span>`
-                            );
-                        }
-                        break;
-                }
-            } else {
-                if ($('.wh-translated').length <= 0) {
-                    log(`未找到翻译: “${action_desc.text().trim()}”`);
-                }
-            }
-            // 添加敌人或朋友的界面
-            $('.add-user .reason-wrapper').find('*').contents().each((i, e) => {
-                if (e.nodeType === 3) {
-                    if (profileDict[e.nodeValue.trim()]) {
-                        e.nodeValue = profileDict[e.nodeValue.trim()];
-                    } else if (/\b[1-4]?[0-9]\b/.test(e.nodeValue.trim().slice(0, 2))) {
-                        const left = e.nodeValue.trim().slice(0, 2);
-                        if (profileDict['{$} characters left']) {
-                            e.nodeValue = profileDict['{$} characters left'].replace('{$}', left);
-                        }
-                    }
-                }
-            });
-            // 状态
-            playerStatusTrans($('.profile-status .profile-container span'));
-            // 表格
-            $('ul.info-table li div').each((i, e) => {
-                const $e = $(e);
-                // 左
-                if ($e.attr('class').contains(/user-information-section/)) {
-                    const elem = e.children[0];
-                    const $elem = $(elem);
-                    if (profileDict[$elem.text().trim()]) $elem.text(profileDict[$elem.text().trim()]);
-                }
-                // 右 值
-                else {
-                    if (profileDict[$e.text().trim()]) {
-                        $e.children().text(profileDict[$e.text().trim()]);
-                        return;
-                    }
-                    switch (i) {
-                        case 5: // 帮派
-                        case 7: { // 公司
-                            if ($e.text().contains(CC_set)) return;
-                            const $span = e.children[0].children[0];
-                            const pos = $span.firstChild.nodeValue.trim().split(' ').slice(0, -1).join(' ');
-                            $span.firstChild.nodeValue = '';
-                            $($span).append(` 的 ${pos}`);
-                            return;
-                        }
-                        case 11: {
-                            // 住宅
-                            $e.find('span *').contents().each((i, el) => {
-                                if (el.nodeType === 3) {
-                                    if (profileDict[el.nodeValue.trim()]) {
-                                        el.nodeValue = profileDict[el.nodeValue.trim()]
-                                    } else if (propertyDict[el.nodeValue.trim()]) {
-                                        el.nodeValue = propertyDict[el.nodeValue.trim()]
-                                    }
-                                }
-                            });
-                            return;
-                        }
-                        case 13: {
-                            // 结婚状态
-                            if ($e.text().contains(CC_set)) return;
-                            const days = $e.text().contains(/ [0-9]+ /)
-                                ? $e.text().trim().split(' ')[4]
-                                : null;
-                            if (days) {
-                                e.children[0].children[0].childNodes[0].nodeValue = '与 ';
-                                e.children[0].children[0].childNodes[2].nodeValue = ` 结婚${days}天`;
-                            } else {
-                                $e.find('span *').contents().each((i, el) => {
-                                    if (el.nodeType === 3) {
-                                        if (profileDict[el.nodeValue.trim()]) {
-                                            el.nodeValue = profileDict[el.nodeValue.trim()]
-                                        }
-                                    }
-                                });
-                            }
-                            return;
-                        }
-                        case 23: {
-                            // 39 minutes ago
-                            if ($e.text().contains(/ago/)) {
-                                $e.children().text($e.text()
-                                    .replace('ago', '前')
-                                    .replace('and', '')
-                                    .replace('seconds', '秒')
-                                    .replace('second', '秒')
-                                    .replace('minutes', '分')
-                                    .replace('minute', '分')
-                                    .replace('hours', '时')
-                                    .replace('hour', '时')
-                                    .replace('days', '日')
-                                    .replace('day', '日')
-                                    .replaceAll(' ', '')
-                                );
-                            }
-                            return;
-                        }
-                    }
-                    /**
-                     1 'Woohoo [2687093]'
-                     3 'Civilian'
-                     5 'Knight of Silver Hand'
-                     7 'Director of -- FaFaFa --'
-                     9 '1567 / 1567'
-                     11 'Private Island (With Spouse)'
-                     13 'Married to Sabrina_Devil for 42 days'
-                     15 '153'
-                     17 '4'
-                     19 '4\n                         好人\n                         坏比指数: 1\n                        '
-                     21 '2 (0 karma)'
-                     23 '52 minutes ago'
-                     */
-                }
-            });
-            // doesnt wish to share
-            const $nShare = $('.personal-info p');
-            $nShare.contents().each((i, e) => {
-                if (e.nodeType === 3) {
-                    if (profileDict[e.nodeValue.trim()]) e.nodeValue = profileDict[e.nodeValue.trim()];
-                }
-            });
-            // 活动状态
-            const $cmpSt = $('.profile-container.competition-wrap span')
-            $cmpSt.text(profileDict[$cmpSt.text().trim()] || $cmpSt.text());
-
-            sendCashTrans('.content-wrapper');
-        };
-        profileTrans();
-        profileOB.observe($wrapper, {
-            characterData: true,
-            attributes: true,
-            subtree: true,
-            childList: true
-        });
-        return;
-    }
-
-    /**
-     * 报纸
-     */
-    if (window.location.href.contains(/(newspaper|joblist|freebies|newspaper_class|personals|bounties|comics)\.php/)) {
-        if (isTransEnabled) {
-            const newspaperOB = new MutationObserver(() => {
-                newspaperOB.disconnect();
-                newspaperTrans();
-                newspaperOB.observe($('div.content-wrapper')[0], {childList: true, subtree: true});
-            });
-
-            function newspaperTrans() {
-                titleTrans();
-                contentTitleLinksTrans();
-                if ($('a.newspaper-link').length === 0) return;
-                // 导航菜单
-                $('a.newspaper-link').contents().each((i, e) => {
-                    if (newspaperDict[e.nodeValue])
-                        e.nodeValue = newspaperDict[e.nodeValue];
-                });
-                // 公众号广告
-                $('div.price.left').contents()[2].nodeValue = '文章翻译请关注中文公众号Torncity';
-                // 日期翻译
-                const $date_label = document.querySelector('span.date-label');
-                const date_reg = /^[FMSTW][adehinorstuy]+, [ADFJMNOS][abceglnoprtuvy]+ [1-3]?[0-9], 20[0-9][0-9]$/;
-                if ($date_label && $date_label.innerText.trim().contains(date_reg)) {
-                    const date_format = $date_label.innerText.trim().replaceAll(',', '');
-                    const date_spl = date_format.split(' ');
-                    const date = {w: date_spl[0], m: date_spl[1], d: date_spl[2], y: date_spl[3]};
-                    const month_trans = {
-                        'Jan': 1,
-                        'Feb': 2,
-                        'Mar': 3,
-                        'Apr': 4,
-                        'May': 5,
-                        'Jun': 6,
-                        'Jul': 7,
-                        'Aug': 8,
-                        'Sep': 9,
-                        'Oct': 10,
-                        'Nov': 11,
-                        'Dec': 12
-                    };
-                    $date_label.innerText = `${date.y}年${month_trans[date.m] || date.m}月${date.d}日`;
-                }
-                // 菜单下的信息  工作 壁纸 广告 悬赏
-                $('div.help-message').find('*').contents().each((i, e) => {
-                    if (!e.nodeValue || e.nodeValue.trim() === '') return;
-                    if (newspaperDict[e.nodeValue.trim()])
-                        e.nodeValue = newspaperDict[e.nodeValue.trim()];
-                    else if (newspaperDict[e.nodeValue.trim().slice(0, 50)])
-                        e.nodeValue = newspaperDict[e.nodeValue.trim().slice(0, 50)];
-                });
-                // 右边栏
-                $('div[class^="sideCont"] [class^="title"]').contents().each((i, e) => {
-                    if (newspaperDict[e.nodeValue])
-                        e.nodeValue = newspaperDict[e.nodeValue];
-                });
-                // 彩票信息
-                $('span[class^="winner"]').each((i, e) => {
-                });
-                // 底部链接
-                // Why not visit our sponsor?
-                if (newspaperDict[$('div.link-left').text().trim()])
-                    $('div.link-left').text(newspaperDict[$('div.link-left').text().trim()]);
-                // View all | Advertise here
-                $('div.link-right a').contents().each((i, e) => {
-                    if (newspaperDict[e.nodeValue.trim()])
-                        e.nodeValue = newspaperDict[e.nodeValue.trim()];
-                })
-                $('.bounties-list-title li').each((i, e) => {
-                    if (newspaperDict[$(e).text().trim()]) {
-                        $(e).text(newspaperDict[$(e).text().trim()]);
-                    }
-                });
-                // 交友
-                if (window.location.href.contains(/personals/)) {
-                    $('div.personals-wrap span.msg').find('*').contents().each((i, e) => {
-                        if (!e.nodeValue || e.nodeValue.trim() === '') return;
-                        if (newspaperDict[e.nodeValue.trim()])
-                            e.nodeValue = newspaperDict[e.nodeValue.trim()];
-                    });
-                }
-                // 漫画
-                if (window.location.href.contains(/freebies/)) {
-                    if (newspaperDict[$('div.bonus-wrap a').text().trim()])
-                        $('div.bonus-wrap a').text(newspaperDict[$('div.bonus-wrap a').text().trim()]);
-                }
-                // 悬赏
-                if (window.location.href.contains(/bounties/)) {
-                    // 列表前的总数
-                    const $total = $('.bounties-total');
-                    if ($total.text().contains(/A total of [0-9]+ listings were found/)) {
-                        const num = $total.text().trim().split(' ')[3];
-                        if (newspaperDict['A total of {$} listings were found.']) {
-                            $total.text(newspaperDict['A total of {$} listings were found.']
-                                .replace('{$}', num));
-                        }
-                    }
-                    // 列表
-                    $('.user-info-wrap div *').contents().each((i, e) => {
-                        if (e.nodeType === 3) {
-                            if (newspaperDict[e.nodeValue.trim()]) {
-                                e.nodeValue = newspaperDict[e.nodeValue.trim()];
-                            }
-                        }
-                    });
-                    // claim
-                    $('ul.bounties-list div.claim button').each((i, e) => {
-                        if (newspaperDict[$(e).text().trim()]) {
-                            $(e).text(newspaperDict[$(e).text().trim()]);
-                        }
-                    });
-                    $('ul.bounties-list div.claim a').each((i, e) => {
-                        if (newspaperDict[$(e).text().trim()]) {
-                            $(e).text(newspaperDict[$(e).text().trim()]);
-                        }
-                    });
-                    // 3选项框
-                    $('.add-bounties-wrap .name').contents().each((i, e) => {
-                        if (e.nodeType === 3) {
-                            if (newspaperDict[e.nodeValue.trim()]) {
-                                e.nodeValue = newspaperDict[e.nodeValue.trim()];
-                            }
-                        } else if (e.nodeType === 1) {
-                            if (newspaperDict[$(e).text().trim()]) {
-                                $(e).text(newspaperDict[$(e).text().trim()]);
-                            }
-                        }
-                    });
-                    // 匿名选项
-                    const $anony = $('.choice-container label');
-                    if (newspaperDict[$anony.text().trim()]) {
-                        $anony.text(newspaperDict[$anony.text().trim()]);
-                    }
-                    // 发钱按钮
-                    const $$symbol = $('span.input-money-symbol');
-                    if (sendCashDict[$$symbol.attr('title')]) {
-                        $$symbol.attr('title', sendCashDict[$$symbol.attr('title')])
-                    }
-                    // 10/10滑动
-                    const $slider_title = $('.slider-title');
-                    if ($slider_title.text().contains(/Quantity:/)) {
-                        $slider_title.text($slider_title.text().replace('Quantity', '数量'));
-                    }
-                    // 价钱信息
-                    $('.confirm-bounties *').contents().each((i, e) => {
-                        if (e.nodeType === 3) {
-                            if (newspaperDict[e.nodeValue.trim()]) {
-                                e.nodeValue = newspaperDict[e.nodeValue.trim()];
-                            }
-                        }
-                    });
-                    // 下单前确认对话
-                    $('.confirm-buttons *').contents().each((i, e) => {
-                        if (e.nodeType === 3) {
-                            if (newspaperDict[e.nodeValue.trim()]) {
-                                e.nodeValue = newspaperDict[e.nodeValue.trim()];
-                                return;
-                            }
-                            switch (i) {
-                                case 7:
-                                case 10: {
-                                    if (e.nodeValue.contains(/[0-9] bounties/)) {
-                                        e.nodeValue = e.nodeValue.replace('bounties', '次')
-                                    } else if (e.nodeValue.contains(/with the reason: .+\?/)) {
-                                        e.nodeValue = e.nodeValue.replace('with the reason', '吗，悬赏原因')
-                                    }
-                                    break;
-                                }
-                            }
-                        }
-                    });
-                    // place
-                    const $place = $('.place-buttons input');
-                    if (newspaperDict[$place.attr('value')]) {
-                        $place.attr('value', newspaperDict[$place.attr('value')]);
-                    }
-                    // cancel
-                    const $cancel = $('.place-buttons a.cancel');
-                    if (newspaperDict[$cancel.text().trim()]) {
-                        $cancel.text(newspaperDict[$cancel.text().trim()]);
-                    }
-                }
-            }
-
-            newspaperTrans();
-            newspaperOB.observe($('div.content-wrapper')[0], {childList: true, subtree: true});
-            return;
-        }
-    }
-
-    /**
-     * npc买房 estateagents
-     */
-    if (isTransEnabled && window.location.href.indexOf('estateagents.php') >= 0) {
-        titleTrans();
-        contentTitleLinksTrans();
-        $('div.estate-info div.title').each((i, e) => {
-            if (propertyDict[e.firstChild.nodeValue])
-                e.firstChild.nodeValue = propertyDict[e.firstChild.nodeValue];
-        });
-
-        return;
-    }
-
-    /**
-     * properties房屋页面 todo
-     */
-    if (isTransEnabled && window.location.href.indexOf('properties.php') >= 0) {
-        const isRent = window.location.href.indexOf('rent') >= 0;
-        // const isRentOrSell = isRent || window.location.href.indexOf('sell') >= 0;
-        // const isOption = window.location.href.indexOf('p=options') >= 0;
-        // const isExtension = window.location.href.indexOf('step=viewOfferExtension') >= 0;
-        const propertyOB = new MutationObserver(() => {
-            propertyOB.disconnect();
-            titleTrans();
-            contentTitleLinksTrans();
-            propertyTrans();
-            propertyOB.observe($('div.content-wrapper').get(0), {childList: true, subtree: true});
-        });
-        const propertyTrans = function propertyTrans() {
-            // 从玩家处租或买
-            if (isRent || window.location.href.indexOf('sell') >= 0) {
-                // 黑框标题
-                $('div.title-black span').each((i, e) => {
-                    e.firstChild.nodeValue = '您想查看哪些房产？';
-                });
-                // 房屋汉化
-                $('ul.info-cont label.marker-css').contents().each((i, e) => {
-                    if (propertyDict[e.nodeValue])
-                        e.nodeValue = propertyDict[e.nodeValue];
-                });
-                //搜索按钮
-                $('div.btn-search button').text('搜索');
-                $('div.search-text a').text('搜索');
-                // 表头信息
-                $('div.users-list-title div').each((i, e) => {
-                    if (propertyDict[$(e).text()])
-                        $(e).text(propertyDict[$(e).text()]);
-                });
-                // 确认购买提示
-                $('div[class="confirm-text"] span.question').each((i, e) => {
-                    const propName = e.firstElementChild.innerText.trim().split(' ').slice(8).join(' ');
-
-                    const hasAnother = $(e).text().indexOf('another') > 0;
-                    if (hasAnother) {
-                        e.firstElementChild.firstChild.nodeValue = '你确定要';
-                        e.firstElementChild.firstChild.nodeValue += isRent ? '租用' : '购买';
-                        e.firstElementChild.childNodes[1].firstChild.nodeValue = '另一个';
-                        e.firstElementChild.childNodes[2].nodeValue = propertyDict[propName];
-                    } else {
-                        e.firstElementChild.firstChild.nodeValue = '你确定要';
-                        e.firstElementChild.firstChild.nodeValue += isRent ? '租用' : '购买';
-                        e.firstElementChild.firstChild.nodeValue += propertyDict[propName];
-                    }
-                    e.children[1].firstChild.nodeValue = '花费 ';
-                    e.children[1].childNodes[2].nodeValue = isRent ? ' 租期 ' : '？';
-                    if (isRent)
-                        e.children[1].childNodes[4].nodeValue = ' 天？';
-                });
-
-                // 房屋详情表格
-                $('div.info-block span.bold').each((i, e) => {
-                    if (e.childElementCount === 2) {
-                        /**
-                         * <span class="bold">
-                         <span class="title-laptop">On </span>
-                         "Market"
-                         <span class="title-desktop"> Price</span>
-                         ":"
-                         </span>
-                         */
-                        e.firstElementChild.firstChild.nodeValue = '';
-                        e.childNodes[2].nodeValue = '市场价';
-                        e.childNodes[3].firstChild.nodeValue = '';
-                        e.childNodes[4].nodeValue = '：';
-                    } else {
-                        if (propertyDict[e.firstChild.nodeValue.trim()])
-                            e.firstChild.nodeValue = propertyDict[e.firstChild.nodeValue.trim()];
-                    }
-                });
-                $('div.rental-period span.bold').each((i, e) => {
-                    if (propertyDict[e.firstChild.nodeValue.trim()])
-                        e.firstChild.nodeValue = propertyDict[e.firstChild.nodeValue.trim()];
-                });
-                // 窄边 cost happy
-                $('span.title-laptop.bold').each((i, e) => {
-                    if (propertyDict[$(e).text().trim()])
-                        $(e).text(propertyDict[$(e).text().trim()]);
-                });
-                // modification
-                $('div.title.bold.left').each((i, e) => {
-                    if (propertyDict[e.firstChild.nodeValue])
-                        e.firstChild.nodeValue = propertyDict[e.firstChild.nodeValue];
-                });
-
-                return;
-            }
-            // 房屋选项
-            if (window.location.href.indexOf('p=options') >= 0) {
-                // 页面的黑框标题
-                $('div.content-wrapper div.title-black').each((i, e) => {
-                    if (propertyDict[$(e).text().trim()])
-                        $(e).text(propertyDict[$(e).text().trim()]);
-                });
-                // 所有li内容
-                // $('div.content-wrapper div.customize-opt li').find('*')
-                //     .contents().each((i,e)=>{
-                //         if(e.nodeType!==3)return;log(e)
-                //     });
-                return;
-            }
-            // 房屋详情
-            if (window.location.href.indexOf('p=propertyinfo') >= 0) {
-                return;
-            }
-            // 延期、合同
-            if (window.location.href.indexOf('step=viewOfferExtension') >= 0) {
-                return;
-            }
-            // 自己的所有房产 页面
-            {
-                // 顶部3标题
-                $('ul.property-tabs a.ui-tabs-anchor div').contents().each((i, e) => {
-                    if (propertyDict[e.nodeValue]) {
-                        e.nodeValue = propertyDict[e.nodeValue];
-                    }
-                });
-                // 图片下的描述部分
-                $('ul.properties-list div.image-description').find('*')
-                    .contents().each((i, e) => {
-                    if (e.nodeType !== 3) return;
-                    if (!propertyDict[e.nodeValue.trim()]) return;
-                    e.nodeValue = propertyDict[e.nodeValue.trim()];
-                });
-                // 图片下的按钮的title浮动框文字
-                $('div#properties-page-wrap a[title]').each((i, e) => {
-                    if (propertyDict[$(e).attr('title')])
-                        $(e).attr('title', propertyDict[$(e).attr('title')]);
-                });
-            }
-        };
-
-        propertyTrans();
-        propertyOB.observe($('div.content-wrapper').get(0), {childList: true, subtree: true});
-        return;
-    }
-
-    /**
-     * 通知页面
-     */
-    if (isTransEnabled && window.location.href.indexOf('events.php') >= 0) {
-        const ob = new MutationObserver(() => {
-            ob.disconnect();
-            titleTrans();
-            contentTitleLinksTrans();
-            eventsTrans();
-            ob.observe($('div.content-wrapper')[0], {childList: true, subtree: true});
-        });
-        eventsTrans();
-        ob.observe($('div.content-wrapper')[0], {childList: true, subtree: true});
-        return;
-        // let events;
-        // const eventMutation = new MutationObserver(() => {
-        //     eventMutation.disconnect();
-        //     // events = $('span.mail-link');
-        //     // eventsTrans(events);
-        //     eventsTrans();
-        //     eventMutation.observe($('div#events-main-wrapper')[0], {childList: true, subtree: true});
-        // });
-        //
-        // //初始化中内容未加载
-        // let eventInterval = setInterval(() => {
-        //     // events = $('span.mail-link');
-        //     // if (events.length === 0) {
-        //     //     return;
-        //     // }
-        //     clearInterval(eventInterval);
-        //     eventMutation.observe($('div#events-main-wrapper')[0], {childList: true, subtree: true});
-        //     eventsTrans(events);
-        // }, 1000);
-    }
-
-    /**
-     * awards.php
-     */
-    if (isTransEnabled && window.location.href.indexOf('awards.php') >= 0) {
-        const awOB = new MutationObserver(() => {
-            awOB.disconnect();
-            awTrans();
-            awOB.observe($('div.content-wrapper')[0], {childList: true, subtree: true, attributes: true});
-        });
-        const awTrans = function awTrans() {
-            titleTrans();
-            contentTitleLinksTrans();
-            // 顶部的3个分类 Honors (106) Medals (44) Merits (3)
-            $('div.content-wrapper a.ui-tabs-anchor span.bold').contents().each((i, e) => {
-                if (e.nodeType !== 3) return;
-                if (awDict[e.nodeValue.trim()])
-                    e.nodeValue = awDict[e.nodeValue.trim()];
-            });
-            // 分类标题下的描述
-            $('div.awards-msg').contents().each((i, e) => {
-                // 文字节点
-                if (e.nodeType === 3) {
-                    if (awDict[e.nodeValue.trim()])
-                        e.nodeValue = awDict[e.nodeValue.trim()];
-                }
-                // 子节点
-                else if (e.nodeType === 1) {
-                    if (awDict[$(e).text().trim()])
-                        $(e).text(awDict[$(e).text().trim()]);
-                    else if ($(e).text().indexOf('medals') >= 0)
-                        $(e).text($(e).text().replace('medals', awDict['medals']));
-                    else if ($(e).text().indexOf('honors') >= 0)
-                        $(e).text($(e).text().replace('honors', awDict['honors']));
-                }
-            });
-            // 荣誉的描述
-            $('div#awards-tab-menu a[data-title]').each((i, e) => {
-                const desc = $(e).attr('data-title').split(' <i>')[0];
-                if (awDict[desc])
-                    $(e).attr('data-title', $(e).attr('data-title').replace(desc, awDict[desc]));
-            });
-            // 改变荣誉条时的提示
-            $('div#honors div.msg').each((i, e) => {
-                if (awDict[$(e).text().trim()])
-                    $(e).text(awDict[$(e).text().trim()]);
-            });
-            // 改变荣誉条时的提示按钮 change
-            $('div#honors div.confirm-msg button').each((i, e) => {
-                if (awDict[$(e).text().trim()])
-                    $(e).text(awDict[$(e).text().trim()]);
-            });
-            // 改变荣誉条时的提示按钮 cancel
-            $('div#honors div.confirm-msg a.cancel').each((i, e) => {
-                if (awDict[$(e).text().trim()])
-                    $(e).text(awDict[$(e).text().trim()]);
-            });
-            // 天赋页面 Available Merits: x Merits Used: x
-            $('div.awards-msg p').contents().each((i, e) => {
-                if (e.nodeType === 3)
-                    if (awDict[e.nodeValue.trim()])
-                        e.nodeValue = e.nodeValue.replace(e.nodeValue.trim(), awDict[e.nodeValue.trim()]);
-            });
-            // 勋章下 即将解锁的勋章框标题 天赋加点的表头标题
-            $('div.title-black').contents().each((i, e) => {
-                // 勋章下 即将解锁的勋章框标题
-                if (e.nodeType === 1) {
-                    if (awDict[$(e).text().trim()])
-                        $(e).text(awDict[$(e).text().trim()]);
-                }
-                // 天赋加点的表头标题
-                else if (e.nodeType === 3) {
-                    if (awDict[e.nodeValue.trim()])
-                        e.nodeValue = awDict[e.nodeValue.trim()];
-                }
-            });
-            // 荣誉和勋章的左边栏分类选择菜单
-            $('div.tab-menu-cont li.ui-state-default a').each((i, e) => {
-                if (awDict[$(e).text().trim()])
-                    $(e).text(awDict[$(e).text().trim()]);
-            });
-            // 天赋点名字
-            $('ul#merits-list span.name').each((i, e) => {
-                if (awDict[$(e).text().trim()])
-                    $(e).text(awDict[$(e).text().trim()]);
-            });
-            // 天赋点短描述
-            $('ul#merits-list span.desc span[class^="t-"]').each((i, e) => {
-                // const slash = $(e).attr('class') === 't-show' ? '- ' : '';
-                const isShow = $(e).attr('class') === 't-hide';
-                const key = isShow ? $(e).text().slice(2) : $(e).text();
-                if (awDict[key])
-                    $(e).text((isShow ? '- ' : '') + awDict[key]);
-            });
-            // 天赋点展开详细描述与确认
-            $('ul#merits-list div.msg').contents().each((i, e) => {
-                // x merit(s)
-                if (e.nodeType === 1) {
-                    const spl = $(e).text().split(' ');
-                    if (awDict[spl[1]])
-                        $(e).text(spl[0] + ' ' + awDict[spl[1]]);
-                }
-                // 文字片段
-                else if (e.nodeType === 3) {
-                    if (awDict[e.nodeValue.trim()]) {
-                        e.nodeValue = awDict[e.nodeValue.trim()] + '';
-                        return;
-                    }
-                    const spl = e.nodeValue.trim().split('\n');
-                    // 未升级完成
-                    if (spl.length === 3) {
-                        const upgradeName = spl[1].slice(5, -9);
-                        const on = spl[0];
-                        const upgrade = spl[1].slice(-8);
-                        const desc = spl[2];
-                        if (awDict[on] && awDict[upgrade] && awDict[upgradeName] && awDict[desc])
-                            e.nodeValue = ' ' + awDict[on] + awDict[upgradeName] +
-                                awDict[upgrade] + awDict[desc];
-                    }
-                    // 升级完成
-                    else if (spl.length === 1) {
-                        const upgraded = e.nodeValue.trim().slice(0, 60);
-                        const desc = e.nodeValue.trim().slice(61);
-                        if (awDict[upgraded]) e.nodeValue = awDict[upgraded];
-                        if (awDict[desc]) e.nodeValue += awDict[desc];
-                    }
-                }
-            });
-            // spend cancel按钮
-            $('ul#merits-list div.confirm-cont a').each((i, e) => {
-                if (awDict[$(e).text().trim()]) $(e).text(awDict[$(e).text().trim()]);
-            });
-        };
-        awTrans();
-        awOB.observe($('div.content-wrapper')[0], {childList: true, subtree: true, attributes: true});
-        return;
-    }
-
-    /**
-     * preferences设置
-     */
-    if (isTransEnabled && window.location.href.contains(/preferences\.php/)) {
+    // 任务助手
+    if (href.contains(/loader\.php\?sid=missions/) && getWhSettingObj()['missionHint']) {
         const $$ = $('.content-wrapper');
         const OB = new MutationObserver(() => {
             OB.disconnect();
@@ -6858,310 +4950,28 @@ display:none !important;
                 childList: true
             });
         });
+        const taskList = {};
         const trans = () => {
-            // 黑框标题
-            const $black_title = $('.title-black');
-            if (tornSettingsDict[$black_title.text().trim()]) {
-                $black_title.text(tornSettingsDict[$black_title.text().trim()]);
-            }
-            // 电脑版左边导航菜单
-            const $nav = $('.content-wrapper a.ui-tabs-anchor');
-            $nav.each((i, e) => {
-                if (tornSettingsDict[$(e).text().trim()]) {
-                    $(e).text(tornSettingsDict[$(e).text().trim()]);
-                }
-            });
-            if (window.location.href.contains(/tab=api/)) {
-                // 描述
-                const $api_desc = $('.content-wrapper p[class^="apiDescription___"]');
-                if (tornSettingsDict[$api_desc.text().slice(0, 50)]) {
-                    $api_desc.text(tornSettingsDict[$api_desc.text().slice(0, 50)]);
-                }
-                // 添加按钮
-                const $add_btn = $('button[class^="addKey___"] span');
-                if (tornSettingsDict[$add_btn.text().trim()]) {
-                    $add_btn.text(tornSettingsDict[$add_btn.text().trim()]);
-                }
-                // new keys name
-                const $new_keys_name = $('input[placeholder="New key\'s name"]');
-                if (tornSettingsDict[$new_keys_name.attr('placeholder')]) {
-                    $new_keys_name.attr('placeholder', tornSettingsDict[$new_keys_name.attr('placeholder')]);
-                }
-                // api类型
-                const $key_type = $('div[class*="typesDropdown___"] button.down');
-                if (tornSettingsDict[$key_type.text().trim()]) {
-                    $key_type.text(tornSettingsDict[$key_type.text().trim()]);
-                }
-                // api类型选择框
-                const $type_down = $('div[class*="typesDropdown___"] div.down li');
-                $type_down.each((i, e) => {
-                    if (tornSettingsDict[$(e).text().trim()]) {
-                        $(e).text(tornSettingsDict[$(e).text().trim()]);
-                    }
-                });
-                return;
-            }
-        };
-        trans();
-        OB.observe($$.get(0), {
-            characterData: true,
-            attributes: true,
-            subtree: true,
-            childList: true
-        });
-        return;
-    }
-
-    /*
-    展柜
-     */
-    if (isTransEnabled && window.location.href.contains(/displaycase\.php/)) {
-        const $page_wrapper = document.querySelector('#display-page-wrap');
-        initOB($page_wrapper, {
-                subtree: true,
-                attributes: true,
-                childList: true
-            },
-            () => {
-                // 标题和右边的链接
-                titleTrans();
-                // 右上角返回按钮
-                const $back_to_profile = $page_wrapper.querySelector('#back');
-                if ($back_to_profile) {
-                    const spl = $back_to_profile.innerText.split(/('s |s' )/);
-                    if (spl.length === 3 && spl[2] === 'Profile') {
-                        $back_to_profile.innerText = `${spl[0]}的个人资料`;
-                    }
-                }
-                const $display_cabinet = $page_wrapper.querySelector('.display-cabinet');
-                if ($display_cabinet) {
-                    // 物品名
-                    const $item_name = $display_cabinet.querySelectorAll('div.b-item-name span:nth-of-type(2)');
-                    $item_name.forEach((e) => {
-                        if (itemNameDict[e.innerText]) {
-                            e.innerText = itemNameDict[e.innerText];
-                        }
-                    });
-                    // 展开详细框
-                    const $show_item_info = $display_cabinet.querySelector('.show-item-info');
-                    showItemInfoTrans($show_item_info);
-                }
-            });
-        return;
-    }
-
-    /**
-     * 升级页面
-     */
-    if (isTransEnabled && window.location.href.indexOf('level2.php') >= 0) {
-    }
-
-    /**
-     *  医院页面
-     */
-    if (isTransEnabled && window.location.href.indexOf("hospitalview.php") >= 0) {
-        const hospitalOB = new MutationObserver(hosOBInit);
-
-        function hosOBInit() {
-            hospitalOB.disconnect();
-            hospTrans();
-            hospitalOB.observe($('div.content-wrapper')[0], {childList: true, subtree: true});
-        }
-
-        function hospTrans() {
-            titleTrans();
-            contentTitleLinksTrans();
-
-            // 顶部提示信息
-            $('div[class^="msg right-round"]').contents().each((i, e) => (hosDict[e.nodeValue.trim()]) && (e.nodeValue = hosDict[e.nodeValue.trim()]));
-
-            //玩家列表标题
-            $('div[class^="users-list-title  title-black top-round m-top10"] span').contents().each((i, e) => {
-                if (e.nodeValue && hosDict[e.nodeValue.trim()]) {
-                    e.nodeValue = e.nodeValue.replace(e.nodeValue, hosDict[e.nodeValue.trim()]);
-                }
-            })
-
-            //玩家列表住院理由
-            $('ul[class^="user-info-list-wrap"] span[class^="reason"]').each((i, e) => {
-                let reasonStr = $(e).get(0).childNodes[1].nodeValue.trim();
-
-                if (hosDict[reasonStr]) {
-                    $(e)[0].childNodes[1].nodeValue = hosDict[reasonStr];
-                } else if (reasonStr.indexOf("Crashed") >= 0) {
-                    $(e)[0].childNodes[1].nodeValue = reasonStr
-                        .replace("Crashed her", hosDict["Crashed her"])
-                        .replace("Crashed his", hosDict["Crashed his"]);
+            $('ul#giver-tabs a.ui-tabs-anchor').each((i, e) => {
+                if ($(e).children().hasClass('mission-complete-icon')) {
+                    taskList[i] = e.innerText.trim();
                 } else {
-                    switch (reasonStr) {
-                        case "Attacked by":
-                            $(e)[0].childNodes[1].nodeValue = hosDict["general"];
-                            $(e).append(" 攻击");
-                            break;
-                        case "Hospitalized by":
-                            $(e)[0].childNodes[1].nodeValue = hosDict["general"];
-                            $(e).append(" 殴打并送入医院");
-                            break;
-                        case "Mugged by":
-                            $(e)[0].childNodes[1].nodeValue = hosDict["general"];
-                            $(e).append(" 抢劫");
-                            break;
-                    }
+                    taskList[i] = $(e).clone().children().remove().end().text().trim();
                 }
-            })
-        }
-
-        hospTrans();
-        hospitalOB.observe($('div.content-wrapper')[0], {childList: true, subtree: true});
-        return;
-    }
-
-    /**
-     * 帮派页面
-     */
-    if (isTransEnabled && window.location.href.indexOf("actions.php") >= 0) {
-        const factionOB = new MutationObserver(factionOBInit);
-
-        function factionOBInit() {
-            factionOB.disconnect();
-            factionTrans();
-            factionOB.observe($('div.content-wrapper')[0], {childList: true, subtree: true});
-        }
-
-        const factionDict = {
-            "INFO": "信息",
-            "TERRITORY": "地盘",
-            "RANK": "名次",
-            "CRIMES": "组织犯罪",
-            "UPGRADES": "升级",
-            "ARMORY": "军械库",
-            "CONTROLS": "控制面板",
-            "FACTION": "帮派",
-            "YOUR FACTION IS NOT IN A WAR": "你的帮派没有处于战争状态",
-            "TIER": "级别",
-            "RESPECT": "声望",
-            "No active chain": "暂无攻击链",
-            "Main News": "主要消息",
-            "Attacking": "攻击",
-            "Funds": "资金流动",
-            "Armory": "军械库",
-            "Crimes": "组织犯罪",
-            "Membership": "成员资格",
-            "has claimed sovereignty of": "",
-            "has abandoned": "放弃了地盘",
-            "Achieved a chain of": "达成了连击链值",
-            "and": "和",
-            "respect [": "点声望 [",
-            "deposited ${$1}": "存放了${$1}",
-            "Leadership was transferred to": "帮派领导权被移交给了 ",
-            "Someone mugged": "有人抢劫了 ",
-            "hospitalized": " 暴打了 ",
-            "mugged": " 抢劫了 ",
-            "attacked": " 攻击了 ",
-            "but lost": "  但是输了",
-            "Someone attacked": "有人攻击了 ",
-            "Someone hospitalized": "有人暴打了 "
-        }
-
-        function factionTrans() {
-            titleTrans();
-            contentTitleLinksTrans();
-
-            //帮派大标题
-            $('span[class^="tab-name"]').each((i, e) => {
-                if (factionDict[$(e).text().trim()]) {
-                    $(e).text(factionDict[$(e).text().trim()]);
-                }
-            })
-
-            //帮派战争状态
-            $('div[class^="f-msg"]').contents().each((i, e) => {
-                let word2Trans = $(e).text().trim().split(":")[0];
-                if (word2Trans && factionDict[word2Trans]) {
-                    $(e).text($(e).text().replace(word2Trans, factionDict[word2Trans]));
-                }
-            })
-
-            //攻击链盒
-            $('div[class^="chain-box"]').contents().each((i, e) => {
-                if (factionDict[$(e).text().trim()]) {
-                    $(e).text(factionDict[$(e).text().trim()]);
-                }
-            })
-
-            //帮派消息类别
-            $('div[class^="newsHeader"]').contents().each((i, e) => {
-                if (factionDict[$(e).text().trim()]) {
-                    $(e).text(factionDict[$(e).text().trim()]);
-                }
-            })
-            //帮派主要消息日志
-            $('button[class^="tab"] ').each((i, e) => {
-                if ($(e).attr('class').indexOf("active") >= 0) {
-                    log($(e).text());
-                    switch ($(e).text().trim()) {
-                        case "主要消息":
-                            $('ul[class^="news-list"] span[class^="info"]').contents().each((i, u) => {
-                                if (factionDict[$(u).text().trim()]) {
-                                    u.nodeValue = u.nodeValue.replace($(u).text().trim(), factionDict[$(u).text().trim()]);
-                                }
-                            })
-                            break;
-                        case "攻击":
-                            $('ul[class^="news-list"] span[class^="info"]').find('*').contents().each((i, u) => {
-                                log($(u).text().trim())
-                                if (factionDict[$(u).text().trim()]) {
-                                    u.nodeValue = factionDict[$(u).text().trim()];
-                                }
-                            })
-                            break;
-                        case "资金流动":
-                            $('ul[class^="news-list"] span[class^="info"]').contents().each((i, u) => {
-                                if (u.nodeValue) {
-                                    u.nodeValue = u.nodeValue.replace("deposited", "存放了");
-                                }
-                            })
-                            break;
-                    }
-                }
-            })
-            // //帮派主要消息日志
-            // $('ul[class^="news-list"] span[class^="info"]').contents().each((i, e) => {
-            //     if (factionDict[$(e).text().trim()]) {
-            //         e.nodeValue = e.nodeValue.replace($(e).text().trim(), factionDict[$(e).text().trim()]);
-            //     }
-            // })
-
-        }
-
-        factionTrans();
-        factionOB.observe($('div.content-wrapper')[0], {childList: true, subtree: true});
-        return;
-    }
-
-    /**
-     * pc电脑
-     */
-    if (isTransEnabled && window.location.href.contains(/pc\.php/)) {
-        const $$ = $('.content-wrapper');
-        const OB = new MutationObserver(() => {
-            OB.disconnect();
-            titleTrans();
-            contentTitleLinksTrans();
-            trans();
-            OB.observe($$.get(0), {
-                characterData: true,
-                attributes: true,
-                subtree: true,
-                childList: true
             });
-        });
-        const trans = () => {
-            // 黑框
-            const $black_title = $('div.title-black');
-            if (pcDict[$black_title.text().trim()]) {
-                $black_title.text(pcDict[$black_title.text().trim()]);
-            }
+            // 助手注入
+            $('div.max-height-fix.info').each((i, e) => {
+                if ($(e).find('.wh-translated').length !== 0) return;
+                $(e).append(`<div class="wh-translated"><h6 style="color:green"><b>任务助手</b></h6><p>${getTaskHint(taskList[i])}</p></div>`);
+            });
+            // 任务目标
+            $('ul.tasks-list span.title-wrap').contents().each((i, e) => {
+                if (e.nodeType === 3) {
+                    if (missionDict[e.nodeValue.trim()]) {
+                        e.nodeValue = missionDict[e.nodeValue.trim()];
+                    }
+                }
+            });
         };
         trans();
         OB.observe($$.get(0), {
@@ -7170,47 +4980,14 @@ display:none !important;
             subtree: true,
             childList: true
         });
-        return;
     }
 
-    /*
-    日历
-     */
-    if (window.location.href.contains(/calendar\.php/)) {
-        const $root = document.querySelectorAll('#calendar-root');
-        if (isTransEnabled) $root.forEach(el => {
-            initOB(el, {childList: true, subtree: true}, () => {
-                // 页标题
-                const $h4_title = el.querySelectorAll('h4[class^="title___"]');
-                titleTransReact($h4_title);
-                // 页标题右侧链接
-                const $link_title = el.querySelectorAll('div[class^="linksContainer___"] span[class^="linkTitle___"]');
-                contentTitleLinksTransReact($link_title);
-                // 月标题
-                const $month_title = el.querySelectorAll('div[class^="monthName___"]');
-                $month_title.forEach(e => {
-                    if (calDict[e.innerText.trim()]) e.innerText = calDict[e.innerText.trim()];
-                });
-            });
-        });
-        return;
-    }
-
-    /*
-    圣诞小镇
-     */
-    if (window.location.href.contains(/christmas_town\.php/)) {
+    // 圣诞小镇
+    if (href.contains(/christmas_town\.php/)) {
         let $root = document.querySelector('#christmastownroot');
-        if (isTransEnabled) {
-            const $title_wrapper = $root.querySelector('div[class^="appHeaderWrapper___"]');
-            // 标题和右边的链接
-            initOB($title_wrapper, {childList: true, subtree: true}, () => {
-                titleTransReact();
-                contentTitleLinksTransReact();
-            });
-        }
+        const {xmasTownWT, xmasTownNotify} = getWhSettingObj()
         // 解密攻略
-        if (getWhSettingObj().xmasTownWT) {
+        if (xmasTownWT) {
             const insert_html = `<div id="wh-xmas-cont">
 <div class="title-black"><span>水晶球解密地图攻略</span><span><button style="color: white">[隐藏]</button></span></div>
 <div class="cont-gray select-wrap dropdown-new dropdown-default">
@@ -7513,7 +5290,7 @@ margin: 0 0 3px;
             });
         }
         // 宝箱检测
-        if (getWhSettingObj().xmasTownNotify) {
+        if (xmasTownNotify) {
             const chestTypeDict = {'1': '金', '2': '银', '3': '铜',};
             const chestTypeColorDict = {'1': 'gold', '2': 'silver', '3': 'sandybrown',};
             const lootTypeDict = {'chests': '钥匙箱', 'gifts': '礼物', 'combinationChest': '密码箱', 'keys': '钥匙',};
@@ -7748,17 +5525,9 @@ margin: 0 0 3px;
             });
             getDOMOb.observe($root, {childList: true, subtree: true});
         }
-        return;
     }
 
-    /**
-     * itemuseparcel.php
-     */
-
-    /**
-     * 通知翻译
-     * @param events
-     */
+    // 通知翻译
     function eventsTrans(events = $('span.mail-link')) {
         // if (!wh_trans_settings.transEnable) return;
         const index = window.location.href.indexOf('events.php#/step=received') >= 0 ? 1 : 0;
@@ -8557,9 +6326,7 @@ margin: 0 0 3px;
         });
     }
 
-    /**
-     * 页标题右侧按钮
-     */
+    // 页标题右侧按钮
     function contentTitleLinksTrans() {
         const $links_default = document.querySelectorAll('div.content-title span:nth-child(2)');
         const $links = $links_default.length === 0
@@ -9348,10 +7115,10 @@ z-index:100001;
             if (lowest_item['cost'] <= lower_price) {
                 if (priceWatcher['watch-xan-lower-id'] !== lowest_item['ID']) {
                     priceWatcher['watch-xan-lower-id'] = lowest_item['ID'];
-                    WHNotify(`XAN新低价：$${toThousands(lowest_item['cost'])}( < $${toThousands(lower_price)}) - <a href="/imarket.php#/p=shop&step=shop&type=&searchname=Xanax" target="_blank">点击转跳</a>`,{
-                        timeout:6,
-                        sysNotify:true,
-                        sysNotifyClick:()=>window.open('https://www.torn.com/imarket.php#/p=shop&step=shop&type=&searchname=Xanax')
+                    WHNotify(`XAN新低价：$${toThousands(lowest_item['cost'])}( < $${toThousands(lower_price)}) - <a href="/imarket.php#/p=shop&step=shop&type=&searchname=Xanax" target="_blank">点击转跳</a>`, {
+                        timeout: 6,
+                        sysNotify: true,
+                        sysNotifyClick: () => window.open('https://www.torn.com/imarket.php#/p=shop&step=shop&type=&searchname=Xanax')
                     });
                 }
             }
@@ -9392,5 +7159,2095 @@ z-index:100001;
             // 全部在后台，使用唯一id判断
             return uuid === localStorage.getItem('whuuid')
         };
+    }
+
+    // 翻译
+    function transToZhCN(href, onoff) {
+        if (!onoff) return;
+
+        // 时分秒转换
+        String.prototype.replaceHMS = function replaceHMS() {
+            return this.replace('and', '')
+                .replace('days', '天')
+                .replace('days', '天')
+                .replace('hours', '小时')
+                .replace('hour', '小时')
+                .replace('minutes', '分钟')
+                .replace('minute', '分钟')
+                .replace('seconds', '秒钟')
+                .replace('second', '秒钟');
+        };
+
+        // 数词转换 a an some
+        String.prototype.numWordTrans = function numWordTrans() {
+            return this.replace(/\ban\b/, '1 个')
+                .replace(/\ba\b/, '1 个')
+                .replace(/\bsome\b/, '1 个')
+                .replace(/([0-9])x\b/, '$1 个');
+        };
+
+        // 边栏
+        let sidebarTimeOut = 60;
+        const sidebarInterval = setInterval(() => {
+            // 60秒后取消定时
+            if ($('div[class^="sidebar"]').length === 0) {
+                sidebarTimeOut--;
+                if (sidebarTimeOut < 0) {
+                    clearInterval(sidebarInterval);
+                }
+                return;
+            }
+            // 边栏块标题
+            $('h2[class^="header"]').each((i, e) => {
+                if (!sidebarDict[e.firstChild.nodeValue]) return;
+                e.firstChild.nodeValue = sidebarDict[e.firstChild.nodeValue];
+            });
+            // 边栏人物名字
+            $('span[class^="menu-name"]').each((i, e) => {
+                e.firstChild.nodeValue = '名字:';
+            });
+            // 钱 等级 pt 天赋点
+            $('p[class^="point-block"]').each((i, e) => {
+                if (sidebarDict[e.firstChild.firstChild.nodeValue])
+                    e.firstChild.firstChild.nodeValue = sidebarDict[e.firstChild.firstChild.nodeValue];
+            });
+            // 4条 状态条
+            $('p[class^="bar-name"]').each((i, e) => {
+                if (sidebarDict[e.firstChild.nodeValue])
+                    e.firstChild.nodeValue = sidebarDict[e.firstChild.nodeValue];
+            });
+            // 边栏菜单
+            $('span[class^="linkName"]').each((i, e) => {
+                if (sidebarDict[e.firstChild.nodeValue])
+                    e.firstChild.nodeValue = sidebarDict[e.firstChild.nodeValue];
+            });
+            // [use]按钮
+            if (document.querySelector('#pointsMerits'))
+                $('#pointsMerits')[0].firstChild.nodeValue = '[使用]';
+            if (document.querySelector('#pointsPoints'))
+                $('#pointsPoints')[0].firstChild.nodeValue = '[使用]';
+            if (document.querySelector('#pointsLevel'))
+                $('#pointsLevel')[0].firstChild.nodeValue = '[升级]';
+
+            // 手机 区域菜单
+            $('div[class*="areas-mobile"] span:nth-child(2)').contents().each((i, e) => {
+                //log(e);
+                if (sidebarDict[e.nodeValue])
+                    e.nodeValue = sidebarDict[e.nodeValue];
+            });
+
+            clearInterval(sidebarInterval);
+        }, 1000);
+
+        // 迷你资料卡
+        const miniProfile = function miniprof() {
+            const miniprofOB = new MutationObserver(_ => {
+                miniprofOB.disconnect();
+                miniprofTrans();
+                miniprofOB.observe($('div.profile-mini-root').get(0), {
+                    attributes: true,
+                    childList: true,
+                    subtree: true
+                });
+            });
+            const miniprofTrans = function miniprofTrans() {
+                // 迷你资料卡状态
+                playerStatusTrans($('div.profile-mini-root div.description span'));
+                // 转钱
+                sendCashTrans('div.profile-mini-root');
+            };
+            if ($('div.profile-mini-root').length > 0)
+                miniprofTrans();
+            else {
+                const intervalInit = setInterval(() => {
+                    const miniProfileFirst = $('div.profile-mini-root').get(0);
+                    if (miniProfileFirst) {
+                        clearInterval(intervalInit);
+                        miniprofTrans();
+                        miniprofOB.observe(miniProfileFirst, {attributes: true, childList: true, subtree: true});
+                    }
+                }, 1000);
+            }
+        };
+        miniProfile();
+
+        // header
+        if (document.querySelector('div#header-root')) {
+            const headerOB = new MutationObserver(_ => {
+                headerOB.disconnect();
+                headerTrans();
+                headerOB.observe($('div#header-root')[0], {childList: true, subtree: true, attributes: true});
+            });
+
+            const headerTrans = function headerTrans() {
+                // 搜索内容下拉框中的文字 已选中
+                if (headerDict[$('div.find button.toggler.down').text()])
+                    $('div.find button.toggler.down').text(headerDict[$('div.find button.toggler.down').text()]);
+                // pc端 搜索下拉框点击后的搜索类型文字
+                $('div.find li.item').each((i, e) => {
+                    if (headerDict[$(e).text()])
+                        $(e).text(headerDict[$(e).text()]);
+                });
+                // 手机端 搜索下拉框点击后的搜索类型文字
+                $('li[class^="search-type-"] label').each((i, e) => {
+                    if (headerDict[$(e).text()])
+                        $(e).text(headerDict[$(e).text()]);
+                });
+                // 搜索框placeholder
+                if (headerDict[$('input[class^="searchInput"]').attr('placeholder')])
+                    $('input[class^="searchInput"]').attr('placeholder',
+                        headerDict[$('input[class^="searchInput"]').attr('placeholder')]);
+                // 高级搜索框 search by
+                if (headerDict[document.querySelector('div#header-root legend.title').innerText])
+                    $('div#header-root legend.title').text(headerDict[$('div#header-root legend.title').text()]);
+                // 高级搜索框的条件 左 键
+                $('ul.advancedSearchFormBody label.label').each((i, e) => {
+                    if (headerDict[$(e).text()])
+                        $(e).text(headerDict[$(e).text()]);
+                });
+                // 高级搜索框的已选中
+                $('ul.advancedSearchFormBody div.select-wrapper button.toggler.down').each((i, e) => {
+                    // log($(e).text())
+                    if (headerDict[$(e).text().trim()])
+                        $(e).text(headerDict[$(e).text().trim()]);
+                    else if (propertyDict[$(e).text().trim()])
+                        $(e).text(propertyDict[$(e).text().trim()]);
+                });
+                // 高级搜索的下拉选项
+                $('ul.advancedSearchFormBody li.item').each((i, e) => {
+                    if (headerDict[$(e).text()])
+                        $(e).text(headerDict[$(e).text()]);
+                    else if (propertyDict[$(e).text()])
+                        $(e).text(propertyDict[$(e).text()]);
+                });
+                // 高级搜索的"Not"
+                $('ul.advancedSearchFormBody label.search-condition-not').each((i, e) => {
+                    if (headerDict[$(e).text()])
+                        $(e).text(headerDict[$(e).text()]);
+                });
+                // 高级搜索的"to"
+                $('ul.advancedSearchFormBody label[for*="To"]').each((i, e) => {
+                    if (headerDict[$(e).text()])
+                        $(e).text(headerDict[$(e).text()]);
+                });
+                // 高级搜索的reset search按钮
+                $('form.form-search-extend div.bottom button').each((i, e) => {
+                    if (headerDict[$(e).text()])
+                        $(e).text(headerDict[$(e).text()]);
+                });
+                // log按钮“view log”
+                const $view_log = $('div.recentHistory a[class^="link"] span[class^="text"]')
+                if (headerDict[$view_log.text().trim()])
+                    $view_log
+                        .text(headerDict[$view_log.text().trim()]);
+                // 点击头像打开的菜单
+                $('ul.settings-menu span').each((i, e) => {
+                    if (headerDict[$(e).text()] && e.childNodes.length === 1)
+                        $(e).text(headerDict[$(e).text()]);
+                    else if (e.childNodes.length === 3)
+                        if (headerDict[e.firstChild.nodeValue])
+                            e.firstChild.nodeValue = headerDict[e.firstChild.nodeValue];
+                });
+            };
+            headerTrans();
+            headerOB.observe($('div#header-root')[0], {childList: true, subtree: true, attributes: true});
+        }
+
+        // chatbox
+        if (document.querySelector('div#chatRoot')) {
+            const chatOB = new MutationObserver(_ => {
+                chatOB.disconnect();
+                chatTrans();
+                chatOB.observe($('div#chatRoot').get(0), {childList: true, subtree: true, attributes: true});
+            });
+            const chatTrans = function chatTrans() {
+                // 聊天框的标题
+                $('div#chatRoot div[class^="chat-box-title"] span[class^="name"]').each((i, e) => {
+                    if (chatDict[$(e).text().trim()])
+                        $(e).text(chatDict[$(e).text().trim()]);
+                });
+                // 聊天设置的左边label
+                $('div[class^="chat-settings-opts"] div[class*="label"]').each((i, e) => {
+                    if ($(e).next().children('div.rc-slider').length > 0) {
+                        // 高度和宽度有响应式的%
+                        if (chatDict[$(e).text().split(' ')[0]]) {
+                            $(e).text($(e).text().replace($(e).text().split(' ')[0], chatDict[$(e).text().split(' ')[0]]));
+                        }
+                        return;
+                    }
+                    if (chatDict[$(e).text().trim()])
+                        $(e).text(chatDict[$(e).text().trim()]);
+                });
+                // 选项下拉栏
+                $('div[class^="dropdown-root"]').find('*').contents().each((i, e) => {
+                    if (e.nodeType !== 3) return;
+                    if (chatDict[e.nodeValue])
+                        e.nodeValue = chatDict[e.nodeValue];
+                });
+                // 设置的两个选项
+                $('label[class^="privacy-label"]').each((i, e) => {
+                    if (chatDict[$(e).text().trim()])
+                        $(e).text(chatDict[$(e).text().trim()]);
+                });
+                // people中的5个分类 faction friend...
+                $('ul[class^="type-list"] li a').each((i, e) => {
+                    if (chatDict[$(e).text().trim()])
+                        $(e).text(chatDict[$(e).text().trim()]);
+                });
+                // people中的列表添加框placeholder
+                $('div.ac-wrapper input.ac-search').each((i, e) => {
+                    if (chatDict[$(e).attr('placeholder')])
+                        $(e).attr('placeholder', chatDict[$(e).attr('placeholder')]);
+                });
+                //
+                if (eventsDict[$('div#chatRoot div[class^="overview"] > div > div:nth-child(2)').text().trim()]) {
+                    $('div#chatRoot div[class^="overview"] > div > div:nth-child(2)')
+                        .text(
+                            eventsDict[document.querySelector('div#chatRoot div[class^="overview"] > div > div:nth-child(2)').innerText.trim()]
+                        );
+                }
+            };
+            chatTrans();
+            chatOB.observe($('div#chatRoot').get(0), {childList: true, subtree: true, attributes: true});
+        }
+
+        // 搜索玩家的4个分类按钮
+        const playerSearchBoxTrans = function playerSearchBoxTrans() {
+            const opt = {
+                childList: true,
+                subtree: true,
+            };
+            const psbtOB = new MutationObserver(mutation => {
+                const $people_cat = $('ul.ac-options li a');
+                psbtOB.disconnect();
+                mutation.forEach((e) => {
+                    if (e.target.className === 'ac-wrapper') {
+                        $people_cat.each((i, e) => {
+                            if (chatDict[$(e).text().trim()])
+                                $(e).text(chatDict[$(e).text().trim()]);
+                        });
+                    }
+                })
+                psbtOB.observe(document.body, opt);
+            });
+            psbtOB.observe(document.body, opt);
+        }
+        playerSearchBoxTrans();
+
+        // 飞行页面
+        if (href.includes('index.php') &&
+            !!document.querySelector('div.travelling h4')) {
+            const travelOB = new MutationObserver(travelOBInit);
+
+            function travelOBInit() {
+                travelOB.disconnect();
+                travelTrans();
+                travelOB.observe($('div.content-wrapper')[0], {childList: true, subtree: true});
+            }
+
+            function travelTrans() {
+                titleTrans();
+                contentTitleLinksTrans();
+
+                // 气泡
+                if (tipsDict[document.querySelector('div.inner-popup').innerText.trim()])
+                    $('div.inner-popup').text(tipsDict[$('div.inner-popup').text().trim()]);
+                // Remaining Flight Time -
+                $('div.destination-title span').contents().each((i, e) => {
+                    if (e.childNodes.length !== 0) return;
+                    if (!e.nodeValue) return;
+                    if (travelingDict[e.nodeValue.trim()])
+                        e.nodeValue = travelingDict[e.nodeValue.trim()];
+                });
+                // torntools扩展插件落地时间
+                if (document.querySelector('div.tt-landing-time span.description').innerText.split(' ')[0] === 'Landing') {
+                    const landingTime = $('div.tt-landing-time span.description').text().slice(11, 19);
+                    $('div.tt-landing-time span.description').text('于 ' + landingTime + ' 降落');
+                }
+            }
+
+            travelTrans();
+            travelOB.observe(document.querySelector('div.content-wrapper'), {childList: true, subtree: true});
+        }
+
+        // 主页
+        if (href.contains(/index\.php/) && document.querySelector('h4#skip-to-content').innerText.contains(/Home/)) {
+            titleTrans();
+            contentTitleLinksTrans();
+            // 主页黑框标题文字翻译
+            $('h5.box-title').each((i, e) => {
+                if (!homeDict[e.firstChild.nodeValue]) return;
+                // 翻译最近5条通知
+                if (e.firstChild.nodeValue === 'Latest Events') {
+                    //homeEvents = $(e).parent().next().find('span');
+                    eventsTrans($(e).parent().next().find('span'));
+                }
+                // 翻译最近5个攻击
+                else if (e.firstChild.nodeValue === 'Latest Attacks') {
+                    $(e).parent().next().find('span').each(function () {
+                        let nodes = $(this)[0].childNodes;
+                        nodes.forEach((v, i) => {
+                            if (v.nodeValue !== null) {
+                                let waitToTsf = v.nodeValue.toString().indexOf(" ");
+                                let words = v.nodeValue.replace("\n", "").toString().split(" ");
+                                words.forEach((word, j) => {
+                                    if (attackDict.hasOwnProperty(word)) {
+                                        if (word === "Someone") {
+                                            $(this)[0].childNodes[i].nodeValue = $(this)[0].childNodes[i].nodeValue.replace(" ", "");
+                                        }
+                                        let change = $(this)[0].childNodes[i].nodeValue.replace(word, attackDict[word]);
+                                        $(this)[0].childNodes[i].nodeValue = change;
+
+                                    }
+                                })
+                            }
+                        }, this);
+                    });
+                }
+                //e.firstChild.nodeValue = homeDict[e.firstChild.nodeValue];
+                // 隐藏原dom元素避免与torntools发生冲突
+                if ($(e).css('display') !== 'none')
+                    $(e).css('display', 'none').after(`<h5 class="box-title">` + homeDict[e.firstChild.nodeValue] + `</h5>`);
+            });
+            // 各表格左边的键
+            $('span.divider span').each((i, e) => {
+                if (homeDict[$(e).text()])
+                    $(e).text(homeDict[$(e).text()]);
+            });
+            return;
+        }
+
+        // city
+        if (href.includes('city.php')) {
+            const cityOB = new MutationObserver(cityOBInit);
+
+            function cityOBInit() {
+                cityOB.disconnect();
+                cityTrans();
+                cityOB.observe($('div.content-wrapper')[0], {childList: true, subtree: true});
+            }
+
+            function cityTrans() {
+                titleTrans();
+                contentTitleLinksTrans();
+
+                // Map or Quick Links
+                $('a.ui-tabs-anchor span').each((i, e) => {
+                    if (cityDict[$(e).text()])
+                        $(e).text(cityDict[$(e).text()]);
+                });
+
+                // 标志建筑 标题
+                if (cityDict[$('div.title-black').text()])
+                    $('div.title-black').text(cityDict[$('div.title-black').text()]);
+
+                // 标志建筑 6个分类
+                $('ul.map-symbols span').each((i, e) => {
+                    if (cityDict[$(e).text()])
+                        $(e).text(cityDict[$(e).text()]);
+                });
+
+                // 地图显示模式
+                // 不完全显示 文字
+                $('span.inactive-mode').html(cityDict['inactive-mode1'] + `<br>` + cityDict['inactive-mode2']);
+                // 完全显示 文字
+                $('span.active-mode').text(cityDict['active-mode']);
+                // 开关
+                $('div.on-label').text('已开启');
+                $('div.off-label').text('已关闭');
+
+                // 快速链接中的分类标题
+                $('li.title').each((i, e) => {
+                    if (cityDict[$(e).text()])
+                        $(e).text(cityDict[$(e).text()]);
+                });
+
+                // 快速链接中的区域
+                $('li a[class^="font-num-"] span').each((i, e) => {
+                    // log($(e).prev().attr('class')==='cql-gym')
+                    if (cityDict[$(e).text()]) {
+                        $(e).text(cityDict[$(e).text()]);
+                    } else if ($(e).prev().attr('class') === 'cql-your-property') {
+                        if (propertyDict[$(e).text().trim().slice(5)]) {
+                            $(e).text('你的' + propertyDict[$(e).text().trim().slice(5)]);
+                        }
+                    } else if ($(e).prev().attr('class') === 'cql-gym') {
+                        if (gymList[$(e).text().trim()]) {
+                            $(e).text(gymList[$(e).text()]);
+                        } else if (gymList[$(e).text().trim().split(' ').slice(0, 2).join(' ')]) {
+                            $(e).text(gymList[$(e).text().trim().split(' ').slice(0, 2).join(' ')]);
+                        }
+                    }
+                });
+
+                // 快速链接中的分类选择
+                $('div.sort-by label.marker-css').each((i, e) => {
+                    if (cityDict[$(e).text()])
+                        $(e).text(cityDict[$(e).text()]);
+                });
+
+                // 快速链接中的sort by
+                $('span#wai-sort-by').each((i, e) => {
+                    if (cityDict[$(e).text()])
+                        $(e).text(cityDict[$(e).text()]);
+                });
+            }
+
+            cityTrans();
+            cityOB.observe(document.querySelector('div.content-wrapper'), {childList: true, subtree: true});
+            return;
+        }
+
+        // gym健身房页面
+        if (href.includes('gym.php')) {
+            const gymOB = new MutationObserver(gymOBInit);
+
+            function gymOBInit() {
+                gymOB.disconnect();
+                gymTrans();
+                gymOB.observe($('div.content-wrapper')[0], {childList: true, subtree: true, attributes: true});
+            }
+
+            function gymTrans() {
+                titleTrans();
+                contentTitleLinksTrans();
+                const gymName = $('div[class^="notificationText"] b').text();
+
+                // 顶部提示信息
+                $('div[class^="notificationText"] p').contents().each((i, e) => {
+                    if (e.nodeName === 'B' && gymList[$(e).text().trim()]) {
+                        $(e).text(gymList[$(e).text().trim()]);
+                        return;
+                    }
+                    if (e.childNodes.length === 0 && gymDict[e.nodeValue.trim()])
+                        e.nodeValue = gymDict[e.nodeValue.trim()];
+                });
+                // 4属性标题
+                $('h3[class^="title"]').each((i, e) => {
+                    if (gymDict[$(e).text().trim()])
+                        $(e).text(gymDict[$(e).text().trim()]);
+                });
+                // 4属性的介绍 与冰蛙冲突
+                $('div[class^="description"] p:nth-child(1)').each((i, e) => {
+                    if (gymDict[$(e).text().trim()])
+                        $(e).text(gymDict[$(e).text().trim()]);
+                });
+                // 每次锻炼的花销
+                $('div[class^="description"] p:nth-child(2)').each((i, e) => {
+                    if (e.childNodes.length === 1) {
+                        if (gymDict[$(e).text().trim()])
+                            $(e).text(gymDict[$(e).text().trim()]);
+                    } else if (e.childNodes.length === 2) {
+                        if (gymDict[e.lastChild.nodeValue.trim()]) {
+                            e.lastChild.nodeValue = gymDict[e.lastChild.nodeValue.trim()];
+                        }
+                    }
+                });
+                // 锻炼页面所有按钮
+                $('button[class^="button"]').each((i, e) => {
+                    if (gymDict[$(e).text().trim()])
+                        $(e).text(gymDict[$(e).text().trim()]);
+                });
+                // cancel按钮
+                $('button[class^="cancel"]').each((i, e) => {
+                    if (gymDict[$(e).text().trim()])
+                        $(e).text(gymDict[$(e).text().trim()]);
+                });
+                // 锻炼的提示信息
+                $('div[class^="messageWrapper"] p').each((i, e) => {
+                    /**
+                     * todo
+                     * <p>You dug deep and completed 15 minutes of incline sprints</p>
+                     * <p role="alert" class="gained___3T_GZ">You gained 1,854.05 speed</p>
+                     */
+                    if (gymDict[$(e).text()])
+                        $(e).text(gymDict[$(e).text()]);
+                });
+                // 健身房信息 标题
+                $('div[class^="gymTitle"] h3').each((i, e) => {
+                    if (gymDict[$(e).text()])
+                        $(e).text(gymDict[$(e).text()]);
+                    else if (gymList[$(e).text().trim()])
+                        $(e).text(gymList[$(e).text().trim()]);
+                });
+                // 健身房信息 属性名
+                $('ul[class^="gymInfo"] b').each((i, e) => {
+                    if (gymDict[$(e).text().trim()])
+                        $(e).text(gymDict[$(e).text().trim()]);
+                });
+
+                // 健身房状态信息
+                // $('div[class^="gymStats"] b').each((i, e) => {
+                //     log(e)
+                //     if (gymDict[$(e).text().trim()])
+                //         $(e).text(gymDict[$(e).text().trim()]);
+                // });
+                //
+                // // 健身房状态值
+                // $('div[class^="gymStats"] span[class^=value]').each((i, e) => {
+                //     if ($(e).text().indexOf("per train") > 0)
+                //         $(e).text($(e).text().split(" ")[0] + gymDict["per train"]);
+                //     else if (gymDict[$(e).text().trim()])
+                //         $(e).text(gymDict[$(e).text().trim()]);
+                // });
+
+                // 健身房信息 属性值
+                $('ul[class^="gymInfo"] span[class^="value"]').each((i, e) => {
+                    if (gymDict[$(e).text().trim()])
+                        $(e).text(gymDict[$(e).text().trim()]);
+                });
+                // 健身房信息 具体锻炼项目
+                $('span[class^="exerciseName"]').each((i, e) => {
+                    if (gymDict[$(e).text().trim()])
+                        $(e).text(gymDict[$(e).text().trim()]);
+                });
+                // 购买提示信息
+                $('div[class^="confirmMessage"] p[role="alert"]').each((i, e) => {
+                    if (gymDict[$(e).text().trim()])
+                        $(e).text(gymDict[$(e).text().trim()]);
+                });
+            }
+
+            gymTrans();
+            gymOB.observe($('div.content-wrapper')[0], {childList: true, subtree: true, attributes: true});
+            return;
+        }
+
+        // 物品页面
+        if (href.contains(/item\.php/)) {
+            // 标题和右边的链接
+            initOB(document.querySelector('.content-title'), {childList: true},
+                () => {
+                    titleTrans();
+                    contentTitleLinksTrans();
+                });
+            // 套装预览中间的文字
+            const $loadouts_root = document.getElementById('loadoutsRoot');
+            if ($loadouts_root) {
+                initOB($loadouts_root, {subtree: true, attributes: true}, () => {
+                    const el = $loadouts_root.querySelector('div[class^="type___"]');
+                    if (el && itemPageDict[el.innerText.trim()]) {
+                        el.innerText = itemPageDict[el.innerText.trim()];
+                    }
+                });
+            }
+            // 手机选项按钮 物品名 物品详情
+            const options = {
+                attributes: true,
+                subtree: true,
+                attributeFilter: ["aria-hidden",]
+            };
+            const translated = {cat: '', count: -1};
+            const translatedOnce = {item_opt: -1, opt_icon_count: -1};
+            initOB(document.getElementById('category-wrap'), options, () => {
+                // 手机操作选项
+                const $item_opt = document.querySelectorAll(`ul.itemsList span.opt-name`);
+                if (translatedOnce.item_opt !== $item_opt.length - 1) {
+                    let count = -1;
+                    $item_opt.forEach((e, i) => {
+                        if (itemPageDict[e.firstChild.nodeValue.trim()]) {
+                            e.firstChild.nodeValue = itemPageDict[e.firstChild.nodeValue.trim()];
+                        }
+                        count = i;
+                    });
+                    translatedOnce.item_opt = count !== -1 ? count : -1;
+                }
+                // 物品名
+                const $active_tab = document.querySelector('ul.itemsList[aria-expanded="true"]');
+                if (!$active_tab) return;
+                const $active_item_list = $active_tab.querySelectorAll('span.name');
+                const itemCat = $active_tab.id;
+                if ($active_item_list.length - 1 !== translated.count || itemCat !== translated.cat) {
+                    let count = -1;
+                    // 物品名
+                    $active_item_list.forEach((e, i) => {
+                        if (!e.classList.contains('wh-translated')) {
+                            if (itemNameDict[e.innerText.trim()]) {
+                                e.classList.add('wh-translated');
+                                const trans_dom = document.createElement('span');
+                                trans_dom.classList.add('wh-translate');
+                                trans_dom.setAttribute('style', 'margin: 0 0 0 1em');
+                                trans_dom.append(itemNameDict[e.innerText.trim()]);
+                                e.after(trans_dom);
+                                // .after(`<span class="wh-translate" style="margin: 0 0 0 1em">${itemNameDict[$(e).text().trim()]}</span>`);
+                            }
+                        }
+                        count = i;
+                    });
+
+                    if (count !== -1) {
+                        translated.cat = itemCat;
+                        translated.count = count;
+                    }
+                }
+                // 物品详情
+                const $show_item_info = $active_tab.querySelector('li.show-item-info');
+                showItemInfoTrans($show_item_info);
+                // 物品右操作按钮
+                const $opt_icon_tooltip = $('ul.actions-wrap span.icon-h');
+                if (translatedOnce.opt_icon_count !== $opt_icon_tooltip.length - 1) {
+                    let count = -1
+                    $opt_icon_tooltip.each((i, e) => {
+                        if (itemPageDict[e.attributes.title.nodeValue]) {
+                            e.attributes.title.nodeValue = itemPageDict[e.attributes.title.nodeValue];
+                        }
+                        count = i;
+                    });
+                    if (count !== -1) {
+                        translatedOnce.opt_icon_count = count;
+                    }
+                }
+            });
+            // 黑框
+            const $title_black = document.querySelector('div.title-black');
+            if ($title_black) {
+                const $your_items = $title_black.querySelector('span.m-hide');
+                if (itemPageDict[$your_items.innerText.trim()]) {
+                    $your_items.innerText = itemPageDict[$your_items.innerText.trim()];
+                }
+                // 黑框分类标题
+                const $items_type_name = $title_black.querySelector('span.items-name');
+                initOB($items_type_name, {childList: true}, () => {
+                    if (itemPageDict[$items_type_name.innerText.trim()]) {
+                        $items_type_name.innerText = itemPageDict[$items_type_name.innerText.trim()];
+                    }
+                });
+            }
+            // 分类浮动文字
+            const $data_type = document.querySelectorAll('li#categoriesItem a');
+            $data_type.forEach((e) => {
+                if (itemPageDict[e.getAttribute('title')]) {
+                    e.setAttribute('title', itemPageDict[e.attributes.title.nodeValue]);
+                }
+            });
+            return;
+        }
+
+        // npc商店
+        if (href.contains(/(shops|bigalgunshop)\.php/)) {
+            // 标题和右边的链接
+            const $cont_title = document.querySelector('.content-title');
+            initOB($cont_title, {childList: true, subtree: true}, () => {
+                titleTrans();
+                contentTitleLinksTrans();
+            });
+            const $wrapper = document.querySelector('.content-wrapper');
+            // [购买部分]
+            const $buy_items_wrapper = $wrapper.querySelector('.buy-items-wrap');
+            if ($buy_items_wrapper) {
+                // 黑框标题
+                const $buy_black_title = $buy_items_wrapper.querySelector('.title-black');
+                if ($buy_black_title && npcShopDict[$buy_black_title.firstChild.nodeValue.trim()]) {
+                    $buy_black_title.firstChild.nodeValue = npcShopDict[$buy_black_title.firstChild.nodeValue.trim()];
+                }
+                // 各个物品
+                const $items = $buy_items_wrapper.querySelectorAll('ul.items-list > li.torn-divider');
+                $items.forEach(e => {
+                    // 物品名
+                    const $item_name = e.querySelector('span.desc span.name.bold');
+                    if ($item_name && itemNameDict[$item_name.innerText.trim()]) {
+                        $item_name.innerText = `${itemNameDict[$item_name.innerText.trim()]}(${$item_name.innerText.trim()})`;
+                    }
+                    // 类型和存货
+                    const $item_stock = e.querySelector('span.desc span.stock');
+                    if ($item_stock) $item_stock.childNodes.forEach(e => {
+                        if (e.nodeType === 1) {
+                            if (npcShopDict[e.innerText.trim()]) e.innerText = npcShopDict[e.innerText.trim()];
+                        } else {
+                            if (npcShopDict[e.nodeValue.trim()]) e.nodeValue = npcShopDict[e.nodeValue.trim()];
+                        }
+                    });
+                    // buy按钮
+                    const $buy_btn = e.querySelector('button.wai-support');
+                    if ($buy_btn && npcShopDict[$buy_btn.childNodes[0].nodeValue.trim()]) {
+                        $buy_btn.childNodes[0].nodeValue = npcShopDict[$buy_btn.childNodes[0].nodeValue.trim()];
+                    }
+                    // 买前确认
+                    const $confirm = e.querySelector('span.confirm');
+                    const $confirm_msg = $confirm.querySelector('span');
+                    if ($confirm_msg && npcShopDict[$confirm_msg.innerText.trim()]) {
+                        $confirm_msg.innerText = npcShopDict[$confirm_msg.innerText.trim()];
+                    }
+                    const $amount_item_name = $confirm.querySelector('span.count').nextSibling;
+                    if ($amount_item_name && !$amount_item_name.nodeValue.contains(CC_set)) {
+                        const item_name = $amount_item_name.nodeValue.trim().split(' ').slice(1, -1).join(' ');
+                        const item_name_trans = itemNameDict[item_name] || item_name;
+                        $amount_item_name.nodeValue = `个[${item_name_trans}]，总计$`;
+                    }
+                    const $confirm_a = $confirm.querySelectorAll('span.confirm-act a');
+                    $confirm_a.forEach(e => {
+                        if (npcShopDict[e.innerText.trim()]) e.innerText = npcShopDict[e.innerText.trim()];
+                    });
+                });
+                // 展开的物品详情
+                initOB($wrapper, {childList: true, subtree: true}, () => {
+                    const $item_desc = $wrapper.querySelector('.show-item-info') || $wrapper.querySelector('.view-item-info');
+                    showItemInfoTrans($item_desc);
+                });
+            }
+            // [卖出部分]
+            const $sell_items_wrapper = $wrapper.querySelector('.sell-items-wrap');
+            if ($sell_items_wrapper) {
+                // 黑框标题
+                const $title = $sell_items_wrapper.querySelectorAll('ul.title li');
+                $title.forEach(el => {
+                    el.childNodes.forEach(e => {
+                        if (e.nodeType === 1) {
+                            if (npcShopDict[e.innerText.trim()]) {
+                                e.innerText = npcShopDict[e.innerText.trim()];
+                                return;
+                            }
+                            const spl = e.innerText.trim().split(' ');
+                            if (spl.length > 3) {
+                                const shop_name = spl[2] === 'the' ? spl.slice(3).join(' ') : spl.slice(2).join(' ');
+                                const shop_name_trans = npcShopDict[shop_name] || titleDict[shop_name] || cityDict[shop_name] || null;
+                                e.innerText = `物品给${shop_name_trans || shop_name}`;
+                            }
+                        } else {
+                            if (npcShopDict[e.nodeValue.trim()]) e.nodeValue = npcShopDict[e.nodeValue.trim()];
+                        }
+                    });
+                });
+                // 物品名
+                const $items_name = $sell_items_wrapper.querySelectorAll('span.name');
+                $items_name.forEach(el => {
+                    if (itemNameDict[el.innerText.trim()]) el.innerText +=
+                        ` ${itemNameDict[el.innerText.trim()]}`;
+                });
+                // 按钮
+                const $btn = $sell_items_wrapper.querySelectorAll('button');
+                $btn.forEach(e => {
+                    if (npcShopDict[e.innerText.trim()]) e.innerText = npcShopDict[e.innerText.trim()];
+                });
+                // select btn
+                const $select_btn = $sell_items_wrapper.querySelector('li.select button.wai-btn');
+                if ($select_btn) {
+                    initOB($select_btn, {childList: true}, () => {
+                        if ($select_btn && npcShopDict[$select_btn.innerText.trim()]) {
+                            $select_btn.innerText = npcShopDict[$select_btn.innerText.trim()];
+                        }
+                    });
+                }
+                // 取消按钮
+                const $cancel = $sell_items_wrapper.querySelector('span.cancel a');
+                if ($cancel && npcShopDict[$cancel.innerText.trim()]) {
+                    $cancel.innerText = npcShopDict[$cancel.innerText.trim()];
+                }
+                // 卖出确认文字
+                const $sell_confirm = $sell_items_wrapper.querySelector('div.sell-confirm');
+                if ($sell_confirm) {
+                    const $msg = $sell_confirm.childNodes[0];
+                    if (npcShopDict[$msg.nodeValue.trim()]) $msg.nodeValue = npcShopDict[$msg.nodeValue.trim()];
+                    const $total_value = $sell_confirm.querySelector('span.profit').childNodes[0];
+                    if (npcShopDict[$total_value.nodeValue.trim()]) $total_value.nodeValue = npcShopDict[$total_value.nodeValue.trim()];
+                }
+            }
+            // [出售PT部分]
+            const $sell_pt_wrapper = $wrapper.querySelector('.sell-points-wrap');
+            if ($sell_pt_wrapper) {
+                // 黑框
+                const $title_black = $sell_pt_wrapper.querySelector('.title-black');
+                if (npcShopDict[$title_black.innerText.trim()]) {
+                    $title_black.innerText = npcShopDict[$title_black.innerText.trim()];
+                }
+            }
+            return;
+        }
+
+        // 股票
+        if (href.contains(/page\.php\?sid=stocks/)) {
+            const stockOB = new MutationObserver(() => {
+                stockOB.disconnect();
+                titleTrans();
+                contentTitleLinksTrans();
+                stockTrans();
+                stockOB.observe($('.content-wrapper').get(0), {
+                    characterData: true,
+                    attributes: true,
+                    subtree: true,
+                    childList: true
+                });
+            });
+            const stockTrans = function stockTrans() {
+                // 表头
+                $('ul.title-black').find('*').contents().each((i, e) => {
+                    if (e.nodeType === 3 && stockDict[e.nodeValue.trim()]) {
+                        e.nodeValue = stockDict[e.nodeValue.trim()];
+                    }
+                });
+                // 名称
+                $('div[class^="nameContainer"]').each((i, e) => {
+                    if (e.childNodes[0].nodeValue && stockDict[e.childNodes[0].nodeValue.trim()]) {
+                        e.childNodes[0].nodeValue = stockDict[e.childNodes[0].nodeValue.trim()];
+                    }
+                });
+                // 右侧bb名
+                $('div[class^="dividendInfo"] p').each((i, e) => {
+                    const spl = $(e).text().trim().split(' ');
+                    if (stockDict[$(e).text().trim()]) {
+                        $(e).text(stockDict[$(e).text().trim()]);
+                    } else if (/[0-9]x$/.test(spl[0])) {
+                        const itemName = spl.slice(1).join(' ');
+                        const num = spl[0].slice(0, -1);
+                        $(e).text(`${num}个${itemNameDict[itemName] ? itemNameDict[itemName] : itemName}`);
+                    }
+                });
+                // 股价详情
+                $('#panel-priceTab ul[role="tablist"] label span:last-child').each((i, e) => {
+                    if (stockDict[$(e).text()]) {
+                        $(e).text(stockDict[$(e).text()]);
+                    }
+                });
+                $('ul[class^="priceInfoList___"] li').contents().each((i, e) => {
+                    if (e.nodeType === 3) {
+                        if (stockDict[e.nodeValue.trim()]) {
+                            e.nodeValue = stockDict[e.nodeValue.trim()];
+                        }
+                    }
+                });
+                // 点开购买后
+                $('div#panel-ownedTab div[class^="manageBlock"] *').contents().each((i, e) => {
+                    if (e.nodeType === 1) {
+                        if (stockDict[$(e).text().trim()]) {
+                            $(e).text(stockDict[$(e).text().trim()]);
+                        }
+                    } else if (e.nodeType === 3) {
+                        if (stockDict[e.nodeValue.trim()]) e.nodeValue = stockDict[e.nodeValue.trim()];
+                        else if (/\$[0-9]+ after the 0\.1% fee of \$[0-9]+$/.test(e.nodeValue.trim())) {
+                            e.nodeValue = e.nodeValue.trim()
+                                .replace('after the', stockDict['after the'])
+                                .replace('fee of', stockDict['fee of']);
+                        }
+                    }
+                });
+                // 点开购买后的历史栏
+                $('div#panel-ownedTab div[class^="transactionsContainer"] li').each((i, e) => {
+                    e = e.childElementCount === 0 ? e : e.children[0];
+                    if (stockDict[$(e).text().trim()]) {
+                        $(e).text(stockDict[$(e).text().trim()]);
+                    }
+                });
+                // 历史购买show more
+                const $show_more = document.querySelector('li[class^="showMore___"] button');
+                if ($show_more && $show_more.innerText.trim().contains(/^Show [0-9]+ more$/)) {
+                    const number = $show_more.innerText.trim().split(' ')[1];
+                    $show_more.innerText = `显示另外${number}条`;
+                }
+                // 点开bb后
+                $('div#panel-dividendTab div[class^="message"] *').contents().each((i, e) => {
+                    if (e.nodeType !== 3) return;
+                    if (!e.nodeValue.trim()) return;
+                    if (stockDict[e.nodeValue.trim()]) {
+                        e.nodeValue = stockDict[e.nodeValue.trim()];
+                    }
+                    // 第n个increment 1st 2nd 3rd 4th
+                    else if (/[0-9][snrt][tdh]$/.test(e.nodeValue.trim())) {
+                        e.nodeValue = `第${e.nodeValue.trim().slice(0, -2)}个`;
+                    }
+                    // 物品
+                    else if (/[0-9]x$/.test(e.nodeValue.trim().split(' ')[0])) {
+                        const spl = e.nodeValue.trim().split(' ');
+                        const itemName = spl.slice(1).join(' ');
+                        e.nodeValue =
+                            ` ${spl[0].replace('x', '个')
+                            } ${itemNameDict[itemName] ? itemNameDict[itemName] : itemName
+                            }`;
+                    } else {
+                        if (/[\u4e00-\u9fa5]/.test(e.nodeValue)) return;
+                        if (/\b\$?[0-9,]+$/.test(e.nodeValue)) return;
+                        log(`未找到翻译：[${e.nodeValue.trim()}]`);
+                    }
+                });
+            };
+            stockTrans();
+            stockOB.observe($('.content-wrapper').get(0), {
+                characterData: true,
+                attributes: true,
+                subtree: true,
+                childList: true
+            });
+            return;
+        }
+
+        // 教育页面
+        if (href.indexOf('education.php') >= 0) {
+            const eduOB = new MutationObserver(eduOBInit);
+
+            function eduOBInit() {
+                eduOB.disconnect();
+                eduTrans();
+                eduOB.observe($('div.content-wrapper')[0], {childList: true, subtree: true});
+            }
+
+            function eduTrans() {
+                titleTrans();
+                contentTitleLinksTrans();
+
+                // 大科目、学院标题
+                $('div.content-wrapper div.title').each((i, e) => {
+                    if (eduDict[$(e).text().trim()])
+                        e.firstChild.nodeValue = eduDict[$(e).text().trim()];
+                });
+                // 教育主页提示内容 和 学院详情 小课程提示信息
+                $('div.content-wrapper div[class^="msg"]').find('*').contents().each((i, e) => {
+                    if (e.nodeValue === null) return;
+                    if (eduDict[e.nodeValue.trim()]) {
+                        e.nodeValue = eduDict[e.nodeValue.trim()];
+                    } else if (e.nodeValue.indexOf('second') >= 0 ||
+                        e.nodeValue.indexOf('minute') >= 0 ||
+                        e.nodeValue.indexOf('hour') >= 0 ||
+                        e.nodeValue.indexOf('day') >= 0) {
+                        e.nodeValue = e.nodeValue
+                            .replace('days', '天')
+                            .replace('day', '天')
+                            .replace('hours', '时')
+                            .replace('hour', '时')
+                            .replace('minutes', '分')
+                            .replace('minute', '分')
+                            .replace('and', '和')
+                            .replace('seconds', '秒')
+                            .replace('second', '秒');
+                    }
+                });
+                // 学院详情标题
+                $('div.content-wrapper div.title-black').each((i, e) => {
+                    if (e.childNodes.length === 3)
+                        if (eduDict[e.lastChild.nodeValue.trim()])
+                            e.lastChild.nodeValue = ' ' + eduDict[e.lastChild.nodeValue.trim()];
+                    if (eduDict[$(e).text().trim()])
+                        $(e).text(eduDict[$(e).text().trim()]);
+                });
+                // 学院详情 小课程标题
+                $('div.content-wrapper span.module-name').each((i, e) => {
+                    if (eduDict[$(e).text().trim()])
+                        $(e).text(eduDict[$(e).text().trim()]);
+                });
+                // 学院详情 课程的描述
+                $('div.content-wrapper p.desc').each((i, e) => {
+                    if (eduDict[$(e).text().trim()])
+                        $(e).text(eduDict[$(e).text().trim()]);
+                });
+                // 课程详情 7 标题
+                $('div.module-desc p.title').each((i, e) => {
+                    if (eduDict[$(e).text().trim()])
+                        $(e).text(eduDict[$(e).text().trim()]);
+                });
+                // 课程介绍中的所有li元素
+                $('div.module-desc ul.info').find('*').contents().each((i, e) => {
+                    if (e.nodeValue === null) return;
+                    if (eduDict[e.nodeValue.trim()])
+                        e.nodeValue = eduDict[e.nodeValue.trim()];
+                    else if (e.nodeValue.indexOf('Length') >= 0) {
+                        e.nodeValue = e.nodeValue.replace('Length', eduDict['Length'])
+                            .replace('d ', '日')
+                            .replace('h ', '时')
+                            .replace('m ', '分');
+                    } else if (e.nodeValue.indexOf('Cost') >= 0) {
+                        e.nodeValue = e.nodeValue.replace('Cost', eduDict['Cost']);
+                    } else if (e.nodeValue.indexOf('manual labor') >= 0) {
+                        e.nodeValue = e.nodeValue.replace('manual labor', eduDict['manual labor'])
+                            .replace('Gain', eduDict['Gain'])
+                            .replace('upon completion', eduDict['upon completion']);
+                    } else if (e.nodeValue.indexOf('endurance') >= 0) {
+                        e.nodeValue = e.nodeValue.replace('endurance', eduDict['endurance'])
+                            .replace('Gain', '获得')
+                            .replace('upon completion', eduDict['upon completion']);
+                    } else if (e.nodeValue.indexOf('intelligence') >= 0) {
+                        e.nodeValue = e.nodeValue.replace('intelligence', eduDict['intelligence'])
+                            .replace('Gain', '获得')
+                            .replace('upon completion', eduDict['upon completion']);
+                    }
+                });
+            }
+
+            eduTrans();
+            eduOB.observe($('div.content-wrapper')[0], {childList: true, subtree: true});
+            return;
+        }
+
+        // profile 玩家资料页面
+        if (href.contains(/profiles\.php\?XID=\d+/)) {
+            const $wrapper = document.querySelector('.content-wrapper');
+            const profileOB = new MutationObserver(() => {
+                profileOB.disconnect();
+                titleTrans();
+                contentTitleLinksTrans();
+                profileTrans();
+                profileOB.observe($wrapper, {
+                    characterData: true,
+                    attributes: true,
+                    subtree: true,
+                    childList: true
+                });
+            });
+            const profileTrans = function profileTrans() {
+                const playerName = document.title.trim().contains(/('s |s' )/)
+                    ? document.title.trim().split(/('s |s' )/)[0]
+                    : null;
+                if (!playerName) {
+                    console.error('翻译助手错误：获取用户名失败。');
+                    try {
+                        profileOB.disconnect()
+                    } catch {
+                    }
+                    return;
+                }
+
+                // 黑框标题
+                $('.content-wrapper .title-black').each((i, e) => {
+                    if (i === 1) {
+                        if (profileDict[e.firstChild.nodeValue.trim().replace(playerName, '{$}')]) {
+                            e.firstChild.nodeValue = (
+                                profileDict[$(e).text().trim().replace(playerName, '{$}')]
+                                    .replace('{$}', playerName)
+                            );
+                        }
+                        return;
+                    }
+                    if (profileDict[$(e).text().trim()]) {
+                        $(e).text(profileDict[$(e).text().trim()]);
+                    }
+                });
+                // level rank age
+                $('.profile-information-wrapper .box-info .box-name').each((i, e) => {
+                    if (profileDict[e.innerText.trim()]) e.innerText = profileDict[e.innerText.trim()];
+                });
+                // todo player title
+                // todo player rank title
+                // 行动框的描述
+                const action_desc = $('#profile-container-description.profile-container-description');
+                if (profileDict[action_desc.text().trim()]) {
+                    action_desc.html(`<span class="wh-translated">${profileDict[action_desc.text().trim()]}</span>`);
+                } else if (profileDict[action_desc.text().trim().replace(playerName, '{$}')]) {
+                    action_desc.html(
+                        `<span class="wh-translated">${profileDict[action_desc.text().trim().replace(playerName, '{$}')]
+                            .replace('{$}', playerName)}</span>`
+                    );
+                } else if (action_desc.text().contains(/is on your (friend|enemy) list/)) {
+                    const spl = action_desc.text().trim().split(' ');
+                    const mark = spl.length === 6
+                        ? null
+                        : spl.slice(7).join(' ');
+                    switch (spl[4]) {
+                        case 'friend':
+                            if (profileDict['{$} is on your friend list']) {
+                                action_desc.html(
+                                    `<span class="wh-translated">${profileDict['{$} is on your friend list']
+                                        .replace('{$}', playerName)
+                                    }${mark ? ' : ' + mark : ''
+                                    }</span>`
+                                );
+                            }
+                            break;
+                        case 'enemy':
+                            if (profileDict['{$} is on your enemy list']) {
+                                action_desc.html(
+                                    `<span class="wh-translated">${profileDict['{$} is on your enemy list']
+                                        .replace('{$}', playerName)
+                                    }${mark ? ' : ' + mark : ''
+                                    }</span>`
+                                );
+                            }
+                            break;
+                    }
+                } else {
+                    if ($('.wh-translated').length <= 0) {
+                        log(`未找到翻译: “${action_desc.text().trim()}”`);
+                    }
+                }
+                // 添加敌人或朋友的界面
+                $('.add-user .reason-wrapper').find('*').contents().each((i, e) => {
+                    if (e.nodeType === 3) {
+                        if (profileDict[e.nodeValue.trim()]) {
+                            e.nodeValue = profileDict[e.nodeValue.trim()];
+                        } else if (/\b[1-4]?[0-9]\b/.test(e.nodeValue.trim().slice(0, 2))) {
+                            const left = e.nodeValue.trim().slice(0, 2);
+                            if (profileDict['{$} characters left']) {
+                                e.nodeValue = profileDict['{$} characters left'].replace('{$}', left);
+                            }
+                        }
+                    }
+                });
+                // 状态
+                playerStatusTrans($('.profile-status .profile-container span'));
+                // 表格
+                $('ul.info-table li div').each((i, e) => {
+                    const $e = $(e);
+                    // 左
+                    if ($e.attr('class').contains(/user-information-section/)) {
+                        const elem = e.children[0];
+                        const $elem = $(elem);
+                        if (profileDict[$elem.text().trim()]) $elem.text(profileDict[$elem.text().trim()]);
+                    }
+                    // 右 值
+                    else {
+                        if (profileDict[$e.text().trim()]) {
+                            $e.children().text(profileDict[$e.text().trim()]);
+                            return;
+                        }
+                        switch (i) {
+                            case 5: // 帮派
+                            case 7: { // 公司
+                                if ($e.text().contains(CC_set)) return;
+                                const $span = e.children[0].children[0];
+                                const pos = $span.firstChild.nodeValue.trim().split(' ').slice(0, -1).join(' ');
+                                $span.firstChild.nodeValue = '';
+                                $($span).append(` 的 ${pos}`);
+                                return;
+                            }
+                            case 11: {
+                                // 住宅
+                                $e.find('span *').contents().each((i, el) => {
+                                    if (el.nodeType === 3) {
+                                        if (profileDict[el.nodeValue.trim()]) {
+                                            el.nodeValue = profileDict[el.nodeValue.trim()]
+                                        } else if (propertyDict[el.nodeValue.trim()]) {
+                                            el.nodeValue = propertyDict[el.nodeValue.trim()]
+                                        }
+                                    }
+                                });
+                                return;
+                            }
+                            case 13: {
+                                // 结婚状态
+                                if ($e.text().contains(CC_set)) return;
+                                const days = $e.text().contains(/ [0-9]+ /)
+                                    ? $e.text().trim().split(' ')[4]
+                                    : null;
+                                if (days) {
+                                    e.children[0].children[0].childNodes[0].nodeValue = '与 ';
+                                    e.children[0].children[0].childNodes[2].nodeValue = ` 结婚${days}天`;
+                                } else {
+                                    $e.find('span *').contents().each((i, el) => {
+                                        if (el.nodeType === 3) {
+                                            if (profileDict[el.nodeValue.trim()]) {
+                                                el.nodeValue = profileDict[el.nodeValue.trim()]
+                                            }
+                                        }
+                                    });
+                                }
+                                return;
+                            }
+                            case 23: {
+                                // 39 minutes ago
+                                if ($e.text().contains(/ago/)) {
+                                    $e.children().text($e.text()
+                                        .replace('ago', '前')
+                                        .replace('and', '')
+                                        .replace('seconds', '秒')
+                                        .replace('second', '秒')
+                                        .replace('minutes', '分')
+                                        .replace('minute', '分')
+                                        .replace('hours', '时')
+                                        .replace('hour', '时')
+                                        .replace('days', '日')
+                                        .replace('day', '日')
+                                        .replaceAll(' ', '')
+                                    );
+                                }
+                                return;
+                            }
+                        }
+                        /**
+                         1 'Woohoo [2687093]'
+                         3 'Civilian'
+                         5 'Knight of Silver Hand'
+                         7 'Director of -- FaFaFa --'
+                         9 '1567 / 1567'
+                         11 'Private Island (With Spouse)'
+                         13 'Married to Sabrina_Devil for 42 days'
+                         15 '153'
+                         17 '4'
+                         19 '4\n                         好人\n                         坏比指数: 1\n                        '
+                         21 '2 (0 karma)'
+                         23 '52 minutes ago'
+                         */
+                    }
+                });
+                // doesnt wish to share
+                const $nShare = $('.personal-info p');
+                $nShare.contents().each((i, e) => {
+                    if (e.nodeType === 3) {
+                        if (profileDict[e.nodeValue.trim()]) e.nodeValue = profileDict[e.nodeValue.trim()];
+                    }
+                });
+                // 活动状态
+                const $cmpSt = $('.profile-container.competition-wrap span')
+                $cmpSt.text(profileDict[$cmpSt.text().trim()] || $cmpSt.text());
+
+                sendCashTrans('.content-wrapper');
+            };
+            profileTrans();
+            profileOB.observe($wrapper, {
+                characterData: true,
+                attributes: true,
+                subtree: true,
+                childList: true
+            });
+            return;
+        }
+
+        // 报纸
+        if (href.contains(/(newspaper|joblist|freebies|newspaper_class|personals|bounties|comics)\.php/)) {
+            const newspaperOB = new MutationObserver(() => {
+                newspaperOB.disconnect();
+                newspaperTrans();
+                newspaperOB.observe($('div.content-wrapper')[0], {childList: true, subtree: true});
+            });
+
+            function newspaperTrans() {
+                titleTrans();
+                contentTitleLinksTrans();
+                if ($('a.newspaper-link').length === 0) return;
+                // 导航菜单
+                $('a.newspaper-link').contents().each((i, e) => {
+                    if (newspaperDict[e.nodeValue])
+                        e.nodeValue = newspaperDict[e.nodeValue];
+                });
+                // 公众号广告
+                $('div.price.left').contents()[2].nodeValue = '文章翻译请关注中文公众号Torncity';
+                // 日期翻译
+                const $date_label = document.querySelector('span.date-label');
+                const date_reg = /^[FMSTW][adehinorstuy]+, [ADFJMNOS][abceglnoprtuvy]+ [1-3]?[0-9], 20[0-9][0-9]$/;
+                if ($date_label && $date_label.innerText.trim().contains(date_reg)) {
+                    const date_format = $date_label.innerText.trim().replaceAll(',', '');
+                    const date_spl = date_format.split(' ');
+                    const date = {w: date_spl[0], m: date_spl[1], d: date_spl[2], y: date_spl[3]};
+                    const month_trans = {
+                        'Jan': 1,
+                        'Feb': 2,
+                        'Mar': 3,
+                        'Apr': 4,
+                        'May': 5,
+                        'Jun': 6,
+                        'Jul': 7,
+                        'Aug': 8,
+                        'Sep': 9,
+                        'Oct': 10,
+                        'Nov': 11,
+                        'Dec': 12
+                    };
+                    $date_label.innerText = `${date.y}年${month_trans[date.m] || date.m}月${date.d}日`;
+                }
+                // 菜单下的信息  工作 壁纸 广告 悬赏
+                $('div.help-message').find('*').contents().each((i, e) => {
+                    if (!e.nodeValue || e.nodeValue.trim() === '') return;
+                    if (newspaperDict[e.nodeValue.trim()])
+                        e.nodeValue = newspaperDict[e.nodeValue.trim()];
+                    else if (newspaperDict[e.nodeValue.trim().slice(0, 50)])
+                        e.nodeValue = newspaperDict[e.nodeValue.trim().slice(0, 50)];
+                });
+                // 右边栏
+                $('div[class^="sideCont"] [class^="title"]').contents().each((i, e) => {
+                    if (newspaperDict[e.nodeValue])
+                        e.nodeValue = newspaperDict[e.nodeValue];
+                });
+                // 彩票信息
+                $('span[class^="winner"]').each((i, e) => {
+                });
+                // 底部链接
+                // Why not visit our sponsor?
+                if (newspaperDict[$('div.link-left').text().trim()])
+                    $('div.link-left').text(newspaperDict[$('div.link-left').text().trim()]);
+                // View all | Advertise here
+                $('div.link-right a').contents().each((i, e) => {
+                    if (newspaperDict[e.nodeValue.trim()])
+                        e.nodeValue = newspaperDict[e.nodeValue.trim()];
+                })
+                $('.bounties-list-title li').each((i, e) => {
+                    if (newspaperDict[$(e).text().trim()]) {
+                        $(e).text(newspaperDict[$(e).text().trim()]);
+                    }
+                });
+                // 交友
+                if (window.location.href.contains(/personals/)) {
+                    $('div.personals-wrap span.msg').find('*').contents().each((i, e) => {
+                        if (!e.nodeValue || e.nodeValue.trim() === '') return;
+                        if (newspaperDict[e.nodeValue.trim()])
+                            e.nodeValue = newspaperDict[e.nodeValue.trim()];
+                    });
+                }
+                // 漫画
+                if (window.location.href.contains(/freebies/)) {
+                    if (newspaperDict[$('div.bonus-wrap a').text().trim()])
+                        $('div.bonus-wrap a').text(newspaperDict[$('div.bonus-wrap a').text().trim()]);
+                }
+                // 悬赏
+                if (window.location.href.contains(/bounties/)) {
+                    // 列表前的总数
+                    const $total = $('.bounties-total');
+                    if ($total.text().contains(/A total of [0-9]+ listings were found/)) {
+                        const num = $total.text().trim().split(' ')[3];
+                        if (newspaperDict['A total of {$} listings were found.']) {
+                            $total.text(newspaperDict['A total of {$} listings were found.']
+                                .replace('{$}', num));
+                        }
+                    }
+                    // 列表
+                    $('.user-info-wrap div *').contents().each((i, e) => {
+                        if (e.nodeType === 3) {
+                            if (newspaperDict[e.nodeValue.trim()]) {
+                                e.nodeValue = newspaperDict[e.nodeValue.trim()];
+                            }
+                        }
+                    });
+                    // claim
+                    $('ul.bounties-list div.claim button').each((i, e) => {
+                        if (newspaperDict[$(e).text().trim()]) {
+                            $(e).text(newspaperDict[$(e).text().trim()]);
+                        }
+                    });
+                    $('ul.bounties-list div.claim a').each((i, e) => {
+                        if (newspaperDict[$(e).text().trim()]) {
+                            $(e).text(newspaperDict[$(e).text().trim()]);
+                        }
+                    });
+                    // 3选项框
+                    $('.add-bounties-wrap .name').contents().each((i, e) => {
+                        if (e.nodeType === 3) {
+                            if (newspaperDict[e.nodeValue.trim()]) {
+                                e.nodeValue = newspaperDict[e.nodeValue.trim()];
+                            }
+                        } else if (e.nodeType === 1) {
+                            if (newspaperDict[$(e).text().trim()]) {
+                                $(e).text(newspaperDict[$(e).text().trim()]);
+                            }
+                        }
+                    });
+                    // 匿名选项
+                    const $anony = $('.choice-container label');
+                    if (newspaperDict[$anony.text().trim()]) {
+                        $anony.text(newspaperDict[$anony.text().trim()]);
+                    }
+                    // 发钱按钮
+                    const $$symbol = $('span.input-money-symbol');
+                    if (sendCashDict[$$symbol.attr('title')]) {
+                        $$symbol.attr('title', sendCashDict[$$symbol.attr('title')])
+                    }
+                    // 10/10滑动
+                    const $slider_title = $('.slider-title');
+                    if ($slider_title.text().contains(/Quantity:/)) {
+                        $slider_title.text($slider_title.text().replace('Quantity', '数量'));
+                    }
+                    // 价钱信息
+                    $('.confirm-bounties *').contents().each((i, e) => {
+                        if (e.nodeType === 3) {
+                            if (newspaperDict[e.nodeValue.trim()]) {
+                                e.nodeValue = newspaperDict[e.nodeValue.trim()];
+                            }
+                        }
+                    });
+                    // 下单前确认对话
+                    $('.confirm-buttons *').contents().each((i, e) => {
+                        if (e.nodeType === 3) {
+                            if (newspaperDict[e.nodeValue.trim()]) {
+                                e.nodeValue = newspaperDict[e.nodeValue.trim()];
+                                return;
+                            }
+                            switch (i) {
+                                case 7:
+                                case 10: {
+                                    if (e.nodeValue.contains(/[0-9] bounties/)) {
+                                        e.nodeValue = e.nodeValue.replace('bounties', '次')
+                                    } else if (e.nodeValue.contains(/with the reason: .+\?/)) {
+                                        e.nodeValue = e.nodeValue.replace('with the reason', '吗，悬赏原因')
+                                    }
+                                    break;
+                                }
+                            }
+                        }
+                    });
+                    // place
+                    const $place = $('.place-buttons input');
+                    if (newspaperDict[$place.attr('value')]) {
+                        $place.attr('value', newspaperDict[$place.attr('value')]);
+                    }
+                    // cancel
+                    const $cancel = $('.place-buttons a.cancel');
+                    if (newspaperDict[$cancel.text().trim()]) {
+                        $cancel.text(newspaperDict[$cancel.text().trim()]);
+                    }
+                }
+            }
+
+            newspaperTrans();
+            newspaperOB.observe($('div.content-wrapper')[0], {childList: true, subtree: true});
+            return;
+        }
+
+        // npc买房 estateagents
+        if (href.includes('estateagents.php')) {
+            titleTrans();
+            contentTitleLinksTrans();
+            $('div.estate-info div.title').each((i, e) => {
+                if (propertyDict[e.firstChild.nodeValue])
+                    e.firstChild.nodeValue = propertyDict[e.firstChild.nodeValue];
+            });
+
+            return;
+        }
+
+        // properties房屋页面
+        if (href.includes('properties.php')) {
+            const isRent = window.location.href.indexOf('rent') >= 0;
+            // const isRentOrSell = isRent || window.location.href.indexOf('sell') >= 0;
+            // const isOption = window.location.href.indexOf('p=options') >= 0;
+            // const isExtension = window.location.href.indexOf('step=viewOfferExtension') >= 0;
+            const propertyOB = new MutationObserver(() => {
+                propertyOB.disconnect();
+                titleTrans();
+                contentTitleLinksTrans();
+                propertyTrans();
+                propertyOB.observe($('div.content-wrapper').get(0), {childList: true, subtree: true});
+            });
+            const propertyTrans = function propertyTrans() {
+                // 从玩家处租或买
+                if (isRent || window.location.href.indexOf('sell') >= 0) {
+                    // 黑框标题
+                    $('div.title-black span').each((i, e) => {
+                        e.firstChild.nodeValue = '您想查看哪些房产？';
+                    });
+                    // 房屋汉化
+                    $('ul.info-cont label.marker-css').contents().each((i, e) => {
+                        if (propertyDict[e.nodeValue])
+                            e.nodeValue = propertyDict[e.nodeValue];
+                    });
+                    //搜索按钮
+                    $('div.btn-search button').text('搜索');
+                    $('div.search-text a').text('搜索');
+                    // 表头信息
+                    $('div.users-list-title div').each((i, e) => {
+                        if (propertyDict[$(e).text()])
+                            $(e).text(propertyDict[$(e).text()]);
+                    });
+                    // 确认购买提示
+                    $('div[class="confirm-text"] span.question').each((i, e) => {
+                        const propName = e.firstElementChild.innerText.trim().split(' ').slice(8).join(' ');
+
+                        const hasAnother = $(e).text().indexOf('another') > 0;
+                        if (hasAnother) {
+                            e.firstElementChild.firstChild.nodeValue = '你确定要';
+                            e.firstElementChild.firstChild.nodeValue += isRent ? '租用' : '购买';
+                            e.firstElementChild.childNodes[1].firstChild.nodeValue = '另一个';
+                            e.firstElementChild.childNodes[2].nodeValue = propertyDict[propName];
+                        } else {
+                            e.firstElementChild.firstChild.nodeValue = '你确定要';
+                            e.firstElementChild.firstChild.nodeValue += isRent ? '租用' : '购买';
+                            e.firstElementChild.firstChild.nodeValue += propertyDict[propName];
+                        }
+                        e.children[1].firstChild.nodeValue = '花费 ';
+                        e.children[1].childNodes[2].nodeValue = isRent ? ' 租期 ' : '？';
+                        if (isRent)
+                            e.children[1].childNodes[4].nodeValue = ' 天？';
+                    });
+
+                    // 房屋详情表格
+                    $('div.info-block span.bold').each((i, e) => {
+                        if (e.childElementCount === 2) {
+                            /**
+                             * <span class="bold">
+                             <span class="title-laptop">On </span>
+                             "Market"
+                             <span class="title-desktop"> Price</span>
+                             ":"
+                             </span>
+                             */
+                            e.firstElementChild.firstChild.nodeValue = '';
+                            e.childNodes[2].nodeValue = '市场价';
+                            e.childNodes[3].firstChild.nodeValue = '';
+                            e.childNodes[4].nodeValue = '：';
+                        } else {
+                            if (propertyDict[e.firstChild.nodeValue.trim()])
+                                e.firstChild.nodeValue = propertyDict[e.firstChild.nodeValue.trim()];
+                        }
+                    });
+                    $('div.rental-period span.bold').each((i, e) => {
+                        if (propertyDict[e.firstChild.nodeValue.trim()])
+                            e.firstChild.nodeValue = propertyDict[e.firstChild.nodeValue.trim()];
+                    });
+                    // 窄边 cost happy
+                    $('span.title-laptop.bold').each((i, e) => {
+                        if (propertyDict[$(e).text().trim()])
+                            $(e).text(propertyDict[$(e).text().trim()]);
+                    });
+                    // modification
+                    $('div.title.bold.left').each((i, e) => {
+                        if (propertyDict[e.firstChild.nodeValue])
+                            e.firstChild.nodeValue = propertyDict[e.firstChild.nodeValue];
+                    });
+
+                    return;
+                }
+                // 房屋选项
+                if (window.location.href.indexOf('p=options') >= 0) {
+                    // 页面的黑框标题
+                    $('div.content-wrapper div.title-black').each((i, e) => {
+                        if (propertyDict[$(e).text().trim()])
+                            $(e).text(propertyDict[$(e).text().trim()]);
+                    });
+                    // 所有li内容
+                    // $('div.content-wrapper div.customize-opt li').find('*')
+                    //     .contents().each((i,e)=>{
+                    //         if(e.nodeType!==3)return;log(e)
+                    //     });
+                    return;
+                }
+                // 房屋详情
+                if (window.location.href.indexOf('p=propertyinfo') >= 0) {
+                    return;
+                }
+                // 延期、合同
+                if (window.location.href.indexOf('step=viewOfferExtension') >= 0) {
+                    return;
+                }
+                // 自己的所有房产 页面
+                {
+                    // 顶部3标题
+                    $('ul.property-tabs a.ui-tabs-anchor div').contents().each((i, e) => {
+                        if (propertyDict[e.nodeValue]) {
+                            e.nodeValue = propertyDict[e.nodeValue];
+                        }
+                    });
+                    // 图片下的描述部分
+                    $('ul.properties-list div.image-description').find('*')
+                        .contents().each((i, e) => {
+                        if (e.nodeType !== 3) return;
+                        if (!propertyDict[e.nodeValue.trim()]) return;
+                        e.nodeValue = propertyDict[e.nodeValue.trim()];
+                    });
+                    // 图片下的按钮的title浮动框文字
+                    $('div#properties-page-wrap a[title]').each((i, e) => {
+                        if (propertyDict[$(e).attr('title')])
+                            $(e).attr('title', propertyDict[$(e).attr('title')]);
+                    });
+                }
+            };
+
+            propertyTrans();
+            propertyOB.observe($('div.content-wrapper').get(0), {childList: true, subtree: true});
+            return;
+        }
+
+        // 通知页面
+        if (href.includes('events.php')) {
+            const ob = new MutationObserver(() => {
+                ob.disconnect();
+                titleTrans();
+                contentTitleLinksTrans();
+                eventsTrans();
+                ob.observe($('div.content-wrapper')[0], {childList: true, subtree: true});
+            });
+            eventsTrans();
+            ob.observe($('div.content-wrapper')[0], {childList: true, subtree: true});
+            return;
+            // let events;
+            // const eventMutation = new MutationObserver(() => {
+            //     eventMutation.disconnect();
+            //     // events = $('span.mail-link');
+            //     // eventsTrans(events);
+            //     eventsTrans();
+            //     eventMutation.observe($('div#events-main-wrapper')[0], {childList: true, subtree: true});
+            // });
+            //
+            // //初始化中内容未加载
+            // let eventInterval = setInterval(() => {
+            //     // events = $('span.mail-link');
+            //     // if (events.length === 0) {
+            //     //     return;
+            //     // }
+            //     clearInterval(eventInterval);
+            //     eventMutation.observe($('div#events-main-wrapper')[0], {childList: true, subtree: true});
+            //     eventsTrans(events);
+            // }, 1000);
+        }
+
+        // awards.php
+        if (href.includes('awards.php')) {
+            const awOB = new MutationObserver(() => {
+                awOB.disconnect();
+                awTrans();
+                awOB.observe($('div.content-wrapper')[0], {childList: true, subtree: true, attributes: true});
+            });
+            const awTrans = function awTrans() {
+                titleTrans();
+                contentTitleLinksTrans();
+                // 顶部的3个分类 Honors (106) Medals (44) Merits (3)
+                $('div.content-wrapper a.ui-tabs-anchor span.bold').contents().each((i, e) => {
+                    if (e.nodeType !== 3) return;
+                    if (awDict[e.nodeValue.trim()])
+                        e.nodeValue = awDict[e.nodeValue.trim()];
+                });
+                // 分类标题下的描述
+                $('div.awards-msg').contents().each((i, e) => {
+                    // 文字节点
+                    if (e.nodeType === 3) {
+                        if (awDict[e.nodeValue.trim()])
+                            e.nodeValue = awDict[e.nodeValue.trim()];
+                    }
+                    // 子节点
+                    else if (e.nodeType === 1) {
+                        if (awDict[$(e).text().trim()])
+                            $(e).text(awDict[$(e).text().trim()]);
+                        else if ($(e).text().indexOf('medals') >= 0)
+                            $(e).text($(e).text().replace('medals', awDict['medals']));
+                        else if ($(e).text().indexOf('honors') >= 0)
+                            $(e).text($(e).text().replace('honors', awDict['honors']));
+                    }
+                });
+                // 荣誉的描述
+                $('div#awards-tab-menu a[data-title]').each((i, e) => {
+                    const desc = $(e).attr('data-title').split(' <i>')[0];
+                    if (awDict[desc])
+                        $(e).attr('data-title', $(e).attr('data-title').replace(desc, awDict[desc]));
+                });
+                // 改变荣誉条时的提示
+                $('div#honors div.msg').each((i, e) => {
+                    if (awDict[$(e).text().trim()])
+                        $(e).text(awDict[$(e).text().trim()]);
+                });
+                // 改变荣誉条时的提示按钮 change
+                $('div#honors div.confirm-msg button').each((i, e) => {
+                    if (awDict[$(e).text().trim()])
+                        $(e).text(awDict[$(e).text().trim()]);
+                });
+                // 改变荣誉条时的提示按钮 cancel
+                $('div#honors div.confirm-msg a.cancel').each((i, e) => {
+                    if (awDict[$(e).text().trim()])
+                        $(e).text(awDict[$(e).text().trim()]);
+                });
+                // 天赋页面 Available Merits: x Merits Used: x
+                $('div.awards-msg p').contents().each((i, e) => {
+                    if (e.nodeType === 3)
+                        if (awDict[e.nodeValue.trim()])
+                            e.nodeValue = e.nodeValue.replace(e.nodeValue.trim(), awDict[e.nodeValue.trim()]);
+                });
+                // 勋章下 即将解锁的勋章框标题 天赋加点的表头标题
+                $('div.title-black').contents().each((i, e) => {
+                    // 勋章下 即将解锁的勋章框标题
+                    if (e.nodeType === 1) {
+                        if (awDict[$(e).text().trim()])
+                            $(e).text(awDict[$(e).text().trim()]);
+                    }
+                    // 天赋加点的表头标题
+                    else if (e.nodeType === 3) {
+                        if (awDict[e.nodeValue.trim()])
+                            e.nodeValue = awDict[e.nodeValue.trim()];
+                    }
+                });
+                // 荣誉和勋章的左边栏分类选择菜单
+                $('div.tab-menu-cont li.ui-state-default a').each((i, e) => {
+                    if (awDict[$(e).text().trim()])
+                        $(e).text(awDict[$(e).text().trim()]);
+                });
+                // 天赋点名字
+                $('ul#merits-list span.name').each((i, e) => {
+                    if (awDict[$(e).text().trim()])
+                        $(e).text(awDict[$(e).text().trim()]);
+                });
+                // 天赋点短描述
+                $('ul#merits-list span.desc span[class^="t-"]').each((i, e) => {
+                    // const slash = $(e).attr('class') === 't-show' ? '- ' : '';
+                    const isShow = $(e).attr('class') === 't-hide';
+                    const key = isShow ? $(e).text().slice(2) : $(e).text();
+                    if (awDict[key])
+                        $(e).text((isShow ? '- ' : '') + awDict[key]);
+                });
+                // 天赋点展开详细描述与确认
+                $('ul#merits-list div.msg').contents().each((i, e) => {
+                    // x merit(s)
+                    if (e.nodeType === 1) {
+                        const spl = $(e).text().split(' ');
+                        if (awDict[spl[1]])
+                            $(e).text(spl[0] + ' ' + awDict[spl[1]]);
+                    }
+                    // 文字片段
+                    else if (e.nodeType === 3) {
+                        if (awDict[e.nodeValue.trim()]) {
+                            e.nodeValue = awDict[e.nodeValue.trim()] + '';
+                            return;
+                        }
+                        const spl = e.nodeValue.trim().split('\n');
+                        // 未升级完成
+                        if (spl.length === 3) {
+                            const upgradeName = spl[1].slice(5, -9);
+                            const on = spl[0];
+                            const upgrade = spl[1].slice(-8);
+                            const desc = spl[2];
+                            if (awDict[on] && awDict[upgrade] && awDict[upgradeName] && awDict[desc])
+                                e.nodeValue = ' ' + awDict[on] + awDict[upgradeName] +
+                                    awDict[upgrade] + awDict[desc];
+                        }
+                        // 升级完成
+                        else if (spl.length === 1) {
+                            const upgraded = e.nodeValue.trim().slice(0, 60);
+                            const desc = e.nodeValue.trim().slice(61);
+                            if (awDict[upgraded]) e.nodeValue = awDict[upgraded];
+                            if (awDict[desc]) e.nodeValue += awDict[desc];
+                        }
+                    }
+                });
+                // spend cancel按钮
+                $('ul#merits-list div.confirm-cont a').each((i, e) => {
+                    if (awDict[$(e).text().trim()]) $(e).text(awDict[$(e).text().trim()]);
+                });
+            };
+            awTrans();
+            awOB.observe($('div.content-wrapper')[0], {childList: true, subtree: true, attributes: true});
+            return;
+        }
+
+        // preferences设置
+        if (href.contains(/preferences\.php/)) {
+            const $$ = $('.content-wrapper');
+            const OB = new MutationObserver(() => {
+                OB.disconnect();
+                titleTrans();
+                contentTitleLinksTrans();
+                trans();
+                OB.observe($$.get(0), {
+                    characterData: true,
+                    attributes: true,
+                    subtree: true,
+                    childList: true
+                });
+            });
+            const trans = () => {
+                // 黑框标题
+                const $black_title = $('.title-black');
+                if (tornSettingsDict[$black_title.text().trim()]) {
+                    $black_title.text(tornSettingsDict[$black_title.text().trim()]);
+                }
+                // 电脑版左边导航菜单
+                const $nav = $('.content-wrapper a.ui-tabs-anchor');
+                $nav.each((i, e) => {
+                    if (tornSettingsDict[$(e).text().trim()]) {
+                        $(e).text(tornSettingsDict[$(e).text().trim()]);
+                    }
+                });
+                if (window.location.href.contains(/tab=api/)) {
+                    // 描述
+                    const $api_desc = $('.content-wrapper p[class^="apiDescription___"]');
+                    if (tornSettingsDict[$api_desc.text().slice(0, 50)]) {
+                        $api_desc.text(tornSettingsDict[$api_desc.text().slice(0, 50)]);
+                    }
+                    // 添加按钮
+                    const $add_btn = $('button[class^="addKey___"] span');
+                    if (tornSettingsDict[$add_btn.text().trim()]) {
+                        $add_btn.text(tornSettingsDict[$add_btn.text().trim()]);
+                    }
+                    // new keys name
+                    const $new_keys_name = $('input[placeholder="New key\'s name"]');
+                    if (tornSettingsDict[$new_keys_name.attr('placeholder')]) {
+                        $new_keys_name.attr('placeholder', tornSettingsDict[$new_keys_name.attr('placeholder')]);
+                    }
+                    // api类型
+                    const $key_type = $('div[class*="typesDropdown___"] button.down');
+                    if (tornSettingsDict[$key_type.text().trim()]) {
+                        $key_type.text(tornSettingsDict[$key_type.text().trim()]);
+                    }
+                    // api类型选择框
+                    const $type_down = $('div[class*="typesDropdown___"] div.down li');
+                    $type_down.each((i, e) => {
+                        if (tornSettingsDict[$(e).text().trim()]) {
+                            $(e).text(tornSettingsDict[$(e).text().trim()]);
+                        }
+                    });
+                    return;
+                }
+            };
+            trans();
+            OB.observe($$.get(0), {
+                characterData: true,
+                attributes: true,
+                subtree: true,
+                childList: true
+            });
+            return;
+        }
+
+        // 展柜
+        if (href.contains(/displaycase\.php/)) {
+            const $page_wrapper = document.querySelector('#display-page-wrap');
+            initOB($page_wrapper, {
+                    subtree: true,
+                    attributes: true,
+                    childList: true
+                },
+                () => {
+                    // 标题和右边的链接
+                    titleTrans();
+                    // 右上角返回按钮
+                    const $back_to_profile = $page_wrapper.querySelector('#back');
+                    if ($back_to_profile) {
+                        const spl = $back_to_profile.innerText.split(/('s |s' )/);
+                        if (spl.length === 3 && spl[2] === 'Profile') {
+                            $back_to_profile.innerText = `${spl[0]}的个人资料`;
+                        }
+                    }
+                    const $display_cabinet = $page_wrapper.querySelector('.display-cabinet');
+                    if ($display_cabinet) {
+                        // 物品名
+                        const $item_name = $display_cabinet.querySelectorAll('div.b-item-name span:nth-of-type(2)');
+                        $item_name.forEach((e) => {
+                            if (itemNameDict[e.innerText]) {
+                                e.innerText = itemNameDict[e.innerText];
+                            }
+                        });
+                        // 展开详细框
+                        const $show_item_info = $display_cabinet.querySelector('.show-item-info');
+                        showItemInfoTrans($show_item_info);
+                    }
+                });
+            return;
+        }
+
+        // 升级页面
+        if (href.includes('level2.php')) {
+        }
+
+        //  医院页面
+        if (href.includes("hospitalview.php")) {
+            const hospitalOB = new MutationObserver(hosOBInit);
+
+            function hosOBInit() {
+                hospitalOB.disconnect();
+                hospTrans();
+                hospitalOB.observe($('div.content-wrapper')[0], {childList: true, subtree: true});
+            }
+
+            function hospTrans() {
+                titleTrans();
+                contentTitleLinksTrans();
+
+                // 顶部提示信息
+                $('div[class^="msg right-round"]').contents().each((i, e) => (hosDict[e.nodeValue.trim()]) && (e.nodeValue = hosDict[e.nodeValue.trim()]));
+
+                //玩家列表标题
+                $('div[class^="users-list-title  title-black top-round m-top10"] span').contents().each((i, e) => {
+                    if (e.nodeValue && hosDict[e.nodeValue.trim()]) {
+                        e.nodeValue = e.nodeValue.replace(e.nodeValue, hosDict[e.nodeValue.trim()]);
+                    }
+                })
+
+                //玩家列表住院理由
+                $('ul[class^="user-info-list-wrap"] span[class^="reason"]').each((i, e) => {
+                    let reasonStr = $(e).get(0).childNodes[1].nodeValue.trim();
+
+                    if (hosDict[reasonStr]) {
+                        $(e)[0].childNodes[1].nodeValue = hosDict[reasonStr];
+                    } else if (reasonStr.indexOf("Crashed") >= 0) {
+                        $(e)[0].childNodes[1].nodeValue = reasonStr
+                            .replace("Crashed her", hosDict["Crashed her"])
+                            .replace("Crashed his", hosDict["Crashed his"]);
+                    } else {
+                        switch (reasonStr) {
+                            case "Attacked by":
+                                $(e)[0].childNodes[1].nodeValue = hosDict["general"];
+                                $(e).append(" 攻击");
+                                break;
+                            case "Hospitalized by":
+                                $(e)[0].childNodes[1].nodeValue = hosDict["general"];
+                                $(e).append(" 殴打并送入医院");
+                                break;
+                            case "Mugged by":
+                                $(e)[0].childNodes[1].nodeValue = hosDict["general"];
+                                $(e).append(" 抢劫");
+                                break;
+                        }
+                    }
+                })
+            }
+
+            hospTrans();
+            hospitalOB.observe($('div.content-wrapper')[0], {childList: true, subtree: true});
+            return;
+        }
+
+        // 帮派页面
+        if (href.includes("actions.php")) {
+            const factionOB = new MutationObserver(factionOBInit);
+
+            function factionOBInit() {
+                factionOB.disconnect();
+                factionTrans();
+                factionOB.observe($('div.content-wrapper')[0], {childList: true, subtree: true});
+            }
+
+            const factionDict = {
+                "INFO": "信息",
+                "TERRITORY": "地盘",
+                "RANK": "名次",
+                "CRIMES": "组织犯罪",
+                "UPGRADES": "升级",
+                "ARMORY": "军械库",
+                "CONTROLS": "控制面板",
+                "FACTION": "帮派",
+                "YOUR FACTION IS NOT IN A WAR": "你的帮派没有处于战争状态",
+                "TIER": "级别",
+                "RESPECT": "声望",
+                "No active chain": "暂无攻击链",
+                "Main News": "主要消息",
+                "Attacking": "攻击",
+                "Funds": "资金流动",
+                "Armory": "军械库",
+                "Crimes": "组织犯罪",
+                "Membership": "成员资格",
+                "has claimed sovereignty of": "",
+                "has abandoned": "放弃了地盘",
+                "Achieved a chain of": "达成了连击链值",
+                "and": "和",
+                "respect [": "点声望 [",
+                "deposited ${$1}": "存放了${$1}",
+                "Leadership was transferred to": "帮派领导权被移交给了 ",
+                "Someone mugged": "有人抢劫了 ",
+                "hospitalized": " 暴打了 ",
+                "mugged": " 抢劫了 ",
+                "attacked": " 攻击了 ",
+                "but lost": "  但是输了",
+                "Someone attacked": "有人攻击了 ",
+                "Someone hospitalized": "有人暴打了 "
+            }
+
+            function factionTrans() {
+                titleTrans();
+                contentTitleLinksTrans();
+
+                //帮派大标题
+                $('span[class^="tab-name"]').each((i, e) => {
+                    if (factionDict[$(e).text().trim()]) {
+                        $(e).text(factionDict[$(e).text().trim()]);
+                    }
+                })
+
+                //帮派战争状态
+                $('div[class^="f-msg"]').contents().each((i, e) => {
+                    let word2Trans = $(e).text().trim().split(":")[0];
+                    if (word2Trans && factionDict[word2Trans]) {
+                        $(e).text($(e).text().replace(word2Trans, factionDict[word2Trans]));
+                    }
+                })
+
+                //攻击链盒
+                $('div[class^="chain-box"]').contents().each((i, e) => {
+                    if (factionDict[$(e).text().trim()]) {
+                        $(e).text(factionDict[$(e).text().trim()]);
+                    }
+                })
+
+                //帮派消息类别
+                $('div[class^="newsHeader"]').contents().each((i, e) => {
+                    if (factionDict[$(e).text().trim()]) {
+                        $(e).text(factionDict[$(e).text().trim()]);
+                    }
+                })
+                //帮派主要消息日志
+                $('button[class^="tab"] ').each((i, e) => {
+                    if ($(e).attr('class').indexOf("active") >= 0) {
+                        log($(e).text());
+                        switch ($(e).text().trim()) {
+                            case "主要消息":
+                                $('ul[class^="news-list"] span[class^="info"]').contents().each((i, u) => {
+                                    if (factionDict[$(u).text().trim()]) {
+                                        u.nodeValue = u.nodeValue.replace($(u).text().trim(), factionDict[$(u).text().trim()]);
+                                    }
+                                })
+                                break;
+                            case "攻击":
+                                $('ul[class^="news-list"] span[class^="info"]').find('*').contents().each((i, u) => {
+                                    log($(u).text().trim())
+                                    if (factionDict[$(u).text().trim()]) {
+                                        u.nodeValue = factionDict[$(u).text().trim()];
+                                    }
+                                })
+                                break;
+                            case "资金流动":
+                                $('ul[class^="news-list"] span[class^="info"]').contents().each((i, u) => {
+                                    if (u.nodeValue) {
+                                        u.nodeValue = u.nodeValue.replace("deposited", "存放了");
+                                    }
+                                })
+                                break;
+                        }
+                    }
+                })
+                // //帮派主要消息日志
+                // $('ul[class^="news-list"] span[class^="info"]').contents().each((i, e) => {
+                //     if (factionDict[$(e).text().trim()]) {
+                //         e.nodeValue = e.nodeValue.replace($(e).text().trim(), factionDict[$(e).text().trim()]);
+                //     }
+                // })
+
+            }
+
+            factionTrans();
+            factionOB.observe($('div.content-wrapper')[0], {childList: true, subtree: true});
+            return;
+        }
+
+        // pc电脑
+        if (href.contains(/pc\.php/)) {
+            const $$ = $('.content-wrapper');
+            const OB = new MutationObserver(() => {
+                OB.disconnect();
+                titleTrans();
+                contentTitleLinksTrans();
+                trans();
+                OB.observe($$.get(0), {
+                    characterData: true,
+                    attributes: true,
+                    subtree: true,
+                    childList: true
+                });
+            });
+            const trans = () => {
+                // 黑框
+                const $black_title = $('div.title-black');
+                if (pcDict[$black_title.text().trim()]) {
+                    $black_title.text(pcDict[$black_title.text().trim()]);
+                }
+            };
+            trans();
+            OB.observe($$.get(0), {
+                characterData: true,
+                attributes: true,
+                subtree: true,
+                childList: true
+            });
+            return;
+        }
+
+        // 日历
+        if (href.contains(/calendar\.php/)) {
+            const $root = document.querySelectorAll('#calendar-root');
+            $root.forEach(el => {
+                initOB(el, {childList: true, subtree: true}, () => {
+                    // 页标题
+                    const $h4_title = el.querySelectorAll('h4[class^="title___"]');
+                    titleTransReact($h4_title);
+                    // 页标题右侧链接
+                    const $link_title = el.querySelectorAll('div[class^="linksContainer___"] span[class^="linkTitle___"]');
+                    contentTitleLinksTransReact($link_title);
+                    // 月标题
+                    const $month_title = el.querySelectorAll('div[class^="monthName___"]');
+                    $month_title.forEach(e => {
+                        if (calDict[e.innerText.trim()]) e.innerText = calDict[e.innerText.trim()];
+                    });
+                });
+            });
+            return;
+        }
+
+        // itemuseparcel.php
+
+        // 圣诞小镇
+        if (href.contains(/christmas_town\.php/)) {
+            let $root = document.querySelector('#christmastownroot');
+            const $title_wrapper = $root.querySelector('div[class^="appHeaderWrapper___"]');
+            // 标题和右边的链接
+            initOB($title_wrapper, {childList: true, subtree: true}, () => {
+                titleTransReact();
+                contentTitleLinksTransReact();
+            });
+        }
     }
 }());
