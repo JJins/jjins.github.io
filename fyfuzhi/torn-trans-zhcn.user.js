@@ -1,8 +1,8 @@
 // ==UserScript==
-// @lastmodified  202202252131
+// @lastmodified  202203031126
 // @name         芜湖助手
 // @namespace    WOOH
-// @version      0.3.21
+// @version      0.3.22
 // @description  托恩，起飞！
 // @author       Woohoo[2687093] Sabrina_Devil[2696209]
 // @match        https://www.torn.com/*
@@ -23,12 +23,17 @@
     if (window.WHTRANS) return;
     window.WHTRANS = true;
     // 版本
-    const version = '0.3.21';
+    const version = '0.3.22';
     // 修改历史
     const changelist = [
         {
             todo: true,
             cont: `翻译：baza npc商店、imarket、imarket搜索结果`,
+        },
+        {
+            ver: '0.3.22',
+            date: '20220303',
+            cont: `修改了通知样式`,
         },
         {
             ver: '0.3.21',
@@ -3854,12 +3859,14 @@ height:30px;
             },
         });
         // 测试按钮
-//         if (isDev()) settingsArr.push({
-//             domType: 'button',
-//             domId: 'wh-test-btn',
-//             domText: '测试按钮',
-//             clickFunc: function () {},
-//         })
+        // if (isDev()) settingsArr.push({
+        //     domType: 'button',
+        //     domId: 'wh-test-btn',
+        //     domText: '测试按钮',
+        //     clickFunc: function () {
+        //         WHNotify('123',{timeout:60})
+        //     },
+        // });
     }
     // 菜单node
     const $zhongNode = initIcon();
@@ -6779,7 +6786,7 @@ margin: 0 0 3px;
             new_node.classList.add('wh-notify-item');
             new_node.innerHTML = `<div class="wh-notify-bar"></div>
 <div class="wh-notify-cont">
-    <div class="wh-notify-close"><button>关闭</button></div>
+    <div class="wh-notify-close"></div>
     <div class="wh-notify-msg"><p>${msg}</p></div>
 </div>`;
             notify_contain.append(new_node);
@@ -6810,7 +6817,7 @@ margin: 0 0 3px;
                 callback();
             };
             new_node.del = removeNode;
-            new_node.querySelector('.wh-notify-close button').addEventListener('click', removeNode);
+            new_node.querySelector('.wh-notify-close').addEventListener('click', removeNode);
             return new_node;
         };
         // 不存在容器 创建
@@ -6848,11 +6855,11 @@ text-decoration:none;
 #${node_id} .wh-notify-item .wh-notify-close {
     float:right;
     padding:0;
-}
-#${node_id} .wh-notify-item .wh-notify-close button {
-    padding:10px;
-    margin:0;
-    border:0;
+width:16px;height:16px;
+background:url('data:image/svg+xml,%3Csvg%20viewBox%3D%220%200%201024%201024%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M923%20571H130.7c-27.6%200-50-22.4-50-50s22.4-50%2050-50H923c27.6%200%2050%2022.4%2050%2050s-22.4%2050-50%2050z%22%20fill%3D%22%232196f3%22%3E%3C%2Fpath%3E%3C%2Fsvg%3E') no-repeat center;
+background-size:100%;
+margin: 6px 6px 0 0;
+cursor: pointer;
 }
 #${node_id} .wh-notify-item .wh-notify-msg {
     padding:12px;
