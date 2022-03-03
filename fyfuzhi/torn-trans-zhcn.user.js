@@ -1,8 +1,8 @@
 // ==UserScript==
-// @lastmodified  202203031126
+// @lastmodified  202203031354
 // @name         芜湖助手
 // @namespace    WOOH
-// @version      0.3.22
+// @version      0.3.23
 // @description  托恩，起飞！
 // @author       Woohoo[2687093] Sabrina_Devil[2696209]
 // @match        https://www.torn.com/*
@@ -23,12 +23,17 @@
     if (window.WHTRANS) return;
     window.WHTRANS = true;
     // 版本
-    const version = '0.3.22';
+    const version = '0.3.23';
     // 修改历史
     const changelist = [
         {
             todo: true,
             cont: `翻译：baza npc商店、imarket、imarket搜索结果`,
+        },
+        {
+            ver: '0.3.23',
+            date: '20220303',
+            cont: `修复节日的错误`,
         },
         {
             ver: '0.3.22',
@@ -3198,7 +3203,7 @@
     // 菜单配置列表
     const settingsArr = [];
     {
-        // const date = new Date(2022, 11, 31, 23);
+        // const date = new Date(2022, 2, 4, 23);
         const date = new Date();
         // 欢迎 显示玩家id
         if (player_info.userID !== 0) {
@@ -3231,8 +3236,13 @@
             };
             settingsArr.fest_date_dict = fest_date_dict;
             settingsArr.fest_date_list = Object.keys(fest_date_dict);
-            const fest_date_key = `${date.getUTCMonth() < 10 ? '0' + date.getUTCMonth() + date.getUTCDate() : '' + date.getUTCMonth() + date.getUTCDate()}`;
-            if (fest_date_dict[fest_date_key]) fest_date_html += `${fest_date_dict[fest_date_key]['name']}(<button title="${fest_date_dict[fest_date_key]['eff']}">效果</button>)`;
+            const formatMMDD = (m, d) => {
+                const MM = m < 10 ? `0${m}` : m.toString();
+                const DD = d < 10 ? `0${d}` : d.toString();
+                return MM + DD;
+            }
+            const fest_date_key = formatMMDD(date.getUTCMonth(),date.getUTCDate());
+            if (fest_date_dict[fest_date_key]) fest_date_html += `今天 - ${fest_date_dict[fest_date_key]['name']}(<button title="${fest_date_dict[fest_date_key]['eff']}">效果</button>)`;
             else {
                 // 月日列表
                 let fest_date_list = Object.keys(fest_date_dict);
@@ -3257,46 +3267,47 @@
             domHTML: fest_date_html,
         });
         // 活动
-        let eventObj = {};
-        eventObj.onEv = false;
-        eventObj.daysLeft = Infinity;
-        eventObj.events = [
-            {
-                start: [0, 17, 8], end: [0, 24, 8],
-                name: '捡垃圾周',
-                eff: '获得捡垃圾概率提升的增益',
-            },
-            {
-                start: [3, 5, 20], end: [3, 25, 20],
-                name: '复活节狩猎',
-                eff: '复活节彩蛋会随机出现，集齐10个可兑换金蛋和一个独特的头像框(章)。',
-            },
-            {
-                start: [4, 5, 20], end: [4, 25, 20],
-                name: '狗牌',
-                eff: '击败其他玩家以获得狗牌，小心保护你的狗牌。',
-            },
-            {
-                start: [6, 5, 20], end: [6, 25, 20],
-                name: '托恩先生和托恩女士',
-                eff: '上传你的真实图片，然后拿章',
-            },
-            {
-                start: [8, 5, 20], end: [8, 23, 20],
-                name: '大逃杀',
-                eff: '加入特定队伍后，攻击其他队伍玩家，存活下来的3个队伍可以拿章',
-            },
-            {
-                start: [9, 25, 20], end: [10, 1, 20],
-                name: '不给糖就捣蛋',
-                eff: '买篮子之后攻击其他玩家后会随机掉落糖果，可用于兑换许多高价值物品',
-            },
-            {
-                start: [11, 14, 20], end: [11, 31, 20],
-                name: '圣诞小镇',
-                eff: '在小镇中闲逛来获取随机掉落的物品',
-            },
-        ];
+        let eventObj = {
+            onEv: false,
+            daysLeft: Infinity,
+            events: [
+                {
+                    start: [0, 17, 8], end: [0, 24, 8],
+                    name: '捡垃圾周',
+                    eff: '获得捡垃圾概率提升的增益',
+                },
+                {
+                    start: [3, 5, 20], end: [3, 25, 20],
+                    name: '复活节狩猎',
+                    eff: '复活节彩蛋会随机出现，集齐10个可兑换金蛋和一个独特的头像框(章)。',
+                },
+                {
+                    start: [4, 5, 20], end: [4, 25, 20],
+                    name: '狗牌',
+                    eff: '击败其他玩家以获得狗牌，小心保护你的狗牌。',
+                },
+                {
+                    start: [6, 5, 20], end: [6, 25, 20],
+                    name: '托恩先生和托恩女士',
+                    eff: '上传你的真实图片，然后拿章',
+                },
+                {
+                    start: [8, 5, 20], end: [8, 23, 20],
+                    name: '大逃杀',
+                    eff: '加入特定队伍后，攻击其他队伍玩家，存活下来的3个队伍可以拿章',
+                },
+                {
+                    start: [9, 25, 20], end: [10, 1, 20],
+                    name: '不给糖就捣蛋',
+                    eff: '买篮子之后攻击其他玩家后会随机掉落糖果，可用于兑换许多高价值物品',
+                },
+                {
+                    start: [11, 14, 20], end: [11, 31, 20],
+                    name: '圣诞小镇',
+                    eff: '在小镇中闲逛来获取随机掉落的物品',
+                },
+            ],
+        };
         settingsArr.events = eventObj.events;
         eventObj.events.forEach((obj, index) => {
             if (eventObj.onEv) return;
