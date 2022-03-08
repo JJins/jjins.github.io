@@ -1,8 +1,8 @@
 // ==UserScript==
-// @lastmodified  202203031354
+// @lastmodified  202203081723
 // @name         芜湖助手
 // @namespace    WOOH
-// @version      0.3.23
+// @version      0.3.24
 // @description  托恩，起飞！
 // @author       Woohoo[2687093] Sabrina_Devil[2696209]
 // @match        https://www.torn.com/*
@@ -23,12 +23,17 @@
     if (window.WHTRANS) return;
     window.WHTRANS = true;
     // 版本
-    const version = '0.3.23';
+    const version = '0.3.24';
     // 修改历史
     const changelist = [
         {
             todo: true,
             cont: `翻译：baza npc商店、imarket、imarket搜索结果`,
+        },
+        {
+            ver: '0.3.24',
+            date: '20220308',
+            cont: `调整翻译逻辑，添加一些菜单的说明，健身房页面添加了叠E保护开关`,
         },
         {
             ver: '0.3.23',
@@ -3087,6 +3092,20 @@
         }
     };
 
+    // 原始fetch
+    const ori_fetch = window.fetch;
+    // 监听fetch
+    window.fetch = async (url, init) => {
+        log(url)
+        const res = await ori_fetch(url, init);
+        // mini profile 翻译
+        if (url.includes('profiles.php?step=getUserNameContextMenu') && getWhSettingObj()['transEnable']) {
+            setTimeout(() => miniprofTrans(), 200);
+        }
+        // const res_clone = res.clone();
+        return res;
+    };
+
     // const transDict = {};
     // transDict.titleDict = titleDict;
     // transDict.titleLinksDict = titleLinksDict;
@@ -3241,7 +3260,7 @@
                 const DD = d < 10 ? `0${d}` : d.toString();
                 return MM + DD;
             }
-            const fest_date_key = formatMMDD(date.getUTCMonth(),date.getUTCDate());
+            const fest_date_key = formatMMDD(date.getUTCMonth(), date.getUTCDate());
             if (fest_date_dict[fest_date_key]) fest_date_html += `今天 - ${fest_date_dict[fest_date_key]['name']}(<button title="${fest_date_dict[fest_date_key]['eff']}">效果</button>)`;
             else {
                 // 月日列表
@@ -3374,6 +3393,7 @@
             domId: 'wh-quick-crime',
             domText: ' 快速犯罪 <button id="wh-quick-crime-btn">小窗开启</button>',
             dictName: 'quickCrime',
+            tip: '显示快捷操作按钮，目前不支持自定义',
         });
         // 任务助手
         settingsArr.push({
@@ -3388,6 +3408,7 @@
             domId: 'wh-energy-alert',
             domText: ' 起飞爆E警告',
             dictName: 'energyAlert',
+            tip: '起飞前计算来回是否会爆体，红字警告',
         });
         // 飞行闹钟
         settingsArr.push({
@@ -3395,6 +3416,7 @@
             domId: 'wh-trv-alarm-check',
             domText: ' 飞行闹钟 (仅PC)',
             dictName: 'trvAlarm',
+            tip: '飞行页面将显示一个内建的闹钟，落地前声音提醒，需要打开浏览器声音权限',
         });
         // 啤酒提醒
         settingsArr.push({
@@ -3402,6 +3424,7 @@
             domId: 'wh-qua-alarm-check',
             domText: '<span> 啤酒提醒 </span><button id="wh-qua-alarm-check-btn">今日不提醒</button>',
             dictName: '_15Alarm',
+            tip: '每小时的整15分钟的倍数时通知提醒抢啤酒或者血包',
         });
         // 攻击链接转跳
         settingsArr.push({
@@ -3409,6 +3432,7 @@
             domId: 'wh-attack-relocate',
             domText: ' 真·攻击界面转跳',
             dictName: 'attRelocate',
+            tip: '在无法打开攻击界面的情况下依然可以转跳到正确的攻击页面',
         });
         // 捡垃圾助手
         settingsArr.push({
@@ -3416,6 +3440,7 @@
             domId: 'wh-city-finder',
             domText: ' 捡垃圾助手',
             dictName: 'cityFinder',
+            tip: '城市地图中放大显示物品并且估计价值',
         });
         // 叠E保护
         settingsArr.push({
@@ -3423,6 +3448,7 @@
             domId: 'wh-SEProtect-check',
             domText: ' 叠E保护',
             dictName: 'SEProtect',
+            tip: '隐藏健身房的锻炼按钮，防止误操作',
         });
         // 光速拔刀
         settingsArr.push({
@@ -3527,7 +3553,11 @@
             });
             // 自动开打和结束
             settingsArr.push({
-                domType: 'checkbox', domId: 'wh-auto-start-finish', domText: ' ⚠️自动开打和结束', dictName: 'autoStartFinish',
+                domType: 'checkbox',
+                domId: 'wh-auto-start-finish',
+                domText: ' ⚠️自动开打和结束',
+                dictName: 'autoStartFinish',
+                tip: '脚本将会自动按下战斗和结束按钮',
             });
         } else {
             setWhSetting('autoStartFinish', false, false)
@@ -3880,7 +3910,7 @@ height:30px;
         // });
     }
     // 菜单node
-    const $zhongNode = initIcon();
+    const $zhongNode = initIcon(settingsArr);
     // 菜单中额外的按钮
     if ($zhongNode) {
         // 更新词库按钮
@@ -4110,6 +4140,20 @@ border:0;
 cursor:pointer;
 }
 #wh-gSettings div{margin: 4px 0 0;}
+#wh-gSettings .wh-tip{display:none;}
+#wh-gSettings div:hover .wh-tip{
+display: block;
+position: absolute;
+margin: 0;
+background: #f2f2f2;
+color: #333;
+box-shadow: 0px 0px 3px 1px #25252573;
+border-radius: 2px;
+padding: 6px;
+max-width: 12em;
+font-size: 12px;
+line-height: 14px;
+}
 #wh-trans-icon .wh-container{
 margin:0;
 padding:0 16px 16px;
@@ -4859,9 +4903,16 @@ display:inline-block;
     }
 
     // 叠e助手
-    if (href.includes('gym.php') && getWhSettingObj()['SEProtect']) {
-        elementReady('#gymroot').then(node => {
-            addStyle(`.wh-display-none{
+    if (href.includes('gym.php')) {
+        const switch_node = document.createElement('div');
+        switch_node.innerHTML = `<label><input type="checkbox" ${getWhSettingObj()['SEProtect'] ? 'checked' : ''}/> 叠E保护</label>`;
+        switch_node.id = 'wh-gym-info-cont';
+        switch_node.querySelector('input').onchange = (e) => {
+            $zhongNode.querySelector('#wh-SEProtect-check').checked = e.target.checked;
+            node.classList.toggle('wh-display-none');
+            setWhSetting('SEProtect', e.target.checked);
+        };
+        addStyle(`.wh-display-none{
 display:none !important;
 }
 #wh-gym-info-cont{
@@ -4873,20 +4924,13 @@ display:none !important;
     text-shadow: 0 0 2px black;
     background-image: linear-gradient(90deg,transparent 50%,rgba(0,0,0,.07) 0);
     background-size: 4px;
-}
-#wh-gym-info-cont button{color:white;cursor:pointer;}`);
-            node.classList.add('wh-display-none');
-            const info = document.createElement('div');
-            info.id = 'wh-gym-info-cont';
-            info.innerHTML = `<p>【叠E保护】已为您关闭健身房。<button>点击关闭【叠E保护】</button></p>`;
-            node.after(info);
-            info.querySelector('button').addEventListener('click', (e) => {
-                e.target.disabled = true;
-                info.remove();
-                node.classList.remove('wh-display-none');
-                setWhSetting('SEProtect', false);
-                if ($zhongNode) $zhongNode.querySelector('#wh-SEProtect-check').checked = false;
-            });
+}`);
+        // const node = await elementReady('#gymroot');
+        // if (getWhSettingObj()['SEProtect']) node.classList.add('wh-display-none');
+        // node.before(switch_node);
+        elementReady('#gymroot').then(node=>{
+            if (getWhSettingObj()['SEProtect']) node.classList.add('wh-display-none');
+            node.before(switch_node);
         });
     }
 
@@ -6542,7 +6586,7 @@ margin: 0 0 3px;
     /*
     添加左侧图标
      */
-    function initIcon() {
+    function initIcon(settingsArr) {
         if (isIframe) return;
         if (!!document.querySelector('div#wh-trans-icon')) return;
         const zhongNode = document.createElement('div');
@@ -6560,9 +6604,10 @@ margin: 0 0 3px;
         const settingNode = zhongNode.querySelector('#wh-gSettings');
         settingsArr.forEach(setting => {
             const newNode = document.createElement('div');
+            const tip = setting['tip'] ? `<div class="wh-tip">${setting['tip']}</div>` : '';
             switch (setting.domType) {
                 case 'checkbox': {
-                    newNode.innerHTML += `<label><input type="checkbox" id="${setting.domId}" ${getWhSettingObj()[setting.dictName] ? "checked" : ''} />${setting.domText}</label>`;
+                    newNode.innerHTML += `<label><input type="checkbox" id="${setting.domId}" ${getWhSettingObj()[setting.dictName] ? "checked" : ''} />${setting.domText}</label>${tip}`;
                     settingNode.appendChild(newNode);
                     settingNode.querySelector(`#${setting.domId}`).onchange = (elem) => {
                         setWhSetting(setting.dictName, elem.target.checked);
@@ -6596,6 +6641,7 @@ margin: 0 0 3px;
                 }
             }
         });
+        // 菜单点击按钮
         zhongNode.querySelector('#wh-trans-icon-btn').onclick = () => {
             zhongNode.classList.toggle('wh-icon-expanded');
             const click_func = e => {
@@ -6616,6 +6662,7 @@ margin: 0 0 3px;
                 document.body.removeEventListener('click', click_func);
             }
         };
+        // 更新按钮
         zhongNode.querySelector('#wh-update-btn').onclick = e => {
             e.target.blur();
             const innerHtml = `<h4>电脑</h4>
@@ -6624,8 +6671,29 @@ margin: 0 0 3px;
 <p></p>
 <h4>手机</h4>
 <p>安卓 KIWI 等可以用油猴脚本的浏览器也可以点上面的链接安装👆</p>
-<p>Torn PDA app 或 Alook 用户可打开<a href="//jjins.github.io/fyfuzhi/" target="_blank">这个网页</a>快捷复制粘贴。</p>`;
-            popupMsg(innerHtml, '如何更新');
+<p>Torn PDA app 或 Alook 用户可打开<a href="//jjins.github.io/fyfuzhi/" target="_blank">这个网页</a>快捷复制粘贴。</p>
+<h4>直接复制</h4>
+<p>加载脚本然后直接复制粘贴到用户脚本处。</p>
+<p><button>加载</button></p>
+`;
+            const node = popupMsg(innerHtml, '如何更新');
+            // 直接复制的按钮
+            node.querySelector('button').onclick = async (e) => {
+                e.target.innerHTML = '加载中';
+                const js_text = await COFetch(`https://jjins.github.io/fyfuzhi/torn-trans-zhcn.user.js?${performance.now()}`);
+                e.target.innerHTML = '复制';
+                e.target.onclick = () => {
+                    const textarea_node = document.createElement('textarea');
+                    textarea_node.innerHTML = js_text;
+                    e.target.parentElement.append(textarea_node);
+                    textarea_node.focus();
+                    textarea_node.select();
+                    document.execCommand('Copy');
+                    textarea_node.remove();
+                    e.target.innerHTML = '已复制';
+                    e.target.onclick = null;
+                };
+            };
         };
         document.body.append(zhongNode);
         return zhongNode;
@@ -7257,38 +7325,6 @@ z-index:100001;
             clearInterval(sidebarInterval);
         }, 1000);
 
-        // 迷你资料卡
-        const miniProfile = function miniprof() {
-            const miniprofOB = new MutationObserver(_ => {
-                miniprofOB.disconnect();
-                miniprofTrans();
-                miniprofOB.observe($('div.profile-mini-root').get(0), {
-                    attributes: true,
-                    childList: true,
-                    subtree: true
-                });
-            });
-            const miniprofTrans = function miniprofTrans() {
-                // 迷你资料卡状态
-                playerStatusTrans($('div.profile-mini-root div.description span'));
-                // 转钱
-                sendCashTrans('div.profile-mini-root');
-            };
-            if ($('div.profile-mini-root').length > 0)
-                miniprofTrans();
-            else {
-                const intervalInit = setInterval(() => {
-                    const miniProfileFirst = $('div.profile-mini-root').get(0);
-                    if (miniProfileFirst) {
-                        clearInterval(intervalInit);
-                        miniprofTrans();
-                        miniprofOB.observe(miniProfileFirst, {attributes: true, childList: true, subtree: true});
-                    }
-                }, 1000);
-            }
-        };
-        miniProfile();
-
         // header
         if (document.querySelector('div#header-root')) {
             const headerOB = new MutationObserver(_ => {
@@ -7733,6 +7769,7 @@ z-index:100001;
 
         // 物品页面
         if (href.contains(/item\.php/)) {
+            if (href.includes('item.php?temp=')) return;
             // 标题和右边的链接
             initOB(document.querySelector('.content-title'), {childList: true},
                 () => {
@@ -9267,5 +9304,13 @@ z-index:100001;
                 contentTitleLinksTransReact();
             });
         }
+    }
+
+    // mini profile 翻译
+    function miniprofTrans() {
+        // 迷你资料卡状态
+        playerStatusTrans($('div.profile-mini-root div.description span'));
+        // 转钱
+        sendCashTrans('div.profile-mini-root');
     }
 }());
