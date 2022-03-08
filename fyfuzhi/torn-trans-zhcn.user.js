@@ -1,8 +1,8 @@
 // ==UserScript==
-// @lastmodified  202203081723
+// @lastmodified  202203090029
 // @name         芜湖助手
 // @namespace    WOOH
-// @version      0.3.24
+// @version      0.3.25
 // @description  托恩，起飞！
 // @author       Woohoo[2687093] Sabrina_Devil[2696209]
 // @match        https://www.torn.com/*
@@ -23,12 +23,17 @@
     if (window.WHTRANS) return;
     window.WHTRANS = true;
     // 版本
-    const version = '0.3.24';
+    const version = '0.3.25';
     // 修改历史
     const changelist = [
         {
             todo: true,
             cont: `翻译：baza npc商店、imarket、imarket搜索结果`,
+        },
+        {
+            ver: '0.3.25',
+            date: '20220309',
+            cont: `修复价格监视bug，修改css样式`,
         },
         {
             ver: '0.3.24',
@@ -3836,6 +3841,7 @@ height:30px;
             domText: '价格监视',
             clickFunc: function () {
                 const watcher_conf = getWhSettingObj()['priceWatcher'];
+                const pre_str = JSON.stringify(watcher_conf);
                 const html = `<style>
 #wh-popup-cont input{width:12em;}
 #wh-popup-cont input[type="number"]{width:8em;}
@@ -3847,14 +3853,16 @@ height:30px;
 </p>
 <p><b>PT</b><label> $ <input type="number" value="${watcher_conf['pt'] || -1}" /></label></p>
 <p><b>XAN</b><label> $ <input type="number" value="${watcher_conf['xan'] || -1}" /></label></p>
+<p><button>确定</button></p>
 `;
-                const popup = popupMsg(html, '价格监视设置', () => {
-                    const pre_str = JSON.stringify(watcher_conf);
+                const popup = popupMsg(html, '价格监视设置');
+                popup.querySelector('button').onclick = () => {
                     const [pt_node, xan_node] = popup.querySelectorAll('input[type="number"]');
                     watcher_conf.pt = pt_node.value | 0;
                     watcher_conf.xan = xan_node.value | 0;
-                    if (JSON.stringify(watcher_conf) !== pre_str) setWhSetting('priceWatcher', watcher_conf)
-                });
+                    if (JSON.stringify(watcher_conf) !== pre_str) setWhSetting('priceWatcher', watcher_conf);
+                    popup.close();
+                };
             }
         });
         // 危险行为开关⚠️
@@ -4154,6 +4162,7 @@ max-width: 12em;
 font-size: 12px;
 line-height: 14px;
 }
+#wh-gSettings .wh-tip:hover{display:none !important;}
 #wh-trans-icon .wh-container{
 margin:0;
 padding:0 16px 16px;
@@ -4928,7 +4937,7 @@ display:none !important;
         // const node = await elementReady('#gymroot');
         // if (getWhSettingObj()['SEProtect']) node.classList.add('wh-display-none');
         // node.before(switch_node);
-        elementReady('#gymroot').then(node=>{
+        elementReady('#gymroot').then(node => {
             if (getWhSettingObj()['SEProtect']) node.classList.add('wh-display-none');
             node.before(switch_node);
         });
@@ -6710,7 +6719,7 @@ margin: 0 0 3px;
     }
 
     // 弹出窗口
-    function popupMsg(innerHTML, title = '芜湖助手', callback = doNothing) {
+    function popupMsg(innerHTML, title = '芜湖助手') {
         if (hasPopup()) return null;
         const popup = document.createElement('div');
         popup.id = 'wh-popup';
@@ -6719,18 +6728,12 @@ margin: 0 0 3px;
 <div id="wh-popup-cont">${innerHTML}</div>
 </div>`;
         document.body.append(popup);
+        const rt = popup.querySelector('#wh-popup-cont');
+        rt.close = () => popup.remove();
         popup.addEventListener('click', e => {
             e.stopImmediatePropagation();
-            if (e.target === popup) {
-                popup.remove();
-                callback();
-            }
+            if (e.target === popup) rt.close();
         });
-        const rt = popup.querySelector('#wh-popup-cont')
-        rt.close = () => {
-            popup.remove();
-            callback();
-        };
         return rt;
     }
 
