@@ -1,8 +1,8 @@
 // ==UserScript==
-// @lastmodified  202203090029
+// @lastmodified  202203091635
 // @name         芜湖助手
 // @namespace    WOOH
-// @version      0.3.25
+// @version      0.3.26
 // @description  托恩，起飞！
 // @author       Woohoo[2687093] Sabrina_Devil[2696209]
 // @match        https://www.torn.com/*
@@ -10,7 +10,7 @@
 // @grant        unsafeWindow
 // @connect      *
 // ==/UserScript==
-(function () {
+(async function () {
     'use strict';
     // unsafewindow副本
     const UWCopy = window.unsafeWindow;
@@ -23,12 +23,17 @@
     if (window.WHTRANS) return;
     window.WHTRANS = true;
     // 版本
-    const version = '0.3.25';
+    const version = '0.3.26';
     // 修改历史
     const changelist = [
         {
             todo: true,
             cont: `翻译：baza npc商店、imarket、imarket搜索结果`,
+        },
+        {
+            ver: '0.3.26',
+            date: '20220309',
+            cont: `修复叠E助手bug，添加BnB商店加入啤酒的功能`,
         },
         {
             ver: '0.3.25',
@@ -3406,6 +3411,7 @@
             domId: 'wh-mission-lint',
             domText: ' 任务助手',
             dictName: 'missionHint',
+            tip: 'Duke任务的一些中文小提示',
         });
         // 起飞警告
         settingsArr.push({
@@ -3907,6 +3913,13 @@ height:30px;
                 popupMsg(insert, '更新历史');
             },
         });
+        // 其他设置
+        if (isDev()) settingsArr.push({
+            domType: 'button', domId: 'wh-otherBtn', domText: '其他设置',clickFunc: () =>{
+                const html = `清空设置数据、请求通知权限、测试跨域请求`;
+                const popup = popupMsg(html,'其他设置');
+            },
+        });
         // 测试按钮
         // if (isDev()) settingsArr.push({
         //     domType: 'button',
@@ -4244,6 +4257,21 @@ div#wh-popup::after {
 #wh-popup-cont input:focus{border-color:blue;}
 #wh-popup-cont table{width:100%;border-collapse:collapse;border:1px solid;}
 #wh-popup-cont td, #wh-popup-cont th{border-collapse:collapse;padding:4px;border:1px solid;}
+.wh-display-none{display:none !important;}
+#wh-gym-info-cont{
+    background-color: #363636;
+    color: white;
+    padding: 8px;
+    font-size: 15px;
+    border-radius: 4px;
+    text-shadow: 0 0 2px black;
+    background-image: linear-gradient(90deg,transparent 50%,rgba(0,0,0,.07) 0);
+    background-size: 4px;
+    line-height: 20px;
+}
+#wh-gym-info-cont button{
+cursor:pointer;
+}
 `);
 
     const href = window.location.href;
@@ -4921,26 +4949,100 @@ display:inline-block;
             node.classList.toggle('wh-display-none');
             setWhSetting('SEProtect', e.target.checked);
         };
-        addStyle(`.wh-display-none{
-display:none !important;
-}
-#wh-gym-info-cont{
-    background-color: #363636;
-    color: white;
-    padding: 8px;
-    font-size: 15px;
-    border-radius: 4px;
-    text-shadow: 0 0 2px black;
-    background-image: linear-gradient(90deg,transparent 50%,rgba(0,0,0,.07) 0);
-    background-size: 4px;
-}`);
-        // const node = await elementReady('#gymroot');
-        // if (getWhSettingObj()['SEProtect']) node.classList.add('wh-display-none');
-        // node.before(switch_node);
-        elementReady('#gymroot').then(node => {
-            if (getWhSettingObj()['SEProtect']) node.classList.add('wh-display-none');
-            node.before(switch_node);
+        const node = await elementReady('#gymroot');
+        if (getWhSettingObj()['SEProtect']) node.classList.add('wh-display-none');
+        node.before(switch_node);
+    }
+
+    // 加入啤酒
+    if (href.includes('shops.php?step=bitsnbobs')) {
+        const add_btn_node = document.createElement('div');
+        add_btn_node.id = 'wh-gym-info-cont';
+        add_btn_node.innerHTML = `<button style="color:white;">👉添加啤酒商品</button><p>如果当前商店没有啤酒这个商品可以提前显示以省去刷新步骤，增加抢酒成功率。</p><p id="wh-msg"></p>`;
+        add_btn_node.querySelector('button').addEventListener('click', e => {
+            const msg_node = add_btn_node.querySelector('#wh-msg');
+            if (node.querySelector('span.Alcohol')) {
+                msg_node.innerHTML = '❌ 页面已经有啤酒了';
+                return;
+            }
+            const clear_node = node.querySelector('li.clear');
+            const beer = document.createElement('li');
+            beer.classList.add('torn-divider', 'divider-vertical');
+            beer.style.backgroundColor='#c8c8c8';
+            beer.innerHTML = `<div class="acc-title">
+<span class="item-desc">
+<span tabindex="0" aria-labelledby="180-name 180-price 180-stock" class="item Alcohol" itemid="180" loaded="0">
+<img class="torn-item item-plate" data-size="large" src="/images/items/180/large.png" alt="Bottle of Beer" style="opacity: 0;" id="item-1bea9f66-a6c4-475c-accb-41dcb67af64f" data-converted="1" aria-hidden="true">
+<span class="item-hover">
+<button class="view-h wai-btn" aria-label="Show info: Bottle of Beer" value="100" i-data="i_723_228_51_52"></button>
+<button class="buy-h wai-btn" aria-label="Buy: Bottle of Beer" value="100" i-data="i_774_228_51_52"></button>
+ </span>
+<canvas id="item-1bea9f66-a6c4-475c-accb-41dcb67af64f" role="img" aria-label="Bottle of Beer" style="opacity: 1;" class="torn-item item-plate item-converted" item-mode="light" width="100" height="50"></canvas></span>
+<span class="desc">
+<span id="180-name" class="name  t-overflow bold">啤酒</span>
+<span id="180-price" class="price t-gray-6" data-sell="$5">$10</span>
+<span id="180-stock" class="stock t-gray-6 t-overflow">酒 (<span class="instock">1100</span>存货)</span>
+</span>
+<span class="buy-act-wrap">
+<label for="180" class="wai">Amount
+of Bottle of Beer</label>
+<input id="180" type="text" value="100" maxlength="3" name="buyAmount[]" autocomplete="new-amount">
+<span class="buy-act bold">
+<button class="wai-support t-blue h">买</button>
+<div class="tt-max-buy-overlay"></div>
+</span>
+</span>
+</span>
+<div class="confirm-wrap">
+<span class="confirm">
+<span>
+点击确定购买
+</span>
+<span>
+<span class="count">100</span>
+瓶啤酒
+$<span class="total">1,000</span>
+</span>
+<span class="confirm-act m-top5">
+<a href="#" class="wai-support yes m-right10 bold t-blue h" data-id="180" i-data="i_819_263_23_16">
+确定
+</a>
+<span class="no bold">
+<a href="#" class="wai-support t-blue h" i-data="i_852_263_18_16">
+不
+</a>
+</span>
+</span>
+</span>
+</div>
+<div class="success-wrap">
+<span class="success">
+<span class="t-red bold">
+<span class="ajax-preloader"></span>
+</span>
+</span>
+<button aria-label="Close" class="close-icon p0 wai-btn" value="100" i-data="i_954_228_10_11"></button>
+</div>
+<div class="msg-wrap">
+<span class="t-green bold">
+<span class="ajax-preloader"></span>
+</span>
+</div>
+</div>
+<div class="view-item-info">
+<div class="item-cont">
+<div class="item-wrap">
+<span class="ajax-preloader m-top10 m-bottom10"></span>
+</div>
+</div>
+</div>`;
+            if (clear_node) clear_node.before(beer);
+            else node.append(beer);
+            e.target.remove();
+            msg_node.innerHTML = '添加成功';
         });
+        const node = await elementReady('ul.items-list');
+        document.querySelector('.content-wrapper').prepend(add_btn_node);
     }
 
     // 快速crime
