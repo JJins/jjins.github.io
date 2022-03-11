@@ -1,8 +1,8 @@
 // ==UserScript==
-// @lastmodified  202203091635
+// @lastmodified  202203110851
 // @name         芜湖助手
 // @namespace    WOOH
-// @version      0.3.26
+// @version      0.3.27
 // @description  托恩，起飞！
 // @author       Woohoo[2687093] Sabrina_Devil[2696209]
 // @match        https://www.torn.com/*
@@ -23,12 +23,17 @@
     if (window.WHTRANS) return;
     window.WHTRANS = true;
     // 版本
-    const version = '0.3.26';
+    const version = '0.3.27';
     // 修改历史
     const changelist = [
         {
             todo: true,
             cont: `翻译：baza npc商店、imarket、imarket搜索结果`,
+        },
+        {
+            ver: '0.3.27',
+            date: '20220311',
+            cont: `修复bug，调整css`,
         },
         {
             ver: '0.3.26',
@@ -4161,20 +4166,20 @@ border:0;
 cursor:pointer;
 }
 #wh-gSettings div{margin: 4px 0 0;}
-#wh-gSettings .wh-tip{display:none;}
-#wh-gSettings div:hover .wh-tip{
-display: block;
+#wh-gSettings .wh-tip{
+display:none;
 position: absolute;
-margin: 0;
-background: #f2f2f2;
+margin: 4px 0 0 -8px;
+background: #f2f2f2e6;
 color: #333;
 box-shadow: 0px 0px 3px 1px #25252573;
 border-radius: 2px;
 padding: 6px;
-max-width: 12em;
-font-size: 12px;
+max-width: 14em;
+font-size: 13px;
 line-height: 14px;
 }
+#wh-gSettings div:hover .wh-tip{display: block;}
 #wh-gSettings .wh-tip:hover{display:none !important;}
 #wh-trans-icon .wh-container{
 margin:0;
@@ -4961,7 +4966,7 @@ display:inline-block;
         add_btn_node.innerHTML = `<button style="color:white;">👉添加啤酒商品</button><p>如果当前商店没有啤酒这个商品可以提前显示以省去刷新步骤，增加抢酒成功率。</p><p id="wh-msg"></p>`;
         add_btn_node.querySelector('button').addEventListener('click', e => {
             const msg_node = add_btn_node.querySelector('#wh-msg');
-            if (node.querySelector('span.Alcohol')) {
+            if (node.querySelector('span[id="180-name"]')) {
                 msg_node.innerHTML = '❌ 页面已经有啤酒了';
                 return;
             }
