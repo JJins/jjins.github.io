@@ -1,8 +1,8 @@
 // ==UserScript==
-// @lastmodified  202203311604
+// @lastmodified  202203312033
 // @name         芜湖助手
 // @namespace    WOOH
-// @version      0.3.28
+// @version      0.3.29
 // @description  托恩，起飞！
 // @author       Woohoo[2687093] Sabrina_Devil[2696209]
 // @match        https://www.torn.com/*
@@ -23,12 +23,17 @@
     if (window.WHTRANS) return;
     window.WHTRANS = true;
     // 版本
-    const version = '0.3.28';
+    const version = '0.3.29';
     // 修改历史
     const changelist = [
         {
             todo: true,
             cont: `翻译：baza npc商店、imarket、imarket搜索结果`,
+        },
+        {
+            ver: '0.3.29',
+            date: '20220331',
+            cont: `增加一键起飞`,
         },
         {
             ver: '0.3.28',
@@ -3667,6 +3672,60 @@
                 }
             },
         });
+        // 一键起飞
+        settingsArr.push({
+            domType: 'button',
+            domId: 'wh-quick-fly-btn',
+            domText: '✈一键起飞',
+            clickFunc: async function () {
+                if (window.hasWHQuickFlyOpt) return;
+                window.hasWHQuickFlyOpt = true;
+                addStyle(`#wh-quick-fly-opt{
+    position:fixed;
+    left:64px;
+    top:64px;
+    background: #008000db;
+    padding: 8px;
+    border-radius: 4px;
+    box-shadow: 0 0 5px 1px #ffffff29;
+    color: white;
+    font-size: 16px;
+    width: 220px;
+    z-index: 999999;
+}
+#wh-quick-fly-opt label{
+display:block;
+}
+#wh-quick-fly-opt select{
+width: 100%;
+    padding: 2px;
+    margin: 4px 0;
+}
+#wh-quick-fly-opt button{
+font-size:16px;
+color:white;
+}
+`);
+                const node = document.createElement('div');
+                node.id = 'wh-quick-fly-opt';
+                node.innerHTML = `
+<p>先选好目的地和飞机，出院后点起飞</p>
+<div>
+<label>目的地：<select><option selected>墨</option><option>开</option><option>加</option><option>夏</option><option>英</option><option>阿</option><option>瑞s</option><option>立本</option><option>祖</option><option>迪</option><option>南</option></select></label>
+<label>飞机：<select><option>普通飞机</option><option selected>PI小飞机</option><option>私人飞机</option><option>商务舱</option></select></label>
+<button>起飞！</button>
+</div>
+`;
+                const [dest_node, type_node] = node.querySelectorAll('select');
+                const btn_node = node.querySelector('button');
+                btn_node.addEventListener('click', () => {
+                    WHNotify('即将转跳');
+                    sessionStorage['wh-quick-fly'] = `${dest_node.selectedIndex} ${type_node.selectedIndex} ${new Date().getTime()}`;
+                    location.href = 'https://www.torn.com/travelagency.php';
+                });
+                document.body.append(node);
+            },
+        });
         // NPC LOOT
         settingsArr.push({
             domType: 'button',
@@ -4562,6 +4621,32 @@ display:none;
             attributes: true,
             subtree: true,
             childList: true
+        });
+    }
+
+    // 一键起飞
+    if (sessionStorage['wh-quick-fly'] && href.includes('travelagency.php')) {
+        // [id-dest,type(1...4),timestamp]
+        const [_id, _type, ts] = sessionStorage['wh-quick-fly'].trim().split(' ');
+        sessionStorage['wh-quick-fly'] = undefined;
+        if (new Date().getTime() - ts > 60000) {
+            log('超时，一键起飞计划已取消');
+            return;
+        }
+        const _key = document.querySelector('div[data-id][data-key]').getAttribute('data-key');
+        getAction({
+            type: 'post',
+            data: {
+                step: 'travel',
+                id: getDestId(_id),
+                key: _key,
+                type: ['standard', 'airstrip', 'private', 'business'][_type]
+            },
+            success: function (str) {
+                WHNotify(str)
+            },
+            before: function () {
+            }
         });
     }
 
@@ -9516,5 +9601,11 @@ z-index:100001;
         playerStatusTrans($('div.profile-mini-root div.description span'));
         // 转钱
         sendCashTrans('div.profile-mini-root');
+    }
+
+    // 起飞目的地id
+    function getDestId(dest) {
+        // 墨、开、加、夏、英、阿、瑞s、立本、祖、迪、南
+        return [2, 12, 9, 3, 10, 7, 8, 5, 6, 11, 4][dest];
     }
 }());
