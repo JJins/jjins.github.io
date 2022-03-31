@@ -1,8 +1,8 @@
 // ==UserScript==
-// @lastmodified  202203110851
+// @lastmodified  202203311604
 // @name         芜湖助手
 // @namespace    WOOH
-// @version      0.3.27
+// @version      0.3.28
 // @description  托恩，起飞！
 // @author       Woohoo[2687093] Sabrina_Devil[2696209]
 // @match        https://www.torn.com/*
@@ -23,12 +23,17 @@
     if (window.WHTRANS) return;
     window.WHTRANS = true;
     // 版本
-    const version = '0.3.27';
+    const version = '0.3.28';
     // 修改历史
     const changelist = [
         {
             todo: true,
             cont: `翻译：baza npc商店、imarket、imarket搜索结果`,
+        },
+        {
+            ver: '0.3.28',
+            date: '20220331',
+            cont: `增加pt一键购买（NS抄来的）`,
         },
         {
             ver: '0.3.27',
@@ -3106,6 +3111,7 @@
             return keywords.test(this);
         }
     };
+    console.log('href')
 
     // 原始fetch
     const ori_fetch = window.fetch;
@@ -3920,9 +3926,9 @@ height:30px;
         });
         // 其他设置
         if (isDev()) settingsArr.push({
-            domType: 'button', domId: 'wh-otherBtn', domText: '其他设置',clickFunc: () =>{
+            domType: 'button', domId: 'wh-otherBtn', domText: '其他设置', clickFunc: () => {
                 const html = `清空设置数据、请求通知权限、测试跨域请求`;
-                const popup = popupMsg(html,'其他设置');
+                const popup = popupMsg(html, '其他设置');
             },
         });
         // 测试按钮
@@ -4944,6 +4950,31 @@ display:inline-block;
         })
     }
 
+    // pt一键购买
+    if (href.includes('pmarket.php')) {
+        WHNotify('一键购买已开启');
+        // ns脚本
+        const rmv_cfm = (e) => {
+            let el = e.firstElementChild;
+            el.className += ' yes';
+            let old_href = el.getAttribute('href');
+            let new_href = old_href.replace(/=buy/, '=buy1').replace(/&points=\d{1,9}$/, '');
+            el.setAttribute('href', new_href);
+        };
+
+        let points_sales = document.querySelector('.users-point-sell');
+        for (const index in points_sales.children) {
+            'LI' === points_sales.children[index].tagName && rmv_cfm(points_sales.children[index])
+        }
+        new MutationObserver(e => {
+            for (const t of e) {
+                for (const e of t.addedNodes) {
+                    'LI' === e.tagName && rmv_cfm(e)
+                }
+            }
+        }).observe(points_sales, {childList: true});
+    }
+
     // 叠e助手
     if (href.includes('gym.php')) {
         const switch_node = document.createElement('div');
@@ -4973,7 +5004,7 @@ display:inline-block;
             const clear_node = node.querySelector('li.clear');
             const beer = document.createElement('li');
             beer.classList.add('torn-divider', 'divider-vertical');
-            beer.style.backgroundColor='#c8c8c8';
+            beer.style.backgroundColor = '#c8c8c8';
             beer.innerHTML = `<div class="acc-title">
 <span class="item-desc">
 <span tabindex="0" aria-labelledby="180-name 180-price 180-stock" class="item Alcohol" itemid="180" loaded="0">
@@ -5703,6 +5734,69 @@ margin: 0 0 3px;
             });
             getDOMOb.observe($root, {childList: true, subtree: true});
         }
+    }
+
+    // rw雷达
+    if (href.includes('profiles.php?XID=0')) {
+        const utl = {
+            set: function (k, v) {
+                const obj = JSON.parse(localStorage['wh_rw_raider']) || {};
+                obj[k] = v;
+                localStorage['wh_rw_raider'] = JSON.stringify(obj);
+            },
+            get: function (k) {
+                const obj = JSON.parse(localStorage['wh_rw_raider']) || {};
+                return obj[k];
+            },
+            setFactionID: function (id) {
+                this.set('faction', id);
+            },
+            setRWFactionID: function (id) {
+                this.set('rw_faction', id);
+            },
+            getFactionID: async function (apikey) {
+                const response = await fetch('https://api.torn.com/faction/?selections=basic&key=' + apikey);
+                const res_obj = await response.json();
+                const faction_id = res_obj['ID'];
+                if (faction_id) {
+                    this.setFactionID(faction_id);
+                    return faction_id;
+                } else return -1;
+            },
+            getRWFactionID: function (apikey) {
+            },
+        };
+        const rw_raider = async function () {
+            if (href.includes('#rader')) {
+                addStyle('div.content-title,div.info-msg-cont{display:none;}');
+                const wh_node = document.createElement('div');
+                wh_node.id = 'wh-rd-cont';
+                wh_node.innerHTML = `<div class="m-top10">
+<h4 id="skip-to-content" class="left">RW 雷达</h4>
+<div class="clear"></div>
+<hr class="page-head-delimiter">
+</div>
+
+<div class="content m-top10">
+<a href="/profiles.php?XID=2687093" target="_blank">woohoo</a>
+<table>
+<thead>
+<tr><th>123</th><th>456</th></tr>
+</thead>
+<tbody>
+<tr><td>789</td><td>012</td></tr>
+</tbody></table>
+</div>`;
+                // 原页面完全加载
+                await elementReady('div.msg[role="alert"]');
+                const t_cont = document.querySelector('div.content-wrapper');
+                // t
+                t_cont.append(wh_node);
+            }
+        };
+        addEventListener('hashchange', rw_raider);
+
+        await rw_raider();
     }
 
     // 通知翻译
