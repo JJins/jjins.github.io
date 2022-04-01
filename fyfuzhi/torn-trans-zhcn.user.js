@@ -1,8 +1,8 @@
 // ==UserScript==
-// @lastmodified  202203312033
+// @lastmodified  202204012110
 // @name         芜湖助手
 // @namespace    WOOH
-// @version      0.3.29
+// @version      0.3.30
 // @description  托恩，起飞！
 // @author       Woohoo[2687093] Sabrina_Devil[2696209]
 // @match        https://www.torn.com/*
@@ -23,12 +23,19 @@
     if (window.WHTRANS) return;
     window.WHTRANS = true;
     // 版本
-    const version = '0.3.29';
+    const version = '0.3.30';
     // 修改历史
     const changelist = [
         {
             todo: true,
             cont: `翻译：baza npc商店、imarket、imarket搜索结果`,
+        },
+        {
+            ver: '0.3.30',
+            date: '20220401',
+            cont: `添加pt一键购买开关
+中菜单现已折叠部分设置
+完善一键起飞的内容，修复有关错误`,
         },
         {
             ver: '0.3.29',
@@ -3224,6 +3231,8 @@
         {key: 'cityFinder', val: false},
         // 叠E保护
         {key: 'SEProtect', val: false},
+        // PT一键购买
+        {key: 'ptQuickBuy', val: false},
         // 光速拔刀 6-关闭
         {key: 'quickAttIndex', val: 2},
         // 光速跑路 0-leave 1-mug 2-hos 3-关闭
@@ -3391,210 +3400,257 @@
             domId: 'wh-trans-event-cont',
             domHTML: eventObj.html,
         });
-        // 开启翻译
-        settingsArr.push({
-            domType: 'checkbox',
-            domId: 'wh-trans-enable',
-            domText: ' 开启翻译 <button id="wh-trans-data-update">更新词库</button>',
-            dictName: 'transEnable',
-        });
-        // 12月时加入圣诞小镇选项
-        if (date.getMonth() === 11) {
+        // 折叠部分
+        {
+            // 开启翻译
             settingsArr.push({
                 domType: 'checkbox',
-                domId: 'wh-xmastown-wt',
-                domText: ' 圣诞小镇攻略',
-                dictName: 'xmasTownWT',
+                domId: 'wh-trans-enable',
+                domText: ' 开启翻译 <button id="wh-trans-data-update">更新词库</button>',
+                dictName: 'transEnable',
+                isHide: true,
             });
+            // 12月时加入圣诞小镇选项
+            if (date.getMonth() === 11) {
+                settingsArr.push({
+                    domType: 'checkbox',
+                    domId: 'wh-xmastown-wt',
+                    domText: ' 圣诞小镇攻略',
+                    dictName: 'xmasTownWT',
+                    isHide: true,
+                });
+                settingsArr.push({
+                    domType: 'checkbox',
+                    domId: 'wh-xmastown-notify',
+                    domText: ' 圣诞小镇物品提示',
+                    dictName: 'xmasTownNotify',
+                    isHide: true,
+                });
+            }
+            // 任务助手
             settingsArr.push({
                 domType: 'checkbox',
-                domId: 'wh-xmastown-notify',
-                domText: ' 圣诞小镇物品提示',
-                dictName: 'xmasTownNotify',
+                domId: 'wh-mission-lint',
+                domText: ' 任务助手',
+                dictName: 'missionHint',
+                tip: 'Duke任务的一些中文小提示',
+                isHide: true,
             });
-        }
-        // 快速crime
-        settingsArr.push({
-            domType: 'checkbox',
-            domId: 'wh-quick-crime',
-            domText: ' 快速犯罪 <button id="wh-quick-crime-btn">小窗开启</button>',
-            dictName: 'quickCrime',
-            tip: '显示快捷操作按钮，目前不支持自定义',
-        });
-        // 任务助手
-        settingsArr.push({
-            domType: 'checkbox',
-            domId: 'wh-mission-lint',
-            domText: ' 任务助手',
-            dictName: 'missionHint',
-            tip: 'Duke任务的一些中文小提示',
-        });
-        // 起飞警告
-        settingsArr.push({
-            domType: 'checkbox',
-            domId: 'wh-energy-alert',
-            domText: ' 起飞爆E警告',
-            dictName: 'energyAlert',
-            tip: '起飞前计算来回是否会爆体，红字警告',
-        });
-        // 飞行闹钟
-        settingsArr.push({
-            domType: 'checkbox',
-            domId: 'wh-trv-alarm-check',
-            domText: ' 飞行闹钟 (仅PC)',
-            dictName: 'trvAlarm',
-            tip: '飞行页面将显示一个内建的闹钟，落地前声音提醒，需要打开浏览器声音权限',
-        });
-        // 啤酒提醒
-        settingsArr.push({
-            domType: 'checkbox',
-            domId: 'wh-qua-alarm-check',
-            domText: '<span> 啤酒提醒 </span><button id="wh-qua-alarm-check-btn">今日不提醒</button>',
-            dictName: '_15Alarm',
-            tip: '每小时的整15分钟的倍数时通知提醒抢啤酒或者血包',
-        });
-        // 攻击链接转跳
-        settingsArr.push({
-            domType: 'checkbox',
-            domId: 'wh-attack-relocate',
-            domText: ' 真·攻击界面转跳',
-            dictName: 'attRelocate',
-            tip: '在无法打开攻击界面的情况下依然可以转跳到正确的攻击页面',
-        });
-        // 捡垃圾助手
-        settingsArr.push({
-            domType: 'checkbox',
-            domId: 'wh-city-finder',
-            domText: ' 捡垃圾助手',
-            dictName: 'cityFinder',
-            tip: '城市地图中放大显示物品并且估计价值',
-        });
-        // 叠E保护
-        settingsArr.push({
-            domType: 'checkbox',
-            domId: 'wh-SEProtect-check',
-            domText: ' 叠E保护',
-            dictName: 'SEProtect',
-            tip: '隐藏健身房的锻炼按钮，防止误操作',
-        });
-        // 光速拔刀
-        settingsArr.push({
-            domType: 'select',
-            domId: 'wh-quick-attack-index',
-            domText: '光速拔刀 ',
-            domSelectOpt: [
-                {
-                    domVal: 'pri',
-                    domText: '主手',
-                },
-                {
-                    domVal: 'sec',
-                    domText: '副手',
-                },
-                {
-                    domVal: 'wea',
-                    domText: '近战',
-                },
-                {
-                    domVal: 'gre',
-                    domText: '手雷',
-                },
-                {
-                    domVal: 'fis',
-                    domText: '拳头',
-                },
-                {
-                    domVal: 'kic',
-                    domText: '脚踢',
-                },
-                {
-                    domVal: 'none',
-                    domText: '关闭',
-                },
-            ],
-            dictName: 'quickAttIndex',
-        });
-        // 光速跑路
-        settingsArr.push({
-            domType: 'select',
-            domId: 'wh-quick-mug',
-            domText: '光速跑路 ',
-            domSelectOpt: [
-                {
-                    domVal: 'leave',
-                    domText: '跑路(LEAVE)',
-                },
-                {
-                    domVal: 'mug',
-                    domText: '打劫(MUG)',
-                },
-                {
-                    domVal: 'hosp',
-                    domText: '住院(HOSP)',
-                },
-                {
-                    domVal: 'none',
-                    domText: '关闭',
-                },
-            ],
-            dictName: 'quickFinishAtt',
-        });
-        // 危险行为⚠️
-        if (getWhSettingObj()['dangerZone'] === true) {
-            // 攻击界面自刷新
+            // 起飞警告
+            settingsArr.push({
+                domType: 'checkbox',
+                domId: 'wh-energy-alert',
+                domText: ' 起飞爆E警告',
+                dictName: 'energyAlert',
+                tip: '起飞前计算来回是否会爆体，红字警告',
+                isHide: true,
+            });
+            // 飞行闹钟
+            settingsArr.push({
+                domType: 'checkbox',
+                domId: 'wh-trv-alarm-check',
+                domText: ' 飞行闹钟',
+                dictName: 'trvAlarm',
+                tip: '(仅PC) 飞行页面将显示一个内建的闹钟，落地前声音提醒，需要打开浏览器声音权限',
+                isHide: true,
+            });
+            // 啤酒提醒
+            settingsArr.push({
+                domType: 'checkbox',
+                domId: 'wh-qua-alarm-check',
+                domText: '<span> 啤酒提醒 </span><button id="wh-qua-alarm-check-btn">今日不提醒</button>',
+                dictName: '_15Alarm',
+                tip: '每小时的整15分钟的倍数时通知提醒抢啤酒或者血包',
+                isHide: true,
+            });
+            // 攻击链接转跳
+            settingsArr.push({
+                domType: 'checkbox',
+                domId: 'wh-attack-relocate',
+                domText: ' 真·攻击界面转跳',
+                dictName: 'attRelocate',
+                tip: '在无法打开攻击界面的情况下依然可以转跳到正确的攻击页面',
+                isHide: true,
+            });
+            // 捡垃圾助手
+            settingsArr.push({
+                domType: 'checkbox',
+                domId: 'wh-city-finder',
+                domText: ' 捡垃圾助手',
+                dictName: 'cityFinder',
+                tip: '城市地图中放大显示物品并且估计价值',
+                isHide: true,
+            });
+            // 快速crime
+            settingsArr.push({
+                domType: 'checkbox',
+                domId: 'wh-quick-crime',
+                domText: ' 快速犯罪 <button id="wh-quick-crime-btn">小窗开启</button>',
+                // domText: ' 快速犯罪 <button id="wh-quick-crime-btn">小窗开启</button>',
+                dictName: 'quickCrime',
+                tip: '显示快捷操作按钮，目前不支持自定义',
+                isHide: true,
+            });
+            // 叠E保护
+            settingsArr.push({
+                domType: 'checkbox',
+                domId: 'wh-SEProtect-check',
+                domText: ' 叠E保护',
+                dictName: 'SEProtect',
+                tip: '隐藏健身房的锻炼按钮，防止误操作',
+                isHide: true,
+            });
+            // PT一键购买
+            settingsArr.push({
+                domType: 'checkbox',
+                domId: 'wh-ptQuickBuy-check',
+                domText: ' PT一键购买',
+                dictName: 'ptQuickBuy',
+                tip: 'PT市场页面购买时跳过确认',
+                isHide: true,
+            });
+            // 光速拔刀
             settingsArr.push({
                 domType: 'select',
-                domId: 'wh-attack-reload',
-                domText: '⚠️攻击界面自动刷新 ',
-                dictName: 'attReload',
+                domId: 'wh-quick-attack-index',
+                domText: '光速拔刀 ',
                 domSelectOpt: [
                     {
+                        domVal: 'pri',
+                        domText: '主手',
+                    },
+                    {
+                        domVal: 'sec',
+                        domText: '副手',
+                    },
+                    {
+                        domVal: 'wea',
+                        domText: '近战',
+                    },
+                    {
+                        domVal: 'gre',
+                        domText: '手雷',
+                    },
+                    {
+                        domVal: 'fis',
+                        domText: '拳头',
+                    },
+                    {
+                        domVal: 'kic',
+                        domText: '脚踢',
+                    },
+                    {
                         domVal: 'none',
-                        domText: '无间隔',
-                    },
-                    {
-                        domVal: '1',
-                        domText: '约1s',
-                    },
-                    {
-                        domVal: '2',
-                        domText: '约2s',
-                    },
-                    {
-                        domVal: '3',
-                        domText: '约3s',
-                    },
-                    {
-                        domVal: '4',
-                        domText: '约4s',
-                    },
-                    {
-                        domVal: '5',
-                        domText: '约5s',
-                    },
-                    {
-                        domVal: 'disabled',
                         domText: '关闭',
                     },
                 ],
+                dictName: 'quickAttIndex',
+                isHide: true,
+                tip: '将Start Fight按钮移动到指定格子上',
             });
-            // 自动开打和结束
+            // 光速跑路
+            settingsArr.push({
+                domType: 'select',
+                domId: 'wh-quick-mug',
+                domText: '光速跑路 ',
+                domSelectOpt: [
+                    {
+                        domVal: 'leave',
+                        domText: '跑路(LEAVE)',
+                    },
+                    {
+                        domVal: 'mug',
+                        domText: '打劫(MUG)',
+                    },
+                    {
+                        domVal: 'hosp',
+                        domText: '住院(HOSP)',
+                    },
+                    {
+                        domVal: 'none',
+                        domText: '关闭',
+                    },
+                ],
+                dictName: 'quickFinishAtt',
+                isHide: true,
+                tip: '将结束后指定按钮移动到上面指定的格子上',
+            });
+            // 危险行为⚠️
+            if (getWhSettingObj()['dangerZone'] === true) {
+                // 攻击界面自刷新
+                settingsArr.push({
+                    domType: 'select',
+                    domId: 'wh-attack-reload',
+                    domText: '⚠️攻击界面自动刷新 ',
+                    dictName: 'attReload',
+                    domSelectOpt: [
+                        {
+                            domVal: 'none',
+                            domText: '无间隔',
+                        },
+                        {
+                            domVal: '1',
+                            domText: '约1s',
+                        },
+                        {
+                            domVal: '2',
+                            domText: '约2s',
+                        },
+                        {
+                            domVal: '3',
+                            domText: '约3s',
+                        },
+                        {
+                            domVal: '4',
+                            domText: '约4s',
+                        },
+                        {
+                            domVal: '5',
+                            domText: '约5s',
+                        },
+                        {
+                            domVal: 'disabled',
+                            domText: '关闭',
+                        },
+                    ],
+                    isHide: true,
+                    tip: '危险功能：接机时常用，将自动刷新页面直到目标落地',
+                });
+                // 自动开打和结束
+                settingsArr.push({
+                    domType: 'checkbox',
+                    domId: 'wh-auto-start-finish',
+                    domText: ' ⚠️自动开打和结束',
+                    dictName: 'autoStartFinish',
+                    tip: '脚本将会自动按下战斗和结束按钮',
+                    isHide: true,
+                });
+            } else {
+                setWhSetting('autoStartFinish', false, false)
+                setWhSetting('attReload', 6, false)
+            }
+            // dev
             settingsArr.push({
                 domType: 'checkbox',
-                domId: 'wh-auto-start-finish',
-                domText: ' ⚠️自动开打和结束',
-                dictName: 'autoStartFinish',
-                tip: '脚本将会自动按下战斗和结束按钮',
+                domId: 'wh-dev-mode',
+                domText: ` 开发者模式${isDev() ? ' <button id="wh-devInfo">详情</button>' : ''}`,
+                dictName: 'isDev',
+                isHide: true,
             });
-        } else {
-            setWhSetting('autoStartFinish', false, false)
-            setWhSetting('attReload', 6, false)
+            // 其他设置
+            if (isDev()) settingsArr.push({
+                domType: 'button', domId: 'wh-otherBtn', domText: '其他设置', clickFunc: () => {
+                    const html = `清空设置数据、请求通知权限、测试跨域请求`;
+                    const popup = popupMsg(html, '其他设置');
+                },
+                isHide: true,
+            });
         }
         // 飞花库存
         settingsArr.push({
             domType: 'button',
             domId: 'wh-foreign-stock-btn',
-            domText: '飞花库存',
+            domText: '🌸 飞花库存',
             clickFunc: async function (e) {
                 e.target.blur();
                 if (getScriptEngine() === UserScriptEngine.RAW) {
@@ -3676,7 +3732,7 @@
         settingsArr.push({
             domType: 'button',
             domId: 'wh-quick-fly-btn',
-            domText: '✈一键起飞',
+            domText: '✈️ 一键起飞',
             clickFunc: async function () {
                 if (window.hasWHQuickFlyOpt) return;
                 window.hasWHQuickFlyOpt = true;
@@ -3693,6 +3749,7 @@
     width: 220px;
     z-index: 999999;
 }
+#wh-quick-fly-opt p{margin:4px 0;}
 #wh-quick-fly-opt label{
 display:block;
 }
@@ -3702,24 +3759,31 @@ width: 100%;
     margin: 4px 0;
 }
 #wh-quick-fly-opt button{
-font-size:16px;
-color:white;
+font-size: 16px;
+    color: white;
+    cursor: pointer;
+    float: right;
+    background: #00BCD4;
+    padding: 8px;
+    border-radius: 4px;
 }
 `);
                 const node = document.createElement('div');
                 node.id = 'wh-quick-fly-opt';
                 node.innerHTML = `
-<p>先选好目的地和飞机，出院后点起飞</p>
+<p>主要用途：出院秒飞</p>
+<p>选好目的地和飞机，出院后点起飞</p>
+<p>页面加载完成后会马上飞走</p>
 <div>
-<label>目的地：<select><option selected>墨</option><option>开</option><option>加</option><option>夏</option><option>英</option><option>阿</option><option>瑞s</option><option>立本</option><option>祖</option><option>迪</option><option>南</option></select></label>
-<label>飞机：<select><option>普通飞机</option><option selected>PI小飞机</option><option>私人飞机</option><option>商务舱</option></select></label>
-<button>起飞！</button>
+<label>目的地：<select><option selected>墨西哥</option><option>开曼</option><option>加拿大</option><option>夏威夷</option><option>嘤国</option><option>阿根廷</option><option>瑞士</option><option>立本</option><option>祖国</option><option>迪拜</option><option>南非</option></select></label>
+<label>飞机：<select><option>普通飞机 - 不推荐</option><option selected>PI小飞机</option><option>私人飞机 - 股票</option><option>商务飞机 - 机票或内衣店</option></select></label>
+<button>起飞</button>
 </div>
 `;
                 const [dest_node, type_node] = node.querySelectorAll('select');
                 const btn_node = node.querySelector('button');
                 btn_node.addEventListener('click', () => {
-                    WHNotify('即将转跳');
+                    WHNotify('正在转跳');
                     sessionStorage['wh-quick-fly'] = `${dest_node.selectedIndex} ${type_node.selectedIndex} ${new Date().getTime()}`;
                     location.href = 'https://www.torn.com/travelagency.php';
                 });
@@ -3730,7 +3794,7 @@ color:white;
         settingsArr.push({
             domType: 'button',
             domId: 'wh-npc-loot-btn',
-            domText: 'NPC LOOT (真·世界BOSS)',
+            domText: '🔫 LOOT',
             clickFunc: function (e) {
                 e.target.blur();
                 const insert = `<p>点击开打：</p>
@@ -3744,12 +3808,13 @@ color:white;
 <div><img alt="stock.png" src="https://jjins.github.io/t2i/loot.png?${performance.now()}" style="max-width:100%;display:block;margin:0 auto;" /></div>`;
                 popupMsg(insert, 'NPC LOOT');
             },
+            tip: '显示5个可击杀NPC的开打时间',
         });
         // 查看NNB
         settingsArr.push({
             domType: 'button',
             domId: 'wh-nnb-info',
-            domText: '查看NNB',
+            domText: '👮‍ 查看NNB',
             clickFunc: function (e) {
                 e.target.blur();
                 const insert = `<style>
@@ -3828,7 +3893,7 @@ color:white;
         settingsArr.push({
             domType: 'button',
             domId: 'wh-link-collection',
-            domText: '常用链接',
+            domText: '🔗 常用链接',
             clickFunc: function (e) {
                 if (!this.styleAdded) {
                     addStyle(`
@@ -3904,17 +3969,18 @@ height:30px;
         settingsArr.push({
             domType: 'button',
             domId: 'wh-gs-btn',
-            domText: '飞贼小助手 (by 伞佬)',
+            domText: '🐏 飞贼小助手',
             clickFunc: function (e) {
                 e.target.blur();
                 loadGS(getScriptEngine());
             },
+            tip: '加载从PC端移植来的伞佬的油猴版飞贼小助手',
         });
         // 物品价格监视
         settingsArr.push({
             domType: 'button',
             domId: 'wh-price-watcher-btn',
-            domText: '价格监视',
+            domText: '💊 价格监视',
             clickFunc: function () {
                 const watcher_conf = getWhSettingObj()['priceWatcher'];
                 const pre_str = JSON.stringify(watcher_conf);
@@ -3941,11 +4007,118 @@ height:30px;
                 };
             }
         });
+        // 小窗犯罪
+        settingsArr.push({
+            domType: 'button',
+            domId: 'wh-crime-iframe-btn',
+            domText: '🤑 小窗犯罪',
+            clickFunc: function () {
+                // 弹出小窗口
+                const ifHTML = `<iframe src="/crimes.php?step=main" style="width:100%;max-width: 450px;margin: 0 auto;display: none;height: 340px;"></iframe>`;
+                const popup_insert = `<p>加载中请稍后${loading_gif_html()}</p><div id="wh-quick-crime-if-container"></div>`;
+                const $popup = popupMsg(popup_insert, '小窗快速犯罪');
+                // 运行状态node
+                let loading_node = $popup.querySelector('p:first-of-type');
+                // if容器
+                const if_cont = $popup.querySelector('#wh-quick-crime-if-container');
+                if_cont.innerHTML = ifHTML;
+
+                // if内未加载脚本时插入的快捷crime node
+                const mobile_prepend_node = document.createElement('div');
+                mobile_prepend_node.classList.add('wh-translate');
+                mobile_prepend_node.innerHTML = `<div class="title-black" style="border-radius: 5px 5px 0 0;"><span>快捷操作：</span></div><div class="cont-gray" style="padding: 6px 0;border-radius: 0 0 5px 5px;">
+<form id="wh-translate-quick" action="crimes.php?step=docrime4" method="post" style="display: inline-block;margin: 0 5px">
+<input name="nervetake" type="hidden" value="18">
+<input name="crime" type="hidden" value="hackbank">
+<input style="-webkit-appearance:none;padding: 4px;background: #e91e63;border-radius: 5px;color: white;" type="submit" value="18-1" />
+</form>
+<form id="wh-translate-quick" action="crimes.php?step=docrime4" method="post" style="display: inline-block;margin: 0 5px">
+<input name="nervetake" type="hidden" value="11">
+<input name="crime" type="hidden" value="warehouse">
+<input style="-webkit-appearance:none;padding: 4px;background: #2196f3;border-radius: 5px;color: white;" type="submit" value="烧仓库" />
+</form>
+<form id="wh-translate-quick" action="crimes.php?step=docrime4" method="post" style="display: inline-block;margin: 0 5px">
+<input name="nervetake" type="hidden" value="4">
+<input name="crime" type="hidden" value="jacket">
+<input style="-webkit-appearance:none;padding: 4px;background: #009688;border-radius: 5px;color: white;" type="submit" value="偷夹克" />
+</form></div><hr class="page-head-delimiter m-top10 m-bottom10 r1854">`;
+
+                // if对象加载后运行
+                let cIframe = $popup.querySelector('iframe');
+
+                // 加载状态
+                const if_onload_func = () => {
+                    // if内部文档对象
+                    const ifDocu = cIframe.contentWindow.document;
+                    // 内部插件运行flag
+                    const ifWH = cIframe.contentWindow.WHTRANS;
+                    // 文档加载完成后移除
+                    if (!!loading_node) loading_node.remove();
+                    // 文档加载完成后才显示if
+                    cIframe.style.display = 'block';
+                    // 验证码flag
+                    const isValidate = ifDocu.querySelector('h4#skip-to-content').innerText.toLowerCase().includes('validate');
+                    // 如果iframe内部未运行脚本
+                    if (ifWH === undefined) {
+                        // 隐藏顶部
+                        elementReady('#header-root', ifDocu).then(e => e.style.display = 'none');
+                        // 隐藏4条
+                        elementReady('#sidebarroot', ifDocu).then(e => e.style.display = 'none');
+                        // 隐藏聊天
+                        elementReady('#chatRoot', ifDocu).then(e => e.style.display = 'none');
+                        // 非验证码页面隐藏滚动条
+                        if (!isValidate) ifDocu.body.style.overflow = 'hidden';
+                        // 调整容器位置
+                        elementReady('.content-wrapper', ifDocu).then(elem => {
+                            // 加入
+                            elem.prepend(mobile_prepend_node);
+                            elem.style.margin = '0px';
+                            elem.style.position = 'absolute';
+                            elem.style.top = '-35px';
+                            new MutationObserver((m, o) => {
+                                o.disconnect();
+                                if (!elem.querySelector('.wh-translate')) elem.prepend(mobile_prepend_node);
+                                o.observe(elem, {childList: true, subtree: true});
+                            })
+                                .observe(elem, {childList: true, subtree: true});
+                        });
+                        // 隐藏返回顶部按钮
+                        elementReady('#go-to-top-btn button', ifDocu).then(e => e.style.display = 'none');
+                    }
+                };
+                cIframe.onload = if_onload_func;
+
+                // 超时判断
+                let time_counter = 0;
+                let time_out_id = window.setInterval(() => {
+                    loading_node = $popup.querySelector('p:first-of-type');
+                    if (!loading_node) {
+                        clearInterval(time_out_id);
+                        time_out_id = undefined;
+                        return;
+                    }
+                    time_counter++;
+                    if (time_counter > 0 && !loading_node.querySelector('button')) {
+                        const reload_btn = document.createElement('button');
+                        reload_btn.innerHTML = '重新加载';
+                        reload_btn.onclick = () => {
+                            reload_btn.remove();
+                            time_counter = 0;
+                            if_cont.innerHTML = null;
+                            if_cont.innerHTML = ifHTML;
+                            cIframe = $popup.querySelector('iframe');
+                            cIframe.onload = if_onload_func;
+                        };
+                        loading_node.append(reload_btn);
+                    }
+                }, 1000);
+            }
+        });
         // 危险行为开关⚠️
         settingsArr.push({
             domType: 'button',
             domId: 'wh-danger-zone',
-            domText: '危险功能',
+            domText: '⚠️ 危险功能',
             clickFunc: function (e) {
                 e.target.blur();
                 const insert = `<p>即将打开危险功能，使用这些功能可能会造成账号封禁。请自行考虑是否使用。</p>
@@ -3962,16 +4135,9 @@ height:30px;
                 };
             },
         });
-        // dev
-        settingsArr.push({
-            domType: 'checkbox',
-            domId: 'wh-dev-mode',
-            domText: ` 开发者模式${isDev() ? ' <button id="wh-devInfo">详情</button>' : ''}`,
-            dictName: 'isDev',
-        });
         // 更新历史
         settingsArr.push({
-            domType: 'button', domId: 'wh-changeList', domText: '更新历史', clickFunc: () => {
+            domType: 'button', domId: 'wh-changeList', domText: '🐞 更新历史', clickFunc: () => {
                 let insert = '';
                 changelist.forEach(e => {
                     if (!e.todo) {
@@ -3981,13 +4147,6 @@ height:30px;
                     }
                 });
                 popupMsg(insert, '更新历史');
-            },
-        });
-        // 其他设置
-        if (isDev()) settingsArr.push({
-            domType: 'button', domId: 'wh-otherBtn', domText: '其他设置', clickFunc: () => {
-                const html = `清空设置数据、请求通知权限、测试跨域请求`;
-                const popup = popupMsg(html, '其他设置');
             },
         });
         // 测试按钮
@@ -4026,107 +4185,107 @@ height:30px;
             : el.addEventListener('click', ev => popupMsg(ev.target.attributes['title'].nodeValue))
         );
         // 小窗犯罪按钮
-        $zhongNode.querySelector('button#wh-quick-crime-btn').onclick = () => {
-            // 弹出小窗口
-            const ifHTML = `<iframe src="/crimes.php?step=main" style="width:100%;max-width: 450px;margin: 0 auto;display: none;height: 340px;"></iframe>`;
-            const popup_insert = `<p>加载中请稍后${loading_gif_html()}</p><div id="wh-quick-crime-if-container"></div>`;
-            const $popup = popupMsg(popup_insert, '小窗快速犯罪');
-            // 运行状态node
-            let loading_node = $popup.querySelector('p:first-of-type');
-            // if容器
-            const if_cont = $popup.querySelector('#wh-quick-crime-if-container');
-            if_cont.innerHTML = ifHTML;
-
-            // if内未加载脚本时插入的快捷crime node
-            const mobile_prepend_node = document.createElement('div');
-            mobile_prepend_node.classList.add('wh-translate');
-            mobile_prepend_node.innerHTML = `<div class="title-black" style="border-radius: 5px 5px 0 0;"><span>快捷操作：</span></div><div class="cont-gray" style="padding: 6px 0;border-radius: 0 0 5px 5px;">
-<form id="wh-translate-quick" action="crimes.php?step=docrime4" method="post" style="display: inline-block;margin: 0 5px">
-<input name="nervetake" type="hidden" value="18">
-<input name="crime" type="hidden" value="hackbank">
-<input style="-webkit-appearance:none;padding: 4px;background: #e91e63;border-radius: 5px;color: white;" type="submit" value="18-1" />
-</form>
-<form id="wh-translate-quick" action="crimes.php?step=docrime4" method="post" style="display: inline-block;margin: 0 5px">
-<input name="nervetake" type="hidden" value="11">
-<input name="crime" type="hidden" value="warehouse">
-<input style="-webkit-appearance:none;padding: 4px;background: #2196f3;border-radius: 5px;color: white;" type="submit" value="烧仓库" />
-</form>
-<form id="wh-translate-quick" action="crimes.php?step=docrime4" method="post" style="display: inline-block;margin: 0 5px">
-<input name="nervetake" type="hidden" value="4">
-<input name="crime" type="hidden" value="jacket">
-<input style="-webkit-appearance:none;padding: 4px;background: #009688;border-radius: 5px;color: white;" type="submit" value="偷夹克" />
-</form></div><hr class="page-head-delimiter m-top10 m-bottom10 r1854">`;
-
-            // if对象加载后运行
-            let cIframe = $popup.querySelector('iframe');
-
-            // 加载状态
-            const if_onload_func = () => {
-                // if内部文档对象
-                const ifDocu = cIframe.contentWindow.document;
-                // 内部插件运行flag
-                const ifWH = cIframe.contentWindow.WHTRANS;
-                // 文档加载完成后移除
-                if (!!loading_node) loading_node.remove();
-                // 文档加载完成后才显示if
-                cIframe.style.display = 'block';
-                // 验证码flag
-                const isValidate = ifDocu.querySelector('h4#skip-to-content').innerText.toLowerCase().includes('validate');
-                // 如果iframe内部未运行脚本
-                if (ifWH === undefined) {
-                    // 隐藏顶部
-                    elementReady('#header-root', ifDocu).then(e => e.style.display = 'none');
-                    // 隐藏4条
-                    elementReady('#sidebarroot', ifDocu).then(e => e.style.display = 'none');
-                    // 隐藏聊天
-                    elementReady('#chatRoot', ifDocu).then(e => e.style.display = 'none');
-                    // 非验证码页面隐藏滚动条
-                    if (!isValidate) ifDocu.body.style.overflow = 'hidden';
-                    // 调整容器位置
-                    elementReady('.content-wrapper', ifDocu).then(elem => {
-                        // 加入
-                        elem.prepend(mobile_prepend_node);
-                        elem.style.margin = '0px';
-                        elem.style.position = 'absolute';
-                        elem.style.top = '-35px';
-                        new MutationObserver((m, o) => {
-                            o.disconnect();
-                            if (!elem.querySelector('.wh-translate')) elem.prepend(mobile_prepend_node);
-                            o.observe(elem, {childList: true, subtree: true});
-                        })
-                            .observe(elem, {childList: true, subtree: true});
-                    });
-                    // 隐藏返回顶部按钮
-                    elementReady('#go-to-top-btn button', ifDocu).then(e => e.style.display = 'none');
-                }
-            };
-            cIframe.onload = if_onload_func;
-
-            // 超时判断
-            let time_counter = 0;
-            let time_out_id = window.setInterval(() => {
-                loading_node = $popup.querySelector('p:first-of-type');
-                if (!loading_node) {
-                    clearInterval(time_out_id);
-                    time_out_id = undefined;
-                    return;
-                }
-                time_counter++;
-                if (time_counter > 0 && !loading_node.querySelector('button')) {
-                    const reload_btn = document.createElement('button');
-                    reload_btn.innerHTML = '重新加载';
-                    reload_btn.onclick = () => {
-                        reload_btn.remove();
-                        time_counter = 0;
-                        if_cont.innerHTML = null;
-                        if_cont.innerHTML = ifHTML;
-                        cIframe = $popup.querySelector('iframe');
-                        cIframe.onload = if_onload_func;
-                    };
-                    loading_node.append(reload_btn);
-                }
-            }, 1000);
-        };
+//         $zhongNode.querySelector('button#wh-quick-crime-btn').onclick = () => {
+//             // 弹出小窗口
+//             const ifHTML = `<iframe src="/crimes.php?step=main" style="width:100%;max-width: 450px;margin: 0 auto;display: none;height: 340px;"></iframe>`;
+//             const popup_insert = `<p>加载中请稍后${loading_gif_html()}</p><div id="wh-quick-crime-if-container"></div>`;
+//             const $popup = popupMsg(popup_insert, '小窗快速犯罪');
+//             // 运行状态node
+//             let loading_node = $popup.querySelector('p:first-of-type');
+//             // if容器
+//             const if_cont = $popup.querySelector('#wh-quick-crime-if-container');
+//             if_cont.innerHTML = ifHTML;
+//
+//             // if内未加载脚本时插入的快捷crime node
+//             const mobile_prepend_node = document.createElement('div');
+//             mobile_prepend_node.classList.add('wh-translate');
+//             mobile_prepend_node.innerHTML = `<div class="title-black" style="border-radius: 5px 5px 0 0;"><span>快捷操作：</span></div><div class="cont-gray" style="padding: 6px 0;border-radius: 0 0 5px 5px;">
+// <form id="wh-translate-quick" action="crimes.php?step=docrime4" method="post" style="display: inline-block;margin: 0 5px">
+// <input name="nervetake" type="hidden" value="18">
+// <input name="crime" type="hidden" value="hackbank">
+// <input style="-webkit-appearance:none;padding: 4px;background: #e91e63;border-radius: 5px;color: white;" type="submit" value="18-1" />
+// </form>
+// <form id="wh-translate-quick" action="crimes.php?step=docrime4" method="post" style="display: inline-block;margin: 0 5px">
+// <input name="nervetake" type="hidden" value="11">
+// <input name="crime" type="hidden" value="warehouse">
+// <input style="-webkit-appearance:none;padding: 4px;background: #2196f3;border-radius: 5px;color: white;" type="submit" value="烧仓库" />
+// </form>
+// <form id="wh-translate-quick" action="crimes.php?step=docrime4" method="post" style="display: inline-block;margin: 0 5px">
+// <input name="nervetake" type="hidden" value="4">
+// <input name="crime" type="hidden" value="jacket">
+// <input style="-webkit-appearance:none;padding: 4px;background: #009688;border-radius: 5px;color: white;" type="submit" value="偷夹克" />
+// </form></div><hr class="page-head-delimiter m-top10 m-bottom10 r1854">`;
+//
+//             // if对象加载后运行
+//             let cIframe = $popup.querySelector('iframe');
+//
+//             // 加载状态
+//             const if_onload_func = () => {
+//                 // if内部文档对象
+//                 const ifDocu = cIframe.contentWindow.document;
+//                 // 内部插件运行flag
+//                 const ifWH = cIframe.contentWindow.WHTRANS;
+//                 // 文档加载完成后移除
+//                 if (!!loading_node) loading_node.remove();
+//                 // 文档加载完成后才显示if
+//                 cIframe.style.display = 'block';
+//                 // 验证码flag
+//                 const isValidate = ifDocu.querySelector('h4#skip-to-content').innerText.toLowerCase().includes('validate');
+//                 // 如果iframe内部未运行脚本
+//                 if (ifWH === undefined) {
+//                     // 隐藏顶部
+//                     elementReady('#header-root', ifDocu).then(e => e.style.display = 'none');
+//                     // 隐藏4条
+//                     elementReady('#sidebarroot', ifDocu).then(e => e.style.display = 'none');
+//                     // 隐藏聊天
+//                     elementReady('#chatRoot', ifDocu).then(e => e.style.display = 'none');
+//                     // 非验证码页面隐藏滚动条
+//                     if (!isValidate) ifDocu.body.style.overflow = 'hidden';
+//                     // 调整容器位置
+//                     elementReady('.content-wrapper', ifDocu).then(elem => {
+//                         // 加入
+//                         elem.prepend(mobile_prepend_node);
+//                         elem.style.margin = '0px';
+//                         elem.style.position = 'absolute';
+//                         elem.style.top = '-35px';
+//                         new MutationObserver((m, o) => {
+//                             o.disconnect();
+//                             if (!elem.querySelector('.wh-translate')) elem.prepend(mobile_prepend_node);
+//                             o.observe(elem, {childList: true, subtree: true});
+//                         })
+//                             .observe(elem, {childList: true, subtree: true});
+//                     });
+//                     // 隐藏返回顶部按钮
+//                     elementReady('#go-to-top-btn button', ifDocu).then(e => e.style.display = 'none');
+//                 }
+//             };
+//             cIframe.onload = if_onload_func;
+//
+//             // 超时判断
+//             let time_counter = 0;
+//             let time_out_id = window.setInterval(() => {
+//                 loading_node = $popup.querySelector('p:first-of-type');
+//                 if (!loading_node) {
+//                     clearInterval(time_out_id);
+//                     time_out_id = undefined;
+//                     return;
+//                 }
+//                 time_counter++;
+//                 if (time_counter > 0 && !loading_node.querySelector('button')) {
+//                     const reload_btn = document.createElement('button');
+//                     reload_btn.innerHTML = '重新加载';
+//                     reload_btn.onclick = () => {
+//                         reload_btn.remove();
+//                         time_counter = 0;
+//                         if_cont.innerHTML = null;
+//                         if_cont.innerHTML = ifHTML;
+//                         cIframe = $popup.querySelector('iframe');
+//                         cIframe.onload = if_onload_func;
+//                     };
+//                     loading_node.append(reload_btn);
+//                 }
+//             }, 1000);
+//         };
         // 今日不提醒
         $zhongNode.querySelector('button#wh-qua-alarm-check-btn').onclick = () => WHNotify('没有打开提醒呢，点击无效');
         // 开发详情按钮
@@ -4203,7 +4362,10 @@ color:black;
             })();
         }
     }
-    addStyle(`#wh-trans-icon{
+    addStyle(`
+.wh-hide{display:none;}
+#wh-trans-icon{
+user-select:none;
 display: inline-block;
 position: fixed;
 top:5px;
@@ -4218,6 +4380,7 @@ box-shadow: 0 0 3px 1px #8484848f;
     top:0;left:112px;
   }
 }
+#wh-trans-icon select {width:110px;}
 #wh-trans-icon a {
 text-decoration: none;
 color: #006599;
@@ -4240,11 +4403,11 @@ color: #333;
 box-shadow: 0px 0px 3px 1px #25252573;
 border-radius: 2px;
 padding: 6px;
-max-width: 14em;
+max-width: 13em;
 font-size: 13px;
 line-height: 14px;
 }
-#wh-gSettings div:hover .wh-tip{display: block;}
+#wh-gSettings div:hover > .wh-tip{display: block;}
 #wh-gSettings .wh-tip:hover{display:none !important;}
 #wh-trans-icon .wh-container{
 margin:0;
@@ -4626,14 +4789,19 @@ display:none;
 
     // 一键起飞
     if (sessionStorage['wh-quick-fly'] && href.includes('travelagency.php')) {
-        // [id-dest,type(1...4),timestamp]
+        // [id: dest, _type: (1...4), ts: timestamp]
         const [_id, _type, ts] = sessionStorage['wh-quick-fly'].trim().split(' ');
-        sessionStorage['wh-quick-fly'] = undefined;
-        if (new Date().getTime() - ts > 60000) {
-            log('超时，一键起飞计划已取消');
+        delete sessionStorage['wh-quick-fly'];
+        if (new Date().getTime() - ts > 20000) {
+            WHNotify('超时，一键起飞计划已取消');
             return;
         }
-        const _key = document.querySelector('div[data-id][data-key]').getAttribute('data-key');
+        const keynode = document.querySelector('div[data-id][data-key]');
+        if (!keynode) {
+            WHNotify('出错了，无法起飞，已取消');
+            return;
+        }
+        const _key = keynode.getAttribute('data-key');
         getAction({
             type: 'post',
             data: {
@@ -4644,6 +4812,11 @@ display:none;
             },
             success: function (str) {
                 WHNotify(str)
+                if(str.includes('err')) {
+                    WHNotify('起飞出错了');
+                    return;
+                }
+                window.location.href = 'https://www.torn.com/index.php'
             },
             before: function () {
             }
@@ -5036,7 +5209,7 @@ display:inline-block;
     }
 
     // pt一键购买
-    if (href.includes('pmarket.php')) {
+    if (getWhSettingObj()['ptQuickBuy'] && href.includes('pmarket.php')) {
         WHNotify('一键购买已开启');
         // ns脚本
         const rmv_cfm = (e) => {
@@ -6897,6 +7070,9 @@ margin: 0 0 3px;
   </div>
 </div>`;
         const settingNode = zhongNode.querySelector('#wh-gSettings');
+        let hideNode = null;
+        const btn = document.createElement('button');
+        btn.innerHTML = '+ 展开设置';
         settingsArr.forEach(setting => {
             const newNode = document.createElement('div');
             const tip = setting['tip'] ? `<div class="wh-tip">${setting['tip']}</div>` : '';
@@ -6910,7 +7086,7 @@ margin: 0 0 3px;
                     break;
                 }
                 case 'button': {
-                    newNode.innerHTML += `<button id="${setting.domId}">${setting.domText}</button>`;
+                    newNode.innerHTML += `<button id="${setting.domId}">${setting.domText}</button>${tip}`;
                     settingNode.appendChild(newNode);
                     settingNode.querySelector(`#${setting.domId}`).onclick = setting.clickFunc;
                     break;
@@ -6921,7 +7097,7 @@ margin: 0 0 3px;
                         const selected = i === getWhSettingObj()[setting.dictName] ? 'selected' : '';
                         optHtml += `<option value="${optObj.domVal}" ${selected}>${optObj.domText}</option>`;
                     });
-                    newNode.innerHTML += `<label>${setting.domText}<select id="${setting.domId}">${optHtml}</select></label>`;
+                    newNode.innerHTML += `<label>${setting.domText}<select id="${setting.domId}">${optHtml}</select></label>${tip}`;
                     settingNode.appendChild(newNode);
                     settingNode.querySelector(`#${setting.domId}`).onchange = (elem) => {
                         setWhSetting(setting.dictName, elem.target.selectedIndex);
@@ -6934,6 +7110,19 @@ margin: 0 0 3px;
                     settingNode.appendChild(newNode);
                     break;
                 }
+            }
+            if (setting.isHide === true) {
+                if (!hideNode) {
+                    hideNode = document.createElement('div');
+                    hideNode.classList.add('wh-hide');
+                    btn.addEventListener('click', () => {
+                        hideNode.classList.toggle('wh-hide');
+                        btn.innerHTML = btn.innerHTML === '+ 展开设置' ? '- 收起' : '+ 展开设置';
+                    });
+                }
+                settingNode.append(btn);
+                settingNode.append(hideNode);
+                hideNode.append(newNode);
             }
         });
         // 菜单点击按钮
