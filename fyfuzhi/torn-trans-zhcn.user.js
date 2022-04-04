@@ -1,8 +1,8 @@
 // ==UserScript==
-// @lastmodified  202204012110
+// @lastmodified  202204050419
 // @name         芜湖助手
 // @namespace    WOOH
-// @version      0.3.30
+// @version      0.3.31
 // @description  托恩，起飞！
 // @author       Woohoo[2687093] Sabrina_Devil[2696209]
 // @match        https://www.torn.com/*
@@ -23,12 +23,17 @@
     if (window.WHTRANS) return;
     window.WHTRANS = true;
     // 版本
-    const version = '0.3.30';
+    const version = '0.3.31';
     // 修改历史
     const changelist = [
         {
             todo: true,
             cont: `翻译：baza npc商店、imarket、imarket搜索结果`,
+        },
+        {
+            ver: '0.3.31',
+            date: '20220405',
+            cont: `修改一键起飞，添加往返时间估计、显示药CD`,
         },
         {
             ver: '0.3.30',
@@ -3485,7 +3490,7 @@
             settingsArr.push({
                 domType: 'checkbox',
                 domId: 'wh-quick-crime',
-                domText: ' 快速犯罪 <button id="wh-quick-crime-btn">小窗开启</button>',
+                domText: ' 快速犯罪',
                 // domText: ' 快速犯罪 <button id="wh-quick-crime-btn">小窗开启</button>',
                 dictName: 'quickCrime',
                 tip: '显示快捷操作按钮，目前不支持自定义',
@@ -3653,79 +3658,7 @@
             domText: '🌸 飞花库存',
             clickFunc: async function (e) {
                 e.target.blur();
-                if (getScriptEngine() === UserScriptEngine.RAW) {
-                    const insert = `<img alt="stock.png" src="https://jjins.github.io/t2i/stock.png?${performance.now()}" style="max-width:100%;display:block;margin:0 auto;" />`;
-                    popupMsg(insert, '飞花库存');
-                } else {
-                    const popup = popupMsg(`请稍后${loading_gif_html()}`, '飞花库存');
-                    let table = `<table><tr><th colspan="2">目的地 - 更新时间</th><th colspan="3">库存</th></tr>`;
-                    const dest = [
-                        {
-                            name: 'mex', show: '墨西哥',
-                            stocks: {'Dahlia': '花', 'Jaguar Plushie': '偶'}
-                        },
-                        {
-                            name: 'cay', show: '开曼',
-                            stocks: {'Banana Orchid': '花', 'Stingray Plushie': '偶'}
-                        },
-                        {
-                            name: 'can', show: '加拿大',
-                            stocks: {'Crocus': '花', 'Wolverine Plushie': '偶'}
-                        },
-                        {
-                            name: 'haw', show: '夏威夷',
-                            stocks: {'Orchid': '花', 'Large Suitcase': '大箱'}
-                        },
-                        {
-                            name: 'uni', show: '嘤国',
-                            stocks: {'Heather': '花', 'Red Fox Plushie': '赤狐', 'Nessie Plushie': '水怪'}
-                        },
-                        {
-                            name: 'arg', show: '阿根廷',
-                            stocks: {'Ceibo Flower': '花', 'Monkey Plushie': '偶', 'Tear Gas': '催泪弹'},
-                        },
-                        {
-                            name: 'swi', show: '瑞士',
-                            stocks: {'Edelweiss': '花', 'Chamois Plushie': '偶'},
-                        },
-                        {
-                            name: 'jap', show: '日本',
-                            stocks: {'Cherry Blossom': '花'},
-                        },
-                        {
-                            name: 'chi', show: '祖国',
-                            stocks: {'Peony': '花', 'Panda Plushie': '偶'},
-                        },
-                        {
-                            name: 'uae', show: '迪拜',
-                            stocks: {'Tribulus Omanense': '花', 'Camel Plushie': '偶'},
-                        },
-                        {
-                            name: 'sou', show: '南非',
-                            stocks: {'African Violet': '花', 'Lion Plushie': '偶', 'Xanax': 'XAN'},
-                        }];
-                    const now = new Date();
-                    const res = await fstock.get();
-                    if (!res['stocks']) return;
-                    dest.forEach(el => {
-                        const update = (now - new Date(res.stocks[el.name]['update'] * 1000)) / 1000 | 0
-                        table += `<tr><td>${el.show}</td><td>${update / 60 | 0}分${update % 60 | 0}秒前</td>`;
-                        let count = 0;
-                        res.stocks[el.name]['stocks'].forEach(stock => {
-                            if (el.stocks[stock.name]) {
-                                table += `<td${stock['quantity'] === 0 ? ' style="background-color:#f44336;color:white;border-color:#000;"' : ''}>${el.stocks[stock.name]} (${stock['quantity']})</td>`;
-                                count++;
-                            }
-                        });
-                        while (count < 3) {
-                            count++;
-                            table += '<td></td>';
-                        }
-                        table += '</tr>';
-                    });
-                    table += '</table>';
-                    popup.innerHTML = table;
-                }
+                forStock().then();
             },
         });
         // 一键起飞
@@ -3745,17 +3678,24 @@
     border-radius: 4px;
     box-shadow: 0 0 5px 1px #ffffff29;
     color: white;
-    font-size: 16px;
+    font-size: 15px;
     width: 220px;
     z-index: 999999;
 }
 #wh-quick-fly-opt p{margin:4px 0;}
+#wh-quick-fly-opt a{
+cursor: pointer;
+    border: 1px solid;
+    padding: 4px;
+    display: inline-block;
+    border-radius: 2px;
+}
 #wh-quick-fly-opt label{
 display:block;
 }
 #wh-quick-fly-opt select{
 width: 100%;
-    padding: 2px;
+    padding: 6px;
     margin: 4px 0;
 }
 #wh-quick-fly-opt button{
@@ -3767,27 +3707,70 @@ font-size: 16px;
     padding: 8px;
     border-radius: 4px;
 }
+#wh-quick-fly-opt.wh-quick-fly-opt-hide *{
+display: none;
+}
+#wh-quick-fly-opt.wh-quick-fly-opt-hide input{
+display: inline-block;
+}
+info{display:block;}
 `);
                 const node = document.createElement('div');
                 node.id = 'wh-quick-fly-opt';
                 node.innerHTML = `
+<input type="button" value=" - " />
 <p>主要用途：出院秒飞</p>
-<p>选好目的地和飞机，出院后点起飞</p>
-<p>页面加载完成后会马上飞走</p>
+<p>点起飞，页面加载完成后会马上飞走</p>
+<br/>
 <div>
-<label>目的地：<select><option selected>墨西哥</option><option>开曼</option><option>加拿大</option><option>夏威夷</option><option>嘤国</option><option>阿根廷</option><option>瑞士</option><option>立本</option><option>祖国</option><option>迪拜</option><option>南非</option></select></label>
-<label>飞机：<select><option>普通飞机 - 不推荐</option><option selected>PI小飞机</option><option>私人飞机 - 股票</option><option>商务飞机 - 机票或内衣店</option></select></label>
-<button>起飞</button>
+<label>目的地：<select><option selected>墨西哥</option><option>开曼</option><option>加拿大</option><option>󠁵󠁳夏威夷</option><option>嘤国</option><option>阿根廷</option><option>瑞士</option><option>立本</option><option>祖国</option><option>迪拜</option><option>南非</option></select></label>
+<label>飞机：<select><option>普通飞机 - 不推荐</option><option selected>PI小飞机</option><option>私人飞机 - WLT股票</option><option>商务飞机 - 机票或内衣店</option></select></label>
+<p><a>查看花偶库存</a></p>
+<p>注：需要验证时无法起飞</p>
+<info></info><button>起飞</button>
 </div>
 `;
                 const [dest_node, type_node] = node.querySelectorAll('select');
-                const btn_node = node.querySelector('button');
-                btn_node.addEventListener('click', () => {
+                node.querySelector('button').addEventListener('click', () => {
                     WHNotify('正在转跳');
                     sessionStorage['wh-quick-fly'] = `${dest_node.selectedIndex} ${type_node.selectedIndex} ${new Date().getTime()}`;
                     location.href = 'https://www.torn.com/travelagency.php';
                 });
+                node.querySelector('a').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    forStock();
+                });
+                node.querySelector('input').addEventListener('click', (e) => {
+                    node.classList.toggle('wh-quick-fly-opt-hide');
+                    const el = e.target;
+                    el.value = el.value === ' - ' ? ' + ' : ' - ';
+                });
+                const info_node = node.querySelector('info');
+                const time_predict = document.createElement('p');
+                const yaoCD = document.createElement('p');
+                info_node.append(time_predict);
+                info_node.append(yaoCD);
+                const predict = [
+                    ['~54分', '~36分', '~26分', '~16分',],
+                    ['~1时10分', '~50分', '~36分', '~22分',],
+                    ['~1时22分', '~58分', '~40分', '~24分',],
+                    ['~4时28分', '~3时8分', '~2时14分', '~1时20分',],
+                    ['~5时18分', '~3时42分', '~2时40分', '~1时36分',],
+                    ['~5时34分', '~3时54分', '~2时46分', '~1时40分',],
+                    ['~5时50分', '~4时6分', '~2时56分', '~1时46分',],
+                    ['~7时30分', '~5时16分', '~3时46分', '~2时16分',],
+                    ['~8时4分', '~5时38分', '~4时2分', '~2时24分',],
+                    ['~9时2分', '~6时20分', '~4时30分', '~2时42分',],
+                    ['~9时54分', '~6时56分', '~4时58分', '~2时58分',],
+                ];
+                const showTime = function () {
+                    time_predict.innerHTML = `往返时间：${predict[dest_node.selectedIndex][type_node.selectedIndex]}`;
+                }
+                dest_node.addEventListener('change', showTime);
+                type_node.addEventListener('change', showTime);
                 document.body.append(node);
+                showTime();
+                yaoCD.innerHTML = `药CD剩余：${getYaoCD()}`;
             },
         });
         // NPC LOOT
@@ -3974,7 +3957,7 @@ height:30px;
                 e.target.blur();
                 loadGS(getScriptEngine());
             },
-            tip: '加载从PC端移植来的伞佬的油猴版飞贼小助手',
+            tip: '加载从PC端移植的伞佬的油猴版飞贼小助手',
         });
         // 物品价格监视
         settingsArr.push({
@@ -4167,22 +4150,24 @@ height:30px;
         $zhongNode.querySelector('button#wh-trans-data-update').onclick = () => popupMsg('计划中');
         // 节日
         $zhongNode.querySelectorAll('#wh-trans-fest-date button').forEach((el, i) => i === 0
-            ? el.addEventListener('click', () => {
-                let html = '<table>';
-                settingsArr.fest_date_list.sort().forEach(date => html += `<tr><td>${1 + (date.slice(0, 2) | 0)}月${date.slice(2)}日</td><td>${settingsArr.fest_date_dict[date].name}</td><td>${settingsArr.fest_date_dict[date].eff}</td></tr>`);
-                popupMsg(html += '</table>', '节日');
-            })
-            : el.addEventListener('click', ev => popupMsg(ev.target.attributes['title'].nodeValue))
+                ? el.addEventListener('click', () => {
+                    let html = '<table>';
+                    settingsArr.fest_date_list.sort().forEach(date => html += `<tr><td>${1 + (date.slice(0, 2) | 0)}月${date.slice(2)}日</td><td>${settingsArr.fest_date_dict[date].name}</td><td>${settingsArr.fest_date_dict[date].eff}</td></tr>`);
+                    popupMsg(html += '</table>', '节日');
+                })
+                : el.addEventListener('click', null)
+            // : el.addEventListener('click', ev => popupMsg(ev.target.attributes['title'].nodeValue))
         );
         // 活动
         $zhongNode.querySelectorAll('#wh-trans-event-cont button').forEach((el, i) => i === 0
-            ? el.addEventListener('click', () => {
-                let html = '<table>';
-                settingsArr.events.forEach(el =>
-                    html += `<tr><td><b>${el.name}</b></td><td>${el.start[0] + 1}月${el.start[1]}日${el.start[2]}:00~${el.end[0] + 1}月${el.end[1]}日${el.end[2]}:00</td></tr><tr><td colspan="2">${el.eff}</td></tr>`);
-                popupMsg(html += '</table><p>更多信息请关注群聊和公众号</p>', '活动');
-            })
-            : el.addEventListener('click', ev => popupMsg(ev.target.attributes['title'].nodeValue))
+                ? el.addEventListener('click', () => {
+                    let html = '<table>';
+                    settingsArr.events.forEach(el =>
+                        html += `<tr><td><b>${el.name}</b></td><td>${el.start[0] + 1}月${el.start[1]}日${el.start[2]}:00~${el.end[0] + 1}月${el.end[1]}日${el.end[2]}:00</td></tr><tr><td colspan="2">${el.eff}</td></tr>`);
+                    popupMsg(html += '</table><p>更多信息请关注群聊和公众号</p>', '活动');
+                })
+                : el.addEventListener('click', null)
+            // : el.addEventListener('click', ev => popupMsg(ev.target.attributes['title'].nodeValue))
         );
         // 小窗犯罪按钮
 //         $zhongNode.querySelector('button#wh-quick-crime-btn').onclick = () => {
@@ -4394,7 +4379,7 @@ border:0;
 cursor:pointer;
 }
 #wh-gSettings div{margin: 4px 0 0;}
-#wh-gSettings .wh-tip{
+/*#wh-gSettings .wh-tip{
 display:none;
 position: absolute;
 margin: 4px 0 0 -8px;
@@ -4408,7 +4393,7 @@ font-size: 13px;
 line-height: 14px;
 }
 #wh-gSettings div:hover > .wh-tip{display: block;}
-#wh-gSettings .wh-tip:hover{display:none !important;}
+#wh-gSettings .wh-tip:hover{display:none !important;}*/
 #wh-trans-icon .wh-container{
 margin:0;
 padding:0 16px 16px;
@@ -4812,7 +4797,7 @@ display:none;
             },
             success: function (str) {
                 WHNotify(str)
-                if(str.includes('err')) {
+                if (str.includes('err')) {
                     WHNotify('起飞出错了');
                     return;
                 }
@@ -7075,10 +7060,11 @@ margin: 0 0 3px;
         btn.innerHTML = '+ 展开设置';
         settingsArr.forEach(setting => {
             const newNode = document.createElement('div');
-            const tip = setting['tip'] ? `<div class="wh-tip">${setting['tip']}</div>` : '';
+            // const tip = setting['tip'] ? `<div class="wh-tip">${setting['tip']}</div>` : '';
+            (setting['tip']) && (newNode.setAttribute('title', setting['tip']));
             switch (setting.domType) {
                 case 'checkbox': {
-                    newNode.innerHTML += `<label><input type="checkbox" id="${setting.domId}" ${getWhSettingObj()[setting.dictName] ? "checked" : ''} />${setting.domText}</label>${tip}`;
+                    newNode.innerHTML += `<label><input type="checkbox" id="${setting.domId}" ${getWhSettingObj()[setting.dictName] ? "checked" : ''} />${setting.domText}</label>`;
                     settingNode.appendChild(newNode);
                     settingNode.querySelector(`#${setting.domId}`).onchange = (elem) => {
                         setWhSetting(setting.dictName, elem.target.checked);
@@ -7086,7 +7072,7 @@ margin: 0 0 3px;
                     break;
                 }
                 case 'button': {
-                    newNode.innerHTML += `<button id="${setting.domId}">${setting.domText}</button>${tip}`;
+                    newNode.innerHTML += `<button id="${setting.domId}">${setting.domText}</button>`;
                     settingNode.appendChild(newNode);
                     settingNode.querySelector(`#${setting.domId}`).onclick = setting.clickFunc;
                     break;
@@ -7097,7 +7083,7 @@ margin: 0 0 3px;
                         const selected = i === getWhSettingObj()[setting.dictName] ? 'selected' : '';
                         optHtml += `<option value="${optObj.domVal}" ${selected}>${optObj.domText}</option>`;
                     });
-                    newNode.innerHTML += `<label>${setting.domText}<select id="${setting.domId}">${optHtml}</select></label>${tip}`;
+                    newNode.innerHTML += `<label>${setting.domText}<select id="${setting.domId}">${optHtml}</select></label>`;
                     settingNode.appendChild(newNode);
                     settingNode.querySelector(`#${setting.domId}`).onchange = (elem) => {
                         setWhSetting(setting.dictName, elem.target.selectedIndex);
@@ -7180,6 +7166,10 @@ margin: 0 0 3px;
             };
         };
         document.body.append(zhongNode);
+        // 引入torn自带浮动提示
+        log(initializeTooltip);
+        (initializeTooltip) && (initializeTooltip('.wh-container', 'white-tooltip'));
+        initMiniProf('#wh-trans-icon');
         return zhongNode;
     }
 
@@ -9796,5 +9786,230 @@ z-index:100001;
     function getDestId(dest) {
         // 墨、开、加、夏、英、阿、瑞s、立本、祖、迪、南
         return [2, 12, 9, 3, 10, 7, 8, 5, 6, 11, 4][dest];
+    }
+
+    // 引入torn miniprofile
+    function initMiniProf(selector) {
+        let profileMini = {
+            timeout: 0,
+            clickable: false,
+            rootElement: null,
+            targetElement: null,
+            rootId: 'profile-mini-root',
+            rootSelector: '#profile-mini-root',
+            userNameSelector: "a[href*='profiles.php?XID=']",
+            // contentWrapper: '#wh-trans-icon',
+            contentWrapper: selector,
+            setClickable: function (value) {
+                this.clickable = value
+            },
+            setRootElement: function () {
+                if (!document.getElementById(this.rootId)) {
+                    this.rootElement = document.createElement('div');
+                    this.rootElement.classList.add(this.rootId);
+                    this.rootElement.id = this.rootId;
+                    $('body').append(this.rootElement);
+                } else {
+                    ReactDOM.unmountComponentAtNode($(this.rootSelector).get(0));
+                    this.rootElement = document.getElementById(this.rootId);
+                }
+            },
+            subscribeForHideListeners: function () {
+                const that = this;
+                let width = $(window).width();
+
+                function handleResize(e) {
+                    if ($(this).width() !== width) {
+                        width = $(this).width();
+                        hideMiniProfile.call(that, e);
+                    }
+                }
+
+                function handleScroll(e) {
+                    if (!document.activeElement.classList.contains('send-cash-input')) {
+                        hideMiniProfile.call(that, e);
+                    }
+                }
+
+                function hideMiniProfile(e) {
+                    if ($(e.target).closest(this.rootSelector).length === 0 || ['resize', 'scroll'].includes(e.type)) {
+                        that.targetElement = null
+                        ReactDOM.unmountComponentAtNode($(this.rootSelector).get(0));
+                        $(this.userNameSelector).off('click', this.handleUserNameClick);
+                        $(this.userNameSelector).unbind('contextmenu');
+                        $(document).off('click', hideMiniProfile);
+                        $(window).off('hashchange', hideMiniProfile);
+                        $(window).off('resize', handleResize);
+                        $(window).off('scroll', handleScroll);
+                    }
+                }
+
+                $(document).on('click', hideMiniProfile.bind(this));
+                $(window).on('hashchange', hideMiniProfile.bind(this));
+                $(window).on('resize', handleResize);
+                if (that.targetElement.closest('#chatRoot')) {
+                    $(window).on('scroll', handleScroll);
+                }
+            },
+            subscribeForUserNameClick: function () {
+                $(this.userNameSelector).click(this.handleUserNameClick.bind(this))
+            },
+            handleUserNameClick: function () {
+                if (!this.clickable) {
+                    this.setClickable(true);
+                    return false;
+                }
+            },
+            subscribeForContextMenu: function (element) {
+                $(element).on('contextmenu', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    e.stopImmediatePropagation();
+                    return false;
+                })
+            },
+            handleMouseDown: function () {
+                const that = this;
+                $(this.contentWrapper).on('mousedown touchstart', this.userNameSelector, function (e) {
+                    if (e.which !== 1 && e.type !== 'touchstart') {
+                        return false;
+                    }
+                    that.targetElement = e.currentTarget;
+                    that.subscribeForContextMenu(that.targetElement);
+                    that.handleFocusLost(e.currentTarget);
+                    that.timeout = setTimeout(function () {
+                        if (e.type !== 'touchstart') {
+                            that.setClickable(false);
+                            that.subscribeForUserNameClick();
+                        } else {
+                            $(e.currentTarget).off('touchmove mouseleave');
+                        }
+                        that.subscribeForHideListeners();
+                        that.setRootElement();
+                        const userID = e.currentTarget.search.slice('?XID='.length);
+                        const props = {
+                            userID: userID,
+                            event: e.originalEvent
+                        };
+                        window.renderMiniProfile(that.rootElement, props);
+                    }, 500);
+                    if (e.type !== 'touchstart') {
+                        return false;
+                    }
+                })
+            },
+            handleMouseUp: function () {
+                const that = this;
+                $(this.contentWrapper).on('mouseup touchend', this.userNameSelector, function () {
+                    that.timeout && clearTimeout(that.timeout);
+                })
+            },
+            handleFocusLost: function (element) {
+                const that = this;
+                $(element).on('touchmove mouseleave', function unsubscribe() {
+                    that.timeout && clearTimeout(that.timeout);
+                    $(this).off('touchmove mouseleave', unsubscribe)
+                })
+            },
+            init: function () {
+                this.handleMouseDown();
+                this.handleMouseUp();
+            }
+        };
+        profileMini.init();
+    }
+
+    // 海外库存
+    async function forStock() {
+        if (getScriptEngine() === UserScriptEngine.RAW) {
+            const insert = `<img alt="stock.png" src="https://jjins.github.io/t2i/stock.png?${performance.now()}" style="max-width:100%;display:block;margin:0 auto;" />`;
+            popupMsg(insert, '飞花库存');
+        } else {
+            const popup = popupMsg(`请稍后${loading_gif_html()}`, '飞花库存');
+            let table = `<table><tr><th colspan="2">目的地 - 更新时间</th><th colspan="3">库存</th></tr>`;
+            const dest = [
+                {
+                    name: 'mex', show: '墨西哥',
+                    stocks: {'Dahlia': '花', 'Jaguar Plushie': '偶'}
+                },
+                {
+                    name: 'cay', show: '开曼',
+                    stocks: {'Banana Orchid': '花', 'Stingray Plushie': '偶'}
+                },
+                {
+                    name: 'can', show: '加拿大',
+                    stocks: {'Crocus': '花', 'Wolverine Plushie': '偶'}
+                },
+                {
+                    name: 'haw', show: '夏威夷',
+                    stocks: {'Orchid': '花', 'Large Suitcase': '大箱'}
+                },
+                {
+                    name: 'uni', show: '嘤国',
+                    stocks: {'Heather': '花', 'Red Fox Plushie': '赤狐', 'Nessie Plushie': '水怪'}
+                },
+                {
+                    name: 'arg', show: '阿根廷',
+                    stocks: {'Ceibo Flower': '花', 'Monkey Plushie': '偶', 'Tear Gas': '催泪弹'},
+                },
+                {
+                    name: 'swi', show: '瑞士',
+                    stocks: {'Edelweiss': '花', 'Chamois Plushie': '偶'},
+                },
+                {
+                    name: 'jap', show: '日本',
+                    stocks: {'Cherry Blossom': '花'},
+                },
+                {
+                    name: 'chi', show: '祖国',
+                    stocks: {'Peony': '花', 'Panda Plushie': '偶'},
+                },
+                {
+                    name: 'uae', show: '迪拜',
+                    stocks: {'Tribulus Omanense': '花', 'Camel Plushie': '偶'},
+                },
+                {
+                    name: 'sou', show: '南非',
+                    stocks: {'African Violet': '花', 'Lion Plushie': '偶', 'Xanax': 'XAN'},
+                }];
+            const now = new Date();
+            const res = await fstock.get();
+            if (!res['stocks']) return;
+            dest.forEach(el => {
+                const update = (now - new Date(res.stocks[el.name]['update'] * 1000)) / 1000 | 0
+                table += `<tr><td>${el.show}</td><td>${update / 60 | 0}分${update % 60 | 0}秒前</td>`;
+                let count = 0;
+                res.stocks[el.name]['stocks'].forEach(stock => {
+                    if (el.stocks[stock.name]) {
+                        table += `<td${stock['quantity'] === 0 ? ' style="background-color:#f44336;color:white;border-color:#000;"' : ''}>${el.stocks[stock.name]} (${stock['quantity']})</td>`;
+                        count++;
+                    }
+                });
+                while (count < 3) {
+                    count++;
+                    table += '<td></td>';
+                }
+                table += '</tr>';
+            });
+            table += '</table>';
+            popup.innerHTML = table;
+        }
+    }
+
+    // 药cd
+    function getYaoCD() {
+        if (document.querySelector("#icon49-sidebar")) { // 0-10min
+            return '<10分'
+        } else if (document.querySelector("#icon50-sidebar")) { // 10min-1h
+            return '<1时'
+        } else if (document.querySelector("#icon51-sidebar")) { // 1h-2h
+            return '1~2时'
+        } else if (document.querySelector("#icon52-sidebar")) { // 2h-5h
+            return '2~5时'
+        } else if (document.querySelector("#icon53-sidebar")) { // 5h+
+            return '>5时'
+        } else {
+            return '无效'
+        }
     }
 }());
