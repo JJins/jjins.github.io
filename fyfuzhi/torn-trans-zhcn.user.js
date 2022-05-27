@@ -4829,166 +4829,204 @@ display:none;
     if (href.contains(/loader\.php\?sid=attack/)) {
         let stop_reload = false;
         const {quickAttIndex, quickFinishAtt, attReload} = getWhSettingObj();
-        let cssRules = null;
+
+        // 自刷新
+        let audio_played_flag;
+        if (attReload !== 6 && stop_reload !== true) {
+            const selector_device_map = {
+                'pc': '#defender div[class^="modal___"]',
+                'mobile': '#attacker div[class^="modal___"]',
+                'tablet': '',
+            };
+            const selector = selector_device_map[device];
+            elementReady(selector).then(elem => {
+                if (!elem.querySelector('button')) {
+                    if (getWhSettingObj().attReload === 0 && stop_reload !== true) {
+                        window.location.reload();
+                    } else {
+                        let reload_flag;
+                        const timeout = getWhSettingObj().attReload * 1000 + getRandomInt(-500, 500);
+                        log(`[WH] ${timeout / 1000}s 后自动刷新`);
+                        window.setInterval(() => {
+                            if (reload_flag === undefined) {
+                                reload_flag = true;
+                            } else if (stop_reload !== true) {
+                                window.location.reload();
+                            }
+                        }, timeout);
+                    }
+                } else if (audio_played_flag === undefined) {
+                    audio_played_flag = true;
+                    let play_time = 0;
+                    const audio_play_id = window.setInterval(() => {
+                        const $audio = document.createElement('audio');
+                        $audio.src = 'https://www.torn.com/js/chat/sounds/Warble_1.mp3';
+                        $audio.play().then();
+                        play_time++;
+                        if (play_time === 3) clearInterval(audio_play_id);
+                    }, 600);
+                }
+            });
+        }
         // 光速拔刀
         if (quickAttIndex !== 6) {
             // const selectedId = ['weapon_main', 'weapon_second', 'weapon_melee', 'weapon_temp', 'weapon_fists', 'weapon_boots']
             //     [getWhSettingObj().quickAttIndex];
-            elementReady('div[class^="modal___"] button').then(btn => {
-                if (!(btn.innerText.toLowerCase().includes('start fight') || btn.innerText.toLowerCase().includes('join'))) return;
-                // 判断是否存在脚踢
-                const hasKick = !!document.querySelector('#weapon_boots');
-                // modal层
-                const modal = document.querySelector('div[class^="modal___"]');
-                log(`当前设备类型是${device}`);
-                // 区分设备
-                switch (device) {
-                    case Device.PC: {
-                        log(`开始调整按钮位置`);
-                        // 隐藏modal层
-                        modal.style.display = 'none';
-                        // 根据选择的武器调整css
-                        let css_top = '0';
-                        switch (getWhSettingObj()['quickAttIndex']) {
-                            case 1: { // weapon_second
-                                css_top = '97px';
-                                break;
-                            }
-                            case 2: { // weapon_melee
-                                css_top = '194px';
-                                break;
-                            }
-                            case 3: { // weapon_temp
-                                css_top = '291px';
-                                break;
-                            }
-                            case 4:   // weapon_fists
-                            case 5: { // weapon_boots
-                                css_top = '375px';
-                                break;
-                            }
+            const btn = await elementReady('div[class^="modal___"] button');//.then(btn => {
+            if (!(btn.innerText.toLowerCase().includes('start fight') || btn.innerText.toLowerCase().includes('join'))) return;
+            // 判断是否存在脚踢
+            const hasKick = !!document.querySelector('#weapon_boots');
+            // modal层
+            const modal = document.querySelector('div[class^="modal___"]');
+            log(`当前设备类型是${device}`);
+            // 区分设备
+            switch (device) {
+                case Device.PC: {
+                    log(`开始调整按钮位置`);
+                    // 隐藏modal层
+                    modal.style.display = 'none';
+                    // 根据选择的武器调整css
+                    let css_top = '0';
+                    switch (getWhSettingObj()['quickAttIndex']) {
+                        case 1: { // weapon_second
+                            css_top = '97px';
+                            break;
                         }
-                        const css_rule = `
+                        case 2: { // weapon_melee
+                            css_top = '194px';
+                            break;
+                        }
+                        case 3: { // weapon_temp
+                            css_top = '291px';
+                            break;
+                        }
+                        case 4:   // weapon_fists
+                        case 5: { // weapon_boots
+                            css_top = '375px';
+                            break;
+                        }
+                    }
+                    const css_rule = `
 .wh-move-btn #defender div[class^="modal___"]{display: block;width: 0 !important;top: ${css_top};left: -169px !important;}
 .wh-move-btn #defender div[class^="dialog___"]{border:0;width:159px;height:96px;}
 .wh-move-btn #defender div[class^="colored___"]{display:block;padding:0;}
 .wh-move-btn #defender div[class^="title___"]{height:0;}
 .wh-move-btn #defender button{width: 100%;margin:17px 0;height: 60px;}
 `;
-                        addStyle(css_rule);
-                        document.body.classList.toggle('wh-move-btn');
-                        // 绑定点击事件
-                        btn.onclick = () => {
-                            if (quickFinishAtt !== 3) {
-                                btn.remove();
-                                // 停止自动刷新
-                                stop_reload = true;
-                            } else {
-                                document.body.classList.toggle('wh-move-btn');
-                            }
-                        };
-                        break;
-                    }
-                    case Device.MOBILE: {
-                        log(`开始调整按钮位置`);
-                        // 加入css
-                        let css_top = '0';
-                        let slot_height = '76px';
-                        // 判断有没有脚踢
-                        if (hasKick) {
-                            // 根据选择的武器调整
-                            switch (getWhSettingObj().quickAttIndex) {
-                                case 1: { // weapon_second
-                                    css_top = '76px';
-                                    break;
-                                }
-                                case 2: { // weapon_melee
-                                    css_top = '152px';
-                                    break;
-                                }
-                                case 3: { // weapon_temp
-                                    css_top = '228px';
-                                    break;
-                                }
-                                case 4: { // weapon_fists
-                                    css_top = '304px';
-                                    break;
-                                }
-                                case 5: { // weapon_boots
-                                    css_top = '380px';
-                                    break;
-                                }
-                            }
+                    addStyle(css_rule);
+                    document.body.classList.toggle('wh-move-btn');
+                    // 绑定点击事件
+                    btn.onclick = () => {
+                        if (quickFinishAtt !== 3) {
+                            btn.remove();
+                            // 停止自动刷新
+                            stop_reload = true;
                         } else {
-                            const slot = document.querySelector('#weapon_main');
-                            const height = slot.offsetHeight + 1;
-                            slot_height = height;
-                            // 根据选择的武器调整
-                            switch (getWhSettingObj().quickAttIndex) {
-                                case 1: { // weapon_second
-                                    css_top = `${height}px`;
-                                    break;
-                                }
-                                case 2: { // weapon_melee
-                                    css_top = `${height * 2}px`;
-                                    break;
-                                }
-                                case 3: { // weapon_temp
-                                    css_top = `${height * 3}px`;
-                                    break;
-                                }
-                                case 4: { // weapon_fists
-                                    css_top = `${height * 4}px`;
-                                    break;
-                                }
-                                case 5: { // weapon_boots
-                                    css_top = `${height * 5}px`;
-                                    break;
-                                }
+                            document.body.classList.toggle('wh-move-btn');
+                        }
+                    };
+                    break;
+                }
+                case Device.MOBILE: {
+                    log(`开始调整按钮位置`);
+                    // 加入css
+                    let css_top = '0';
+                    let slot_height = '76px';
+                    // 判断有没有脚踢
+                    if (hasKick) {
+                        // 根据选择的武器调整
+                        switch (getWhSettingObj()['quickAttIndex']) {
+                            case 1: { // weapon_second
+                                css_top = '76px';
+                                break;
+                            }
+                            case 2: { // weapon_melee
+                                css_top = '152px';
+                                break;
+                            }
+                            case 3: { // weapon_temp
+                                css_top = '228px';
+                                break;
+                            }
+                            case 4: { // weapon_fists
+                                css_top = '304px';
+                                break;
+                            }
+                            case 5: { // weapon_boots
+                                css_top = '380px';
+                                break;
                             }
                         }
-                        const css_rule = `
+                    } else {
+                        const slot = document.querySelector('#weapon_main');
+                        const height = slot.offsetHeight + 1;
+                        slot_height = height;
+                        // 根据选择的武器调整
+                        switch (getWhSettingObj().quickAttIndex) {
+                            case 1: { // weapon_second
+                                css_top = `${height}px`;
+                                break;
+                            }
+                            case 2: { // weapon_melee
+                                css_top = `${height * 2}px`;
+                                break;
+                            }
+                            case 3: { // weapon_temp
+                                css_top = `${height * 3}px`;
+                                break;
+                            }
+                            case 4: { // weapon_fists
+                                css_top = `${height * 4}px`;
+                                break;
+                            }
+                            case 5: { // weapon_boots
+                                css_top = `${height * 5}px`;
+                                break;
+                            }
+                        }
+                    }
+                    const css_rule = `
 .wh-move-btn #attacker div[class^="modal___"]{display: block;width: 0;top: ${css_top};left:0;height:0;}
 .wh-move-btn #attacker div[class^="dialog___"]{border:0;width:80px;height:${slot_height};}
 .wh-move-btn #attacker div[class^="colored___"]{display:block;padding:0;}
 .wh-move-btn #attacker div[class^="title___"]{height:0;}
 .wh-move-btn #attacker button{width:100%;margin:0;height:63px;white-space:normal;}
 `;
-                        addStyle(css_rule);
-                        document.body.classList.toggle('wh-move-btn');
-                        btn.onclick = () => {
-                            if (getWhSettingObj().quickFinishAtt !== 3) {
-                                btn.remove();
-                                // 停止自动刷新
-                                stop_reload = true;
-                            } else {
-                                document.body.classList.toggle('wh-move-btn');
-                            }
-                        };
-                        break;
-                    }
-                    case Device.TABLET: {
-                        break;
-                    }
+                    addStyle(css_rule);
+                    document.body.classList.toggle('wh-move-btn');
+                    btn.onclick = () => {
+                        if (getWhSettingObj().quickFinishAtt !== 3) {
+                            btn.remove();
+                            // 停止自动刷新
+                            stop_reload = true;
+                        } else {
+                            document.body.classList.toggle('wh-move-btn');
+                        }
+                    };
+                    break;
                 }
-                // 自动开打
-                if (getWhSettingObj().autoStartFinish === true) {
-                    if (btn.innerText.includes('(')) {
-                        let interval_id = window.setInterval(() => {
-                            if (!btn) {
-                                clearInterval(interval_id);
-                                return;
-                            }
-                            try {
-                                btn.click();
-                            } catch {
-                            }
-                        }, 100);
-                    } else {
-                        btn.click();
-                    }
+                case Device.TABLET: {
+                    break;
                 }
-            });
+            }
+            // 自动开打
+            if (getWhSettingObj()['autoStartFinish'] === true) {
+                if (btn.innerText.includes('(')) {
+                    let interval_id = window.setInterval(() => {
+                        if (!btn) {
+                            clearInterval(interval_id);
+                            return;
+                        }
+                        try {
+                            btn.click();
+                        } catch {
+                        }
+                    }, 100);
+                } else {
+                    btn.click();
+                }
+            }
+            // });
             // const CUR_DISABLED = true;
             // if (!CUR_DISABLED) {
             //     const original_fetch = window.fetch;
@@ -5027,44 +5065,6 @@ display:none;
             }).observe(wrap, {subtree: true, attributes: true, childList: true});
         } else {
             document.body.classList.remove('wh-move-btn');
-        }
-        // 自刷新
-        let audio_played_flag;
-        if (attReload !== 6 && stop_reload !== true) {
-            const selector_device_map = {
-                'pc': '#defender div[class^="modal___"]',
-                'mobile': '#attacker div[class^="modal___"]',
-                'tablet': '',
-            };
-            const selector = selector_device_map[device];
-            elementReady(selector).then(elem => {
-                if (!elem.querySelector('button')) {
-                    if (getWhSettingObj().attReload === 0 && stop_reload !== true) {
-                        window.location.reload();
-                    } else {
-                        let reload_flag;
-                        const timeout = getWhSettingObj().attReload * 1000 + getRandomInt(-500, 500);
-                        log(`[WH] ${timeout / 1000}s 后自动刷新`);
-                        window.setInterval(() => {
-                            if (reload_flag === undefined) {
-                                reload_flag = true;
-                            } else if (stop_reload !== true) {
-                                window.location.reload();
-                            }
-                        }, timeout);
-                    }
-                } else if (audio_played_flag === undefined) {
-                    audio_played_flag = true;
-                    let play_time = 0;
-                    const audio_play_id = window.setInterval(() => {
-                        const $audio = document.createElement('audio');
-                        $audio.src = 'https://www.torn.com/js/chat/sounds/Warble_1.mp3';
-                        $audio.play().then();
-                        play_time++;
-                        if (play_time === 3) clearInterval(audio_play_id);
-                    }, 600);
-                }
-            });
         }
         return;
     }
