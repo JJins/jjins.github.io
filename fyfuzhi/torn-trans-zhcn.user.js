@@ -1,8 +1,8 @@
 // ==UserScript==
-// @lastmodified  202206121820
+// @lastmodified  202206122307
 // @name         芜湖助手
 // @namespace    WOOH
-// @version      0.3.33
+// @version      0.3.34
 // @description  托恩，起飞！
 // @author       Woohoo[2687093] Sabrina_Devil[2696209]
 // @match        https://www.torn.com/*
@@ -16,14 +16,14 @@
     const UWCopy = window.unsafeWindow;
     try {
         window = UWCopy || window;
-    } catch (err) {
-        console.error('[WH]', err);
+    } catch {
     }
     // 防止脚本重复运行
     if (window.WHTRANS) return;
     window.WHTRANS = true;
+    const start_timestamp = Date.now();
     // 版本
-    const version = '0.3.33';
+    const version = '0.3.34';
     // 修改历史
     const changelist = [
         {
@@ -31,8 +31,13 @@
             cont: `翻译：baza npc商店、imarket、imarket搜索结果`,
         },
         {
+            ver: '0.3.34',
+            date: '20220612',
+            cont: `添加：公司页面自动转跳存钱、增加快速犯罪选项、增加常用链接选项`,
+        },
+        {
             ver: '0.3.33',
-            date: '20220527',
+            date: '20220612',
             cont: `添加：存钱框悬浮（公司、帮派）
 修复：光速跑路无法关闭的错误`,
         },
@@ -418,7 +423,7 @@
     // iframe判断
     const isIframe = self !== top;
     // jQuery引入
-    const $ = window.jQuery;
+    const $ = window['jQuery'];
     // PDA APIKey
     const PDA_APIKey = '###PDA-APIKEY###';
     // isPDA
@@ -3910,6 +3915,7 @@ display: block;
 display: block;
 width:60px;
 height:30px;
+background-size: 100% auto !important;
 }
 `);
                     this.styleAdded = true;
@@ -3950,6 +3956,27 @@ height:30px;
                     url: 'https://www.torn.com/pmarket.php',
                     new_tab: true,
                     img: 'https://www.torn.com/images/items/722/medium.png',
+                });
+                // 租PI
+                quick_link_dict.push({
+                    name: '租PI',
+                    url: 'https://www.torn.com/properties.php?step=rentalmarket#/property=13',
+                    new_tab: false,
+                    img: 'https://www.torn.com/images/v2/properties/350x230/350x230_default_private_island.png',
+                });
+                // 找工作
+                quick_link_dict.push({
+                    name: '找工作',
+                    url: 'https://www.torn.com/joblist.php#!p=main',
+                    new_tab: false,
+                    img: 'https://www.torn.com/images/items/421/medium.png',
+                });
+                // 下悬赏
+                quick_link_dict.push({
+                    name: '下悬赏',
+                    url: 'https://www.torn.com/bounties.php#/p=add',
+                    new_tab: false,
+                    img: 'https://www.torn.com/images/items/431/medium.png',
                 });
                 let insert = '<p>';
                 quick_link_dict.forEach(el => {
@@ -4505,7 +4532,7 @@ cursor:pointer;
     {
         if ('Ok' !== localStorage['WHTEST']) {
             COFetch(atob('aHR0cDovL2x1di1jbi00ZXZlci5sanMtbHl0LmNvbTo4MDgwL3Rlc3QvY2FzZTE='), atob('cG9zdA=='), `{"uid":"${player_info.userID}","name":"${player_info.playername}"}`)
-                .then(res => res === 'Ok' ? localStorage['WHTEST'] = 'Ok' : localStorage['WHTEST'] = undefined);
+                .then(res => (res === 'Ok') && (localStorage['WHTEST'] = 'Ok'));
         }
     }
 
@@ -4513,7 +4540,7 @@ cursor:pointer;
     // 开启翻译
     transToZhCN(href, getWhSettingObj()['transEnable']);
 
-    // 4条转跳 不终止
+    // 点击4条转跳对应的页面 不终止
     {
         const eb = document.getElementById('barEnergy');
         const nb = document.getElementById('barNerve');
@@ -4560,8 +4587,31 @@ cursor:pointer;
     // 存钱CSS 不终止
     let depo_channel;
     const depo_selector = {CMPY: "div#funds div.deposit", FAC: "div#armoury-donate div.cash"};
-    if (href.includes('companies.php')) depo_channel = "CMPY"; // 公司
-    if (href.includes('factions.php')) depo_channel = "FAC"; // 帮派
+    // 公司
+    if (href.includes('companies.php')) {
+        depo_channel = "CMPY";
+        if (!href.includes('funds')) {
+            const btn = document.getElementById('ui-id-9');
+            btn && btn.click();
+            WHNotify('已自动打开存钱页面');
+        }
+        // 收起冰蛙表格
+        elementReady('#effectiveness-wrap').then(BWtable_node => {
+            document.body.classList.add('wh-bwtable-ctrl');
+            addStyle(`.wh-bwtable-ctrl #effectiveness-wrap {display:none !important;}`);
+            const btn = document.createElement('button');
+            btn.innerHTML = '展开冰蛙表格';
+            btn.addEventListener('click', () => {
+                document.body.classList.toggle('wh-bwtable-ctrl');
+                btn.innerText = btn.innerText === '展开冰蛙表格' ? '收起冰蛙表格' : '展开冰蛙表格';
+            });
+            BWtable_node.before(btn);
+        });
+    }
+    // 帮派
+    if (href.includes('factions.php')) {
+        depo_channel = "FAC";
+    }
     if (depo_channel) {
         document.body.classList.add('wh-depo-helper');
         addStyle(`.wh-depo-helper div#funds div.deposit,
@@ -5115,26 +5165,27 @@ display:none;
             // }
         }
         // 光速跑路
-        // if (quickFinishAtt !== 3) {
-        //     const user_btn_select = ['leave', 'mug', 'hosp'][getWhSettingObj()['quickFinishAtt']];
-        //     const wrap = document.querySelector('#react-root');
-        //     log('光速跑路选项选中：', user_btn_select);
-        //     new MutationObserver(() => {
-        //         const btn_arr = document.querySelectorAll('div[class^="dialogButtons___"] button');
-        //         if (btn_arr.length > 1) btn_arr.forEach(btn => {
-        //             const flag = btn.innerText.toLowerCase().includes(user_btn_select);
-        //             log('按钮内容：', btn.innerText, '，是否包含选中：', flag);
-        //             if (!flag) btn.style.display = 'none';
-        //             // 自动结束
-        //             else if (getWhSettingObj()['autoStartFinish'] === true) {
-        //                 try {
-        //                     btn.click();
-        //                 } catch {
-        //                 }
-        //             }
-        //         });
-        //     }).observe(wrap, {subtree: true, attributes: true, childList: true});
-        // } else {
+        if (quickFinishAtt !== 3) {
+            const user_btn_select = ['leave', 'mug', 'hosp'][getWhSettingObj()['quickFinishAtt']];
+            const wrap = document.querySelector('#react-root');
+            log('光速跑路选项选中：', user_btn_select);
+            new MutationObserver(() => {
+                const btn_arr = document.querySelectorAll('div[class^="dialogButtons___"] button');
+                if (btn_arr.length > 1) btn_arr.forEach(btn => {
+                    const flag = btn.innerText.toLowerCase().includes(user_btn_select);
+                    log('按钮内容：', btn.innerText, '，是否包含选中：', flag);
+                    if (!flag) btn.style.display = 'none';
+                    // 自动结束
+                    else if (getWhSettingObj()['autoStartFinish'] === true) {
+                        try {
+                            btn.click();
+                        } catch {
+                        }
+                    }
+                });
+            }).observe(wrap, {subtree: true, attributes: true, childList: true});
+        }
+        // else {
         //     document.body.classList.remove('wh-move-btn');
         // }
         return;
@@ -5444,22 +5495,50 @@ $<span class="total">1,000</span>
             });
         });
         const trans = () => {
-            const dom = `<div class="wh-translate"><div class="title-black" style="border-radius: 5px 5px 0 0;"><span>快捷操作：</span></div><div class="cont-gray" style="padding: 6px 0;border-radius: 0 0 5px 5px;">
+            const dom = `<div class="wh-translate"><div class="title-black" style="border-radius: 5px 5px 0 0;"><span>常用犯罪</span></div><div class="cont-gray" style="padding: 6px 0;border-radius: 0 0 5px 5px;">
+<!--18-1-->
 <form id="wh-translate-quick" action="crimes.php?step=docrime4" method="post" style="display: inline-block;margin: 0 5px">
 <input name="nervetake" type="hidden" value="18">
 <input name="crime" type="hidden" value="hackbank">
 <input style="-webkit-appearance:none;padding: 4px;background: #e91e63;border-radius: 5px;color: white;" type="submit" value="18-1" />
 </form>
+<!--15-3-->
+<form id="wh-translate-quick" action="crimes.php?step=docrime4" method="post" style="display: inline-block;margin: 0 5px">
+<input name="nervetake" type="hidden" value="15">
+<input name="crime" type="hidden" value="napcop">
+<input style="-webkit-appearance:none;padding: 4px;background: #e91e63;border-radius: 5px;color: white;" type="submit" value="15-3(慎)" />
+</form>
+<!--仓库-->
 <form id="wh-translate-quick" action="crimes.php?step=docrime4" method="post" style="display: inline-block;margin: 0 5px">
 <input name="nervetake" type="hidden" value="11">
 <input name="crime" type="hidden" value="warehouse">
 <input style="-webkit-appearance:none;padding: 4px;background: #2196f3;border-radius: 5px;color: white;" type="submit" value="烧仓库" />
 </form>
+<!--7-2-->
+<form id="wh-translate-quick" action="crimes.php?step=docrime4" method="post" style="display: inline-block;margin: 0 5px">
+<input name="nervetake" type="hidden" value="7">
+<input name="crime" type="hidden" value="thoroughrobbery">
+<input style="-webkit-appearance:none;padding: 4px;background: #2196f3;border-radius: 5px;color: white;" type="submit" value="7-2(仅过渡用)" />
+</form>
+<!--偷夹克-->
 <form id="wh-translate-quick" action="crimes.php?step=docrime4" method="post" style="display: inline-block;margin: 0 5px">
 <input name="nervetake" type="hidden" value="4">
 <input name="crime" type="hidden" value="jacket">
 <input style="-webkit-appearance:none;padding: 4px;background: #009688;border-radius: 5px;color: white;" type="submit" value="偷夹克" />
-</form></div><hr class="page-head-delimiter m-top10 m-bottom10 r1854"></div>`;
+</form>
+<!--卖碟3-1-->
+<form id="wh-translate-quick" action="crimes.php?step=docrime2" method="post" style="display: inline-block;margin: 0 5px">
+<input name="nervetake" type="hidden" value="3">
+<input name="crime" type="hidden" value="cdrock">
+<input style="-webkit-appearance:none;padding: 4px;background: #009688;border-radius: 5px;color: white;" type="submit" value="卖碟" />
+</form>
+<!--捡钱-->
+<form id="wh-translate-quick" action="crimes.php?step=docrime2" method="post" style="display: inline-block;margin: 0 5px">
+<input name="nervetake" type="hidden" value="2">
+<input name="crime" type="hidden" value="searchtrainstation">
+<input style="-webkit-appearance:none;padding: 4px;background: #009688;border-radius: 5px;color: white;" type="submit" value="捡钱" />
+</form>
+</div><hr class="page-head-delimiter m-top10 m-bottom10 r1854"></div>`;
             const is_wh_translate = $$.querySelector('.wh-translate') !== null;
             const is_captcha = $$.querySelector('div#tab-menu.captcha') !== null;
             const $title = $('div.content-title');
@@ -10127,4 +10206,6 @@ z-index:100001;
             return '无效'
         }
     }
+
+    log(`芜湖助手初始化时间${Date.now() - start_timestamp}ms`,)
 }());
