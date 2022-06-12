@@ -18,6 +18,7 @@ jobs:
         cd fyfuzhi
         rm -f torn-trans-zhcn.user.js
         wget https://gitlab.com/JJins/wuhu-torn-helper/-/raw/dev/torn-trans-zhcn.user.js
+        wget https://gitlab.com/JJins/wuhu-torn-helper/-/raw/dev/release.min.user.js
     - name: Commit & Push
       uses: EndBug/add-and-commit@v7
       with:
