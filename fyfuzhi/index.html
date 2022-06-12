@@ -16,8 +16,8 @@
                 .then(data => data.text())
                 .then(text => {
                     $textarea.value = text;
-                    const iStart = 37;
-                    const dtimeStr = text.slice(iStart, iStart + 12);
+                    //const iStart = 37;
+                    const dtimeStr = text.split('// ')[2].trim().slice(-12);
                     const last = {
                         year: dtimeStr.slice(0, 4),
                         month: dtimeStr.slice(4, 6),
