@@ -1,8 +1,8 @@
 // ==UserScript==
-// @lastmodified  202206171722
+// @lastmodified  202206172337
 // @name         芜湖助手
 // @namespace    WOOH
-// @version      0.3.35
+// @version      0.3.36
 // @description  托恩，起飞！
 // @author       Woohoo[2687093] Sabrina_Devil[2696209]
 // @match        https://www.torn.com/*
@@ -23,11 +23,16 @@
     // 防止脚本重复运行
     if (window.WHTRANS) return;
     window.WHTRANS = true;
-    const version = '0.3.35';
+    const version = '0.3.36';
     const changelist = [
         {
             todo: true,
             cont: `翻译：baza npc商店、imarket、imarket搜索结果`,
+        },
+        {
+            ver: '0.3.36',
+            date: '20220617',
+            cont: `错误修复`,
         },
         {
             ver: '0.3.35',
@@ -3151,15 +3156,19 @@
     const ori_fetch = window.fetch;
     // 监听fetch
     window.fetch = async (url, init) => {
-        if (url.contains('newsTickers')) return {};
+        if (url.contains('newsTickers')) {
+            // 阻止获取新闻横幅
+            return new Response('{}');
+        }
         const res = await ori_fetch(url, init);
         // mini profile 翻译
         if (url.includes('profiles.php?step=getUserNameContextMenu') && getWhSettingObj()['transEnable']) {
             setTimeout(() => miniprofTrans(), 200);
         }
-        let text = await res.json();
+        let clone = res.clone();
+        let text = await res.text();
         log({url, init, text});
-        return res.clone();
+        return clone;
     };
 
     // const transDict = {};
@@ -5325,9 +5334,10 @@ display:inline-block;
             node.classList.toggle('wh-display-none');
             setWhSetting('SEProtect', e.target.checked);
         };
-        const node = await elementReady('#gymroot');
-        if (getWhSettingObj()['SEProtect']) node.classList.add('wh-display-none');
-        node.before(switch_node);
+        if (getWhSettingObj()['SEProtect']) elementReady('#gymroot').then(node => {
+            node.classList.add('wh-display-none');
+            node.before(switch_node);
+        });
     }
 
     // 加入啤酒
