@@ -1,8 +1,8 @@
 // ==UserScript==
-// @lastmodified  202206122307
+// @lastmodified  202206171722
 // @name         芜湖助手
 // @namespace    WOOH
-// @version      0.3.34
+// @version      0.3.35
 // @description  托恩，起飞！
 // @author       Woohoo[2687093] Sabrina_Devil[2696209]
 // @match        https://www.torn.com/*
@@ -10,8 +10,10 @@
 // @grant        unsafeWindow
 // @connect      *
 // ==/UserScript==
+
 (async function () {
     'use strict';
+    const start_timestamp = Date.now();
     // unsafewindow副本
     const UWCopy = window.unsafeWindow;
     try {
@@ -21,14 +23,16 @@
     // 防止脚本重复运行
     if (window.WHTRANS) return;
     window.WHTRANS = true;
-    const start_timestamp = Date.now();
-    // 版本
-    const version = '0.3.34';
-    // 修改历史
+    const version = '0.3.35';
     const changelist = [
         {
             todo: true,
             cont: `翻译：baza npc商店、imarket、imarket搜索结果`,
+        },
+        {
+            ver: '0.3.35',
+            date: '20220617',
+            cont: `添加：加载时间、更多的选项`,
         },
         {
             ver: '0.3.34',
@@ -420,15 +424,12 @@
 更新了一些物品名称翻译，咸鱼修正为鳟鱼`,
         },
     ];
-    // iframe判断
     const isIframe = self !== top;
-    // jQuery引入
     const $ = window['jQuery'];
-    // PDA APIKey
+    // PDA
     const PDA_APIKey = '###PDA-APIKEY###';
-    // isPDA
     const isPDA = PDA_APIKey.slice(-1) !== '#';
-    // 请求通知权限
+    // 通知权限
     if (window.Notification) {
         Notification.requestPermission().then(status => {
             // 这将使我们能在 Chrome/Safari 中使用 Notification.permission
@@ -559,19 +560,19 @@
         'events': '通知',
         'awards': '勋章',
     };
-    const tooltipDict = {
-        'Full ': '回满',
-        'energy': '能量E',
-        'happy': '快乐',
-        ' in ': '还需',
-        'You have full ': '你已有满',
-        'life': '血量',
-        'nerve': '犯罪N',
-        'You are currently traveling': '你正在飞行中',
-        'You don\'t own a Laptop!': '你没有笔记本电脑！',
-        'You are not in Torn': '你不在城里',
-        'Rank': '阶级',
-    };
+    // const tooltipDict = {
+    //     'Full ': '回满',
+    //     'energy': '能量E',
+    //     'happy': '快乐',
+    //     ' in ': '还需',
+    //     'You have full ': '你已有满',
+    //     'life': '血量',
+    //     'nerve': '犯罪N',
+    //     'You are currently traveling': '你正在飞行中',
+    //     'You don\'t own a Laptop!': '你没有笔记本电脑！',
+    //     'You are not in Torn': '你不在城里',
+    //     'Rank': '阶级',
+    // };
     const statusDict = {
         'Traveling to Mexico': '正在飞往墨西哥',
         'Traveling to Cayman Islands': '正在飞往开曼群岛',
@@ -607,7 +608,7 @@
         'In United UAE': '在 UAE',
         'In South Africa': '在南非',
     };
-    const miniProfileDict = {};
+    // const miniProfileDict = {};
     const homeDict = {
         'General Information': '基本信息',
         'Property Information': '房产信息',
@@ -1482,55 +1483,55 @@
 
         "Go to hospital 250 times (Very Common)": '住院 250 次 (非常常见)',
     };
-    const playerTitleList = {
-        '_wiki_url_': 'https://wiki.torn.com/wiki/Title',
-        'Accomplice': '',
-        'Addict': '',
-        'Alcoholic': '',
-        'Antagonist': '',
-        'Bondsman': '',
-        'Booster': '',
-        'Boxer': '',
-        'Buster': '',
-        'Coward': '',
-        'Citizen': '',
-        'Damage Dealer': '',
-        'Deserter': '',
-        'Druggy': '',
-        'Egotist': '',
-        'Felon': '',
-        'Healer': '',
-        'Hitman': '',
-        'Hoarder': '',
-        'Importer': '',
-        'Intimidator': '',
-        'Investor': '',
-        'Jobsworth': '',
-        'Killer': '',
-        'Loser': '',
-        'Marksman': '',
-        'Medalist': '',
-        'Mercenary': '',
-        'Merchant': '',
-        'Mobster': '',
-        'Newcomer': '',
-        'Nudist': '',
-        'One Hit Killer': '',
-        'Outcast': '',
-        'Punchbag': '',
-        'Samaritan': '',
-        'Sage': '',
-        'Scavenger': '',
-        'Silent Killer': '',
-        'Slayer': '',
-        'Soldier': '',
-        'Socialite': '',
-        'Tank': '',
-        'Thief': '',
-        'Tourist': '',
-        'Trader': '',
-        'Tycoon': '',
-    };
+    // const playerTitleList = {
+    //     '_wiki_url_': 'https://wiki.torn.com/wiki/Title',
+    //     'Accomplice': '',
+    //     'Addict': '',
+    //     'Alcoholic': '',
+    //     'Antagonist': '',
+    //     'Bondsman': '',
+    //     'Booster': '',
+    //     'Boxer': '',
+    //     'Buster': '',
+    //     'Coward': '',
+    //     'Citizen': '',
+    //     'Damage Dealer': '',
+    //     'Deserter': '',
+    //     'Druggy': '',
+    //     'Egotist': '',
+    //     'Felon': '',
+    //     'Healer': '',
+    //     'Hitman': '',
+    //     'Hoarder': '',
+    //     'Importer': '',
+    //     'Intimidator': '',
+    //     'Investor': '',
+    //     'Jobsworth': '',
+    //     'Killer': '',
+    //     'Loser': '',
+    //     'Marksman': '',
+    //     'Medalist': '',
+    //     'Mercenary': '',
+    //     'Merchant': '',
+    //     'Mobster': '',
+    //     'Newcomer': '',
+    //     'Nudist': '',
+    //     'One Hit Killer': '',
+    //     'Outcast': '',
+    //     'Punchbag': '',
+    //     'Samaritan': '',
+    //     'Sage': '',
+    //     'Scavenger': '',
+    //     'Silent Killer': '',
+    //     'Slayer': '',
+    //     'Soldier': '',
+    //     'Socialite': '',
+    //     'Tank': '',
+    //     'Thief': '',
+    //     'Tourist': '',
+    //     'Trader': '',
+    //     'Tycoon': '',
+    // };
     const ocList = {
         'blackmail someone': '敲诈某人',
         'blackmailed someone': '敲诈某人',
@@ -2675,13 +2676,13 @@
         "Article on Crime": '',
         "Piece of Cake": '',
     };
-    const itemDescDict = {
-        'A lottery voucher which can be traded in for 100 lottery tickets for the weekly draw, courtesy of the Lucky Shot Casino.':
-            '',
-        "Increases one's energy.": '提高能量。',
-        "Temporarily passively increases all statistics while attacking or defending by 25%.":
-            '在攻击或防守时暂时地获得25%战斗属性增益。',
-    };
+    // const itemDescDict = {
+    //     'A lottery voucher which can be traded in for 100 lottery tickets for the weekly draw, courtesy of the Lucky Shot Casino.':
+    //         '',
+    //     "Increases one's energy.": '提高能量。',
+    //     "Temporarily passively increases all statistics while attacking or defending by 25%.":
+    //         '在攻击或防守时暂时地获得25%战斗属性增益。',
+    // };
     const itemEffectDict = {
         // 彩票
         'Effect: Provides 100 Lucky Shot Lotto tickets when used.': '',
@@ -2755,7 +2756,7 @@
         'is a  Book Item.': '是一本书。',
         'is a  Special Item.': '是一种特殊物品。',
     };
-    const itemReqDict = {};
+    // const itemReqDict = {};
     const tornSettingsDict = {
         'API Keys': 'API 密钥',
         'General settings': '通用设置',
@@ -3150,14 +3151,15 @@
     const ori_fetch = window.fetch;
     // 监听fetch
     window.fetch = async (url, init) => {
-        log(url)
+        if (url.contains('newsTickers')) return {};
         const res = await ori_fetch(url, init);
         // mini profile 翻译
         if (url.includes('profiles.php?step=getUserNameContextMenu') && getWhSettingObj()['transEnable']) {
             setTimeout(() => miniprofTrans(), 200);
         }
-        // const res_clone = res.clone();
-        return res;
+        let text = await res.json();
+        log({url, init, text});
+        return res.clone();
     };
 
     // const transDict = {};
@@ -3200,6 +3202,7 @@
     // transDict.calDict = calDict;
     // if (!localStorage.getItem('wh_trans_transDict')) localStorage.setItem('wh_trans_transDict', JSON.stringify(transDict))
 
+    const date = new Date();
     // 伪enum 设备类型 PC MOBILE TABLET
     const Device = Object.freeze({
         PC: 'pc',
@@ -3226,6 +3229,9 @@
         const gif_base64 = `data:image/gif;base64,R0lGODlhAAQABKIFAKqqqoiIiO7u7szMzGZmZgAAAAAAAAAAACH/C05FVFNDQVBFMi4wAwEAAAAh+QQFCAAFACwAAAAAAAQABAAD/1i63P4wykmrvTjrzbv/YCiOZGmeaKqubOu+cCzPdG3feK7vfO//wKBwSCwaj8ikcslsOp/QqHRKrVqv2Kx2y+16v+CweEwum8/otHrNbrvf8Lh8Tq/b7/i8fs/v+/+AgYKDhIWGh4iJiouMjY6PkJGSk5SVlpeYmZqbnJ2en6ChoqOkpaanqKmqq6ytrq+wsbKztLW2t7i5uru8vb6/wMHCw8TFxsfIycrLzM3Oz9DR0tPU1dbX2Nna29zd3t/g4eLj5OXm5+jp6uvs7e7v8PHy8/T19vf4+fr7/P3+/wADChxIsKDBgwgTKlzIsKHDhxAjSpxIsaLFixgzatzIsf+jx48gQ4ocSbKkyZMoU6pcybKly5cwY8qcSbOmzZs4c+rcybOnz59AgwodSrSo0aNIkypdyrSp06dQo0qdSrWq1atYs2rdyrWr169gw4odS7as2bNo06pdy7at27dw48qdS7eu3bt48+rdy7ev37+AAwseTLiw4cOIEytezLix48eQI0ueTLmy5cuYM2vezLmz58+gQ4seTbq06dOoU6tezbq169ewY8ueTbu27du4c+vezbu379/AgwsfTry48ePIkytfzry58+fQo0ufTr269evYs2vfzr279+/gw4sfT768+fPo06tfz769+/fw48ufT7++/fv48+vfz7+/////AAYo4IAEFmjggQgmqOCCDDbo4IMQRijhhBRWaOGFGGao4YYcdujhhyCGKOKIJJZo4okopqjiiiy26OKLMMYo44w01mjjjTjmqOOOPPbo449ABinkkER+R8CRSBbpG5JMNunkkUrO9uSUVEIZpWpVZqnllaVp6aWXXIL25ZhZhskZmWiWaaZlabap5pqQuSlnlXA+NuedVNa5GJ58PqknYn0G2uSfhQlqaJKEBnboogQk+hejjDrKF6SQSpoXpZRaahemmGo6F6ecehoXqJ2K6hapoZrKFqqlqpoWq6m6ahasoMo6K62t2hoWrrXquiuvufrKFbC9CjssscEaixWy/8kqWxWzsTprFbTNShsVtZlaOy22kWpLFbfZenstuN2KCxW55ZrrFLqLqnsuu4a6+xS88crLFL2H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TeowkapUpbavqU1VH1Sjer6pUjV8VnUqVrOaVPJxVavb+2pXvSdWo261rEElK1qFqta1+rStbtUpXONq07nStaZhvatcsafXvVavrznNK2BjatfBmrSwhhUpYhPr0bMytqSOfWxIIyvZjlK2shm9LGYlWtXNarSznrUoaEMb0aeStrRSPa1DTavahM6vta5lKmwP+trZLhSotn0oTnM70d3ydp4s/a08gyvcjyKwuOyMIHLRCdLl/660uc7lZgejK12MUteaEL1uPhmq3Z8itLvXJCh4jxrE8Q70iOYNQD21K0bqrrO45cztHFWbx8pC063AzK9+98vf/vr3vwAOsIAHTOACG/jACE6wghfM4AY7+MEQjrCEJ0zhClv4whjOsIY3zOEOe/jDIA6xiEdM4hKb+MQoTrGKV8ziFrv4xTCOsYxnTOMa2/jGOM6xjne8YwBgGABADrKQhyxkBhP5yEgucoGTzOQm+/i/To6yk/cr5So3Ob9WzjKTe6nlLm8Zl14O85dpKeYyI5nMZk7zkGWp5jYruZVujnOQ4SznOj8ZlXbOcyrzrGdT8pnPpfzzn0cpaEGHsv/QhQYlohPdyUUjutGOZnQmI73oSVO60pe8tKMtqelIV7LTnp4kqEMNyVFTOpKmPvUjU61qRrL60o18NawXKetZI7LWmk4krnN9yF3zupC+/vUggy3sQBK72H88NrL7qOxl77HZzsYjtDsNyGlH247WvjYds61tOXK723D8NrjdKO5xs7Hc5lYjutNdxnWzW4zutvW2493qOdJb3t6+N6nzre9N27vf+w43wP0dx4EHvI0GP/i5E45pgTNc0iMZgMQnTnGJE+PhDadIxTfOcYrrAuOPfkjHR07yAdAC5CEnSMlXXnJZoBzi9mC5zFvOipfDnB0zzznNT2FzQ8ND50D/37koej7ocwT96EIHBdEBLQ6kO33kPF+6ncPx9KpzPOpSlzM3rM71ipsi61OXRtfH7vVQgF3rziC72ic+9LO7uRlrj7vJze72NiND7nH/et3VTAy8573tezfzL/wud70Hvsy6IDzeDX94L+dC8X5nfOO1TAvIE17yk69y5S2/eMxnPsqy4PzlPf/5MbNC9JHHeulBf3rUp570qz9y611feFTEnvWmoP3oVX972Z9C96/nfe/XLArg7174wwdy7o3f+Zonn/ihYH7znf/8OYNC+sG3ffWVf33s194V27+zJrz/ffBvfxPkn34rzj/+9P99FtVHv/vXnovny3/+ZP/4//Dvj/+u+2L/7dd//vd/txeAAjiA+rd6BniAVjcMsbeADPh0F6eAlBCBCPgLFDgJFsh1yfB5ELiBQdcMmfeBIKhzzjB5JFiCMycNjZeCKshy03B4LviCSdeBezeDNAh113CDmZCDIYgNdYeDPrhx3XB2/DeEMFiEWXeESFiDMSh1TNiEOhgOS9d9Urhy50B0VniFJLcOPbeFXNhx7GBzYBiGRDiGIBd9ZjiFXohxariGVxcPD1d8cBiHcphwdFiHZVcPBrd8euhx+jBwfviHFrcP/fZ7hMh2/6BviJiIc7eI8YYKjliIAOFus5eICYFurTCJj0gQ4uYKnOgQ3BZ6k//4ENlGio44EdM2C6FIEcq2eamIEcH2eKWYEbuWeLVoi7LmC63YEa82eLnoEaPWd8EoEu/2hpjYEgRHjLGojD4Hd8XojGgndtFYE2lGddXYE11mdNnYFeJXD734SOHoSOPYSOXISOe4SOmoSOuYSO2ISO94SPFoSPNYSPVISPc4SPkoSPsYSP0ISP/4RwHpRwPZRwXJRwe5RwmpRwuZRw2JRw95RxFpRxNZRxVJRxc5RxkpRxsZRx0JRx/5RiHpRiPZRiXJRie5RimpRiuJRi1ZRi8pRjH5RTPJRTWZRTdpRTk5RTsJRT3ZRD+pREEplMkoSc0YSUcJSUkpjkWJlE1q6ZR6aEmEKJV/SJVRaZVriElXiZVmmElwqElfCZZhyEldSZZX+ElSCEppqZZDKEptOUo+WEo0eEoqmEoguEoW2EoM+EoCGEv4N0vuZ0vYl0vMx0u0B0yct1+Q91/vJ2AcqGBHZ2GAqEsJAAAh+QQFCAAFACz6APoAZgJmAgAD/1i63P4wykmrvTjrzbv/YCiOZGlagnCubOu+cCzPdG3fOJvufN/nwKBwSCwaj8jkycds8pTQqHRKrVqvMKd2m8J6v+CweEz+cM/csnrNbrvfWbRcC6/b7/i8eM7f6v+AgYKDS32GdISJiouMf4ePiI2Sk5SVUpCYTZabnJ2eLpmhPp+kpaanEKKqT6itrq+Mq7I7sLW2t22zul24vb6/UbvCwMTFxjXCw8fLzM0gycnO0tPUD9DQ1dnax9fX29/gtd3d4eXmnuPk5+vsi+nj7fHyee/p8/f4avX2+f3+Vvve/RtI8EhAgQUTKrRxsN7ChxB1NEQYsaLFDhP3XdzIkf9CRo0dQ4os8BHkyJMVS5pEyTKhyoAtYw58CVOmzXs0a97cuS7nQZ5Aw/n8GbRotaFEjSplhjTp0qfAmjqFStWW1KlVs6K6ilWrV3RcdX4dyylsV7Jo3Zk9m7YtoLVs3cq9Azfu3Lu56orFy9eNXrt9A3v5C1iw4SmECx9ejCSxYsaQhTh+HLkyw8l7LWsOgjnz5s+XOzsETTq0aIqlU784vVK160KsUb+eLSJ2a9q4Odgenbv3ht28fQuvADz48OPWivNDzryB8uXNoz+HHh35dHjVm1/Hnv34dnXdh38HH773eG/lfZ/Hlt78emXtcb+HH3/2/F315d/XlZ/2/ln//dn33yoBvjYggQWqdqAqCSq4YCgNpvYghBGWNiEmFVp44SMZarhhHx2S9qEhIYo44hwlgnYiiilutqIcLX724hkxyjhjJDVWdiOOOUa2oyY9avbjKEFaNuQPRRp5JC9J6rhkk0oeCWWUP05J5Y1WXvlillqeyGWXH34J5oVijvlgmWYeiKaTXq7J5oZupnlfnHK+R2ed592J53d67nldn34+B2igxQ1K6G6GCrlfoorOx2ij6z3qYqSSQrpdpZPyiWmm021qY6eeclpoqJ8CR6qKo55aKmuqenhaq652BquEos1KK2a2OuhYrq7tymuvf/0qIFzCDmtWsf4di2yy/1Itqx5Szgo3VLTi0UStdypdy1xG2lbnWbfWcQdud+iNGx9/5hZIYboVkshukSq8K++89NZr77345qvvvvz26++/AAcs8MAEF2zwwQgnrPDCDDfs8MMQRyzxxBRXbPHFGGes8cYcd+zxxyCHLPLIJJds8skop6zyyiy37PLLMMcs88w012zzzTjnrPPOPPfs889ABy300EQXbfTRSCet9NJMN+3001BHLfXUVFdt9dVYZ6311ly/TMDXYIct9thkl2322WinrfbYXZOx9ttwxy333Ge3XQXdeOet995s230E34AHLjjcfgsx+OGIJx524Tco7vjjgjMuA+SUV5635P8uWK755nFjfgLnoIeOtucjiG766YuT/gHqrJ+uOgetx2766xnIbnvotFtw++6c5z4B78Br7nsEwRdP+fAOGK/848gvsPzzijcP/fSHI0/99ZH7jv32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9tpke40G23DHLffcdKPtdhZ156333ny3fTcTfQcu+OBx/y0E4YgnrrjYhvew+OOQD954DpFXbrne/5O3cPnmnMudOQqdhy562p+XMPrpqDNeegipt4766h+4LvvpsG8w++2i124B7rx3rvsEvQe/+e8QCG985cQ7cPzykCe/APPQL+589NQnnnz12Euue/bc9/179+BjDnv45NNde/noF156+uyvvX778Nudefz0lz1//firbnj+/AMwef/5+x8A8be/ARLwbwY84N0SqMCuMbCBXHtg/RYowfhRsILtuyAG2ee2DcKvgx7koANDKMIIkjB9XjshCkeoQvKlsIUuZCEMuwfCGXKvhjbEHg5zSL0d8pB5GvwhEH0oROMFsYhGPCISe4fAJSZRiU6cXeOiGLwpUhF3AryiFP+zqMXW3a+LqfscGL0oxjGObnxmDB0a0zi887Hxctt7I/K+J8fmEa+O0rseHhHnPAXsUXt9LMAfvRfI5w1SfIX04yHNl0gGLNJzjWzAI9kWyQdMUn6VtOQl/ZbJ4m0ybJ2kwCdDubtFkhIDgzxlB+qoShCksZUkuCIsVSDEWVJug7bMpS53ycte+vKXwAymMIdJzGIa85jITKYyl8nMZjrzmdCMpjSnSc1qWvOa2MymNrfJzW5685vgDKc4x0nOcprznOhMpzrXyc52uvOd8IynPOdJz3ra8574zKc+98nPfvrznwANqEAHStCCGvSgCN1XAGglgEAF4KEQjahEI+r/JwFY9KIYzShGuzTRjnqUomnSqEhHutEiffSkKF3olUjK0pY2tEUpjWlKi+TSmro0RDLNKUprZNOetrRCOg3qSVvk06KytEBCTepQM2TUph41PkqN6lIL5NSqPjU8Us2qR6lq1a6KFKtaDatE++PVsmo0O2JNK0jbY9a2lvQ5ao0rRMvj1rpedDlyzetDu2PXvlq0OHoNbHX8SljgBFaw1CFsYW9z2MNCR7GKtU1jG7scyEI2NpOdrHEsa1nWZDazweEsZ0/zWdACR7Sj9UxpP8sb1Iq2M6tl7W5c+1rKxLa0t6EtaidzW9zKRreudUxvV/tb4O62MMONbWuMS1vC/yRXuaxhbnP38lzooka6061LdW97Xexmly3b5e5pvKtbuIRXvKMhb3nPct7eple96w1Le90rGvgCV77zRW9n7HtfrOR3uJ7hr3Gv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`
         return `<img src="${gif_base64}" alt="lgif" style="width:14px;height:14px;" />`;
     }
+    // 抢啤酒
+    let beer = buyBeer();
+    let popup_node = null;
 
     // 记录当前窗口唯一id
     const isWindowActive = getWindowActiveState();
@@ -3268,21 +3274,342 @@
         {key: 'priceWatcher', val: {}},
         // 开发者模式
         {key: 'isDev', val: false},
+        // 啤酒提醒时间
+        {key: '_15AlarmTime', val: 50},
+        // 4条转跳
+        {key: 'barsRedirect', val: true},
+        // 浮动存钱框
+        {key: 'floatDepo', val: true},
+        // 公司转跳存钱
+        {key: 'companyRedirect', val: true},
+        // 收起公司冰蛙效率表
+        {key: 'companyBWCollapse', val: true},
 
         // 危险行为⚠️
         {key: 'dangerZone', val: false},
-    ].forEach(_default => {
-        if (typeof getWhSettingObj()[_default.key] !== typeof _default.val) setWhSetting(_default.key, _default.val);
+    ].forEach(df => {
+        if (typeof getWhSettingObj()[df.key] !== typeof df.val) setWhSetting(df.key, df.val);
     });
 
-    // 菜单配置列表
-    const settingsArr = [];
+    // 助手各项「设置」
+    let setting_list = [];
     {
-        // const date = new Date(2022, 2, 4, 23);
-        const date = new Date();
+        // 开启翻译
+        setting_list.push({
+            domType: 'checkbox',
+            domId: 'wh-trans-enable',
+            domText: ' 开启翻译 <button id="wh-trans-data-update">更新词库</button>',
+            dictName: 'transEnable',
+            isHide: true,
+        });
+        // 12月时加入圣诞小镇选项
+        if (date.getMonth() === 11) {
+            setting_list.push({
+                domType: 'checkbox',
+                domId: 'wh-xmastown-wt',
+                domText: ' 圣诞小镇攻略',
+                dictName: 'xmasTownWT',
+                isHide: true,
+            });
+            setting_list.push({
+                domType: 'checkbox',
+                domId: 'wh-xmastown-notify',
+                domText: ' 圣诞小镇物品提示',
+                dictName: 'xmasTownNotify',
+                isHide: true,
+            });
+        }
+        // 任务助手
+        setting_list.push({
+            domType: 'checkbox',
+            domId: 'wh-mission-lint',
+            domText: ' 任务助手',
+            dictName: 'missionHint',
+            tip: 'Duke任务的一些中文小提示',
+            isHide: true,
+        });
+        // 起飞警告
+        setting_list.push({
+            domType: 'checkbox',
+            domId: 'wh-energy-alert',
+            domText: ' 起飞爆E警告',
+            dictName: 'energyAlert',
+            tip: '起飞前计算来回是否会爆体，红字警告',
+            isHide: true,
+        });
+        // 飞行闹钟
+        setting_list.push({
+            domType: 'checkbox',
+            domId: 'wh-trv-alarm-check',
+            domText: ' 飞行闹钟',
+            dictName: 'trvAlarm',
+            tip: '(仅PC) 飞行页面将显示一个内建的闹钟，落地前声音提醒，需要打开浏览器声音权限',
+            isHide: true,
+        });
+        // 啤酒提醒
+        setting_list.push({
+            domType: 'checkbox',
+            domId: 'wh-qua-alarm-check',
+            domText: '<span> 啤酒提醒 </span><button id="wh-qua-alarm-check-btn">今日不提醒</button>',
+            dictName: '_15Alarm',
+            tip: '每小时的整15分钟的倍数时通知提醒抢啤酒或者血包',
+            isHide: true,
+            changeEv: function (ev) {
+                ev.target.checked ? beer.start() : beer.stop();
+            },
+        });
+        setting_list.push({domType: 'plain', domId: '', domHTML: ''});
+        // 啤酒提醒时间
+        setting_list.push({
+            domType: 'button',
+            domId: '',
+            domText: '啤酒提醒时间设定',
+            // tip: '通知提前时间',
+            clickFunc: function () {
+                popup_node.close();
+                let popup = popupMsg(`<label>提前提醒时间(秒)：<input type="number" value="${getWhSettingObj()['_15AlarmTime']}" /></label><p>区间为 1 ~ 60，默认 50</p>`, '啤酒提醒时间设定');
+                let confirm = document.createElement('button');
+                confirm.innerHTML = '确定';
+                confirm.style.float = 'right';
+                confirm.addEventListener('click', () => {
+                    let input = popup.querySelector('input');
+                    let num = input.value | 0;
+                    if (num === getWhSettingObj()['_15AlarmTime']) return;
+                    if (num < 1 || num > 60) num = 50;
+                    input.value = num.toString();
+                    setWhSetting('_15AlarmTime', num);
+                    // 之前的运行状态
+                    let before_state = beer.is_running();
+                    beer.set_time(num);
+                    if (before_state) beer.start();
+                    popup.close();
+                });
+                popup.appendChild(confirm);
+            },
+        });
+        // 攻击链接转跳
+        setting_list.push({
+            domType: 'checkbox',
+            domId: 'wh-attack-relocate',
+            domText: ' 真·攻击界面转跳',
+            dictName: 'attRelocate',
+            tip: '在无法打开攻击界面的情况下依然可以转跳到正确的攻击页面',
+            isHide: true,
+        });
+        // 捡垃圾助手
+        setting_list.push({
+            domType: 'checkbox',
+            domId: 'wh-city-finder',
+            domText: ' 捡垃圾助手',
+            dictName: 'cityFinder',
+            tip: '城市地图中放大显示物品并且估计价值',
+            isHide: true,
+        });
+        // 快速crime
+        setting_list.push({
+            domType: 'checkbox',
+            domId: 'wh-quick-crime',
+            domText: ' 快速犯罪',
+            dictName: 'quickCrime',
+            tip: '显示快捷操作按钮，目前不支持自定义',
+            isHide: true,
+        });
+        // 叠E保护
+        setting_list.push({
+            domType: 'checkbox',
+            domId: 'wh-SEProtect-check',
+            domText: ' 叠E保护',
+            dictName: 'SEProtect',
+            tip: '隐藏健身房的锻炼按钮，防止误操作',
+            isHide: true,
+        });
+        // PT一键购买
+        setting_list.push({
+            domType: 'checkbox',
+            domId: 'wh-ptQuickBuy-check',
+            domText: ' PT一键购买',
+            dictName: 'ptQuickBuy',
+            tip: 'PT市场页面购买时跳过确认',
+            isHide: true,
+        });
+        // 光速拔刀
+        setting_list.push({
+            domType: 'select',
+            domId: 'wh-quick-attack-index',
+            domText: '光速拔刀 ',
+            domSelectOpt: [
+                {
+                    domVal: 'pri',
+                    domText: '主手',
+                },
+                {
+                    domVal: 'sec',
+                    domText: '副手',
+                },
+                {
+                    domVal: 'wea',
+                    domText: '近战',
+                },
+                {
+                    domVal: 'gre',
+                    domText: '手雷',
+                },
+                {
+                    domVal: 'fis',
+                    domText: '拳头',
+                },
+                {
+                    domVal: 'kic',
+                    domText: '脚踢',
+                },
+                {
+                    domVal: 'none',
+                    domText: '关闭',
+                },
+            ],
+            dictName: 'quickAttIndex',
+            isHide: true,
+            tip: '将Start Fight按钮移动到指定格子上',
+        });
+        // 光速跑路
+        setting_list.push({
+            domType: 'select',
+            domId: 'wh-quick-mug',
+            domText: '光速跑路 ',
+            domSelectOpt: [
+                {
+                    domVal: 'leave',
+                    domText: '跑路(LEAVE)',
+                },
+                {
+                    domVal: 'mug',
+                    domText: '打劫(MUG)',
+                },
+                {
+                    domVal: 'hosp',
+                    domText: '住院(HOSP)',
+                },
+                {
+                    domVal: 'none',
+                    domText: '关闭',
+                },
+            ],
+            dictName: 'quickFinishAtt',
+            isHide: true,
+            tip: '将结束后指定按钮移动到上面指定的格子上',
+        });
+        // 4条转跳
+        setting_list.push({
+            domType: 'checkbox',
+            domId: '',
+            domText: ' 4条转跳',
+            dictName: 'barsRedirect',
+            tip: '点击4条时转跳对应页面',
+        });
+        // 浮动存钱框
+        setting_list.push({
+            domType: 'checkbox',
+            domId: '',
+            domText: ' 浮动存钱框',
+            dictName: 'floatDepo',
+            tip: '打开公司或帮派的存钱页面后存钱框将浮动显示',
+        });
+        // 公司转跳存钱
+        setting_list.push({
+            domType: 'checkbox',
+            domId: '',
+            domText: ' 公司转跳存钱',
+            dictName: 'companyRedirect',
+            tip: '打开公司页面时自动打开存钱选项卡',
+        });
+        // 收起公司冰蛙效率表
+        setting_list.push({
+            domType: 'checkbox',
+            domId: '',
+            domText: ' 收起公司冰蛙效率表',
+            dictName: 'companyBWCollapse',
+            tip: '开启后可手动显示隐藏冰蛙公司表格',
+        });
+        // 危险行为⚠️
+        if (getWhSettingObj()['dangerZone'] === true) {
+            // 攻击界面自刷新
+            setting_list.push({
+                domType: 'select',
+                domId: 'wh-attack-reload',
+                domText: '⚠️攻击界面自动刷新 ',
+                dictName: 'attReload',
+                domSelectOpt: [
+                    {
+                        domVal: 'none',
+                        domText: '无间隔',
+                    },
+                    {
+                        domVal: '1',
+                        domText: '约1s',
+                    },
+                    {
+                        domVal: '2',
+                        domText: '约2s',
+                    },
+                    {
+                        domVal: '3',
+                        domText: '约3s',
+                    },
+                    {
+                        domVal: '4',
+                        domText: '约4s',
+                    },
+                    {
+                        domVal: '5',
+                        domText: '约5s',
+                    },
+                    {
+                        domVal: 'disabled',
+                        domText: '关闭',
+                    },
+                ],
+                isHide: true,
+                tip: '危险功能：接机时常用，将自动刷新页面直到目标落地',
+            });
+            // 自动开打和结束
+            setting_list.push({
+                domType: 'checkbox',
+                domId: 'wh-auto-start-finish',
+                domText: ' ⚠️自动开打和结束',
+                dictName: 'autoStartFinish',
+                tip: '脚本将会自动按下战斗和结束按钮',
+                isHide: true,
+            });
+        } else {
+            setWhSetting('autoStartFinish', false, false)
+            setWhSetting('attReload', 6, false)
+        }
+        // dev
+        setting_list.push({
+            domType: 'checkbox',
+            domId: 'wh-dev-mode',
+            domText: ` 开发者模式${isDev() ? ' <button id="wh-devInfo">详情</button>' : ''}`,
+            dictName: 'isDev',
+            isHide: true,
+        });
+        // 其他设置
+        if (isDev()) setting_list.push({
+            domType: 'button', domId: 'wh-otherBtn', domText: '其他设置', clickFunc: () => {
+                const html = `清空设置数据、请求通知权限、测试跨域请求`;
+                const popup = popupMsg(html, '其他设置');
+            },
+            isHide: true,
+        });
+    }
+    // 菜单中的「选项」
+    const menu_list = [];
+    {
+        // 测试日期
+        //const date = new Date(2022, 2, 4, 23);
+
         // 欢迎 显示玩家id
         if (player_info.userID !== 0) {
-            settingsArr.push({
+            menu_list.push({
                 domType: 'plain',
                 domId: 'wh-trans-welcome',
                 domHTML: `<span>欢迎 <a href="/profiles.php?XID=${player_info.userID}" target="_blank">${player_info.playername}</a>[${player_info.userID}] 大佬</span>`,
@@ -3309,8 +3636,8 @@
                 '1025': {name: '黑色星期五', eff: '某些商家将提供1元购活动'},
                 '1114': {name: '住院日', eff: '获得降低75%的住院时间增益'},
             };
-            settingsArr.fest_date_dict = fest_date_dict;
-            settingsArr.fest_date_list = Object.keys(fest_date_dict);
+            menu_list.fest_date_dict = fest_date_dict;
+            menu_list.fest_date_list = Object.keys(fest_date_dict);
             const formatMMDD = (m, d) => {
                 const MM = m < 10 ? `0${m}` : m.toString();
                 const DD = d < 10 ? `0${d}` : d.toString();
@@ -3336,7 +3663,7 @@
                 fest_date_html += `${days_left}天后 - ${next_fest_date.name}(<button title="${next_fest_date.eff}">效果</button>)`;
             }
         }
-        settingsArr.push({
+        menu_list.push({
             domType: 'plain',
             domId: 'wh-trans-fest-date',
             domHTML: fest_date_html,
@@ -3357,7 +3684,7 @@
                     eff: '复活节彩蛋会随机出现，集齐10个可兑换金蛋和一个独特的头像框(章)。',
                 },
                 {
-                    start: [4, 5, 20], end: [4, 25, 20],
+                    start: [5, 20, 20], end: [5, 29, 20],
                     name: '狗牌',
                     eff: '击败其他玩家以获得狗牌，小心保护你的狗牌。',
                 },
@@ -3383,7 +3710,7 @@
                 },
             ],
         };
-        settingsArr.events = eventObj.events;
+        menu_list.events = eventObj.events;
         eventObj.events.forEach((obj, index) => {
             if (eventObj.onEv) return;
             // 当前年份
@@ -3416,259 +3743,13 @@
         eventObj.onEv
             ? eventObj.html += `${eventObj.current.name}(<button title="${eventObj.current.eff}">详情</button>) - 剩余${eventObj.daysLeft}天`
             : eventObj.html += `${eventObj.daysLeft}天后 - ${eventObj.next.name}(<button title="${eventObj.next.eff}">详情</button>)`;
-        settingsArr.push({
+        menu_list.push({
             domType: 'plain',
             domId: 'wh-trans-event-cont',
             domHTML: eventObj.html,
         });
-        // 折叠部分
-        {
-            // 开启翻译
-            settingsArr.push({
-                domType: 'checkbox',
-                domId: 'wh-trans-enable',
-                domText: ' 开启翻译 <button id="wh-trans-data-update">更新词库</button>',
-                dictName: 'transEnable',
-                isHide: true,
-            });
-            // 12月时加入圣诞小镇选项
-            if (date.getMonth() === 11) {
-                settingsArr.push({
-                    domType: 'checkbox',
-                    domId: 'wh-xmastown-wt',
-                    domText: ' 圣诞小镇攻略',
-                    dictName: 'xmasTownWT',
-                    isHide: true,
-                });
-                settingsArr.push({
-                    domType: 'checkbox',
-                    domId: 'wh-xmastown-notify',
-                    domText: ' 圣诞小镇物品提示',
-                    dictName: 'xmasTownNotify',
-                    isHide: true,
-                });
-            }
-            // 任务助手
-            settingsArr.push({
-                domType: 'checkbox',
-                domId: 'wh-mission-lint',
-                domText: ' 任务助手',
-                dictName: 'missionHint',
-                tip: 'Duke任务的一些中文小提示',
-                isHide: true,
-            });
-            // 起飞警告
-            settingsArr.push({
-                domType: 'checkbox',
-                domId: 'wh-energy-alert',
-                domText: ' 起飞爆E警告',
-                dictName: 'energyAlert',
-                tip: '起飞前计算来回是否会爆体，红字警告',
-                isHide: true,
-            });
-            // 飞行闹钟
-            settingsArr.push({
-                domType: 'checkbox',
-                domId: 'wh-trv-alarm-check',
-                domText: ' 飞行闹钟',
-                dictName: 'trvAlarm',
-                tip: '(仅PC) 飞行页面将显示一个内建的闹钟，落地前声音提醒，需要打开浏览器声音权限',
-                isHide: true,
-            });
-            // 啤酒提醒
-            settingsArr.push({
-                domType: 'checkbox',
-                domId: 'wh-qua-alarm-check',
-                domText: '<span> 啤酒提醒 </span><button id="wh-qua-alarm-check-btn">今日不提醒</button>',
-                dictName: '_15Alarm',
-                tip: '每小时的整15分钟的倍数时通知提醒抢啤酒或者血包',
-                isHide: true,
-            });
-            // 攻击链接转跳
-            settingsArr.push({
-                domType: 'checkbox',
-                domId: 'wh-attack-relocate',
-                domText: ' 真·攻击界面转跳',
-                dictName: 'attRelocate',
-                tip: '在无法打开攻击界面的情况下依然可以转跳到正确的攻击页面',
-                isHide: true,
-            });
-            // 捡垃圾助手
-            settingsArr.push({
-                domType: 'checkbox',
-                domId: 'wh-city-finder',
-                domText: ' 捡垃圾助手',
-                dictName: 'cityFinder',
-                tip: '城市地图中放大显示物品并且估计价值',
-                isHide: true,
-            });
-            // 快速crime
-            settingsArr.push({
-                domType: 'checkbox',
-                domId: 'wh-quick-crime',
-                domText: ' 快速犯罪',
-                // domText: ' 快速犯罪 <button id="wh-quick-crime-btn">小窗开启</button>',
-                dictName: 'quickCrime',
-                tip: '显示快捷操作按钮，目前不支持自定义',
-                isHide: true,
-            });
-            // 叠E保护
-            settingsArr.push({
-                domType: 'checkbox',
-                domId: 'wh-SEProtect-check',
-                domText: ' 叠E保护',
-                dictName: 'SEProtect',
-                tip: '隐藏健身房的锻炼按钮，防止误操作',
-                isHide: true,
-            });
-            // PT一键购买
-            settingsArr.push({
-                domType: 'checkbox',
-                domId: 'wh-ptQuickBuy-check',
-                domText: ' PT一键购买',
-                dictName: 'ptQuickBuy',
-                tip: 'PT市场页面购买时跳过确认',
-                isHide: true,
-            });
-            // 光速拔刀
-            settingsArr.push({
-                domType: 'select',
-                domId: 'wh-quick-attack-index',
-                domText: '光速拔刀 ',
-                domSelectOpt: [
-                    {
-                        domVal: 'pri',
-                        domText: '主手',
-                    },
-                    {
-                        domVal: 'sec',
-                        domText: '副手',
-                    },
-                    {
-                        domVal: 'wea',
-                        domText: '近战',
-                    },
-                    {
-                        domVal: 'gre',
-                        domText: '手雷',
-                    },
-                    {
-                        domVal: 'fis',
-                        domText: '拳头',
-                    },
-                    {
-                        domVal: 'kic',
-                        domText: '脚踢',
-                    },
-                    {
-                        domVal: 'none',
-                        domText: '关闭',
-                    },
-                ],
-                dictName: 'quickAttIndex',
-                isHide: true,
-                tip: '将Start Fight按钮移动到指定格子上',
-            });
-            // 光速跑路
-            settingsArr.push({
-                domType: 'select',
-                domId: 'wh-quick-mug',
-                domText: '光速跑路 ',
-                domSelectOpt: [
-                    {
-                        domVal: 'leave',
-                        domText: '跑路(LEAVE)',
-                    },
-                    {
-                        domVal: 'mug',
-                        domText: '打劫(MUG)',
-                    },
-                    {
-                        domVal: 'hosp',
-                        domText: '住院(HOSP)',
-                    },
-                    {
-                        domVal: 'none',
-                        domText: '关闭',
-                    },
-                ],
-                dictName: 'quickFinishAtt',
-                isHide: true,
-                tip: '将结束后指定按钮移动到上面指定的格子上',
-            });
-            // 危险行为⚠️
-            if (getWhSettingObj()['dangerZone'] === true) {
-                // 攻击界面自刷新
-                settingsArr.push({
-                    domType: 'select',
-                    domId: 'wh-attack-reload',
-                    domText: '⚠️攻击界面自动刷新 ',
-                    dictName: 'attReload',
-                    domSelectOpt: [
-                        {
-                            domVal: 'none',
-                            domText: '无间隔',
-                        },
-                        {
-                            domVal: '1',
-                            domText: '约1s',
-                        },
-                        {
-                            domVal: '2',
-                            domText: '约2s',
-                        },
-                        {
-                            domVal: '3',
-                            domText: '约3s',
-                        },
-                        {
-                            domVal: '4',
-                            domText: '约4s',
-                        },
-                        {
-                            domVal: '5',
-                            domText: '约5s',
-                        },
-                        {
-                            domVal: 'disabled',
-                            domText: '关闭',
-                        },
-                    ],
-                    isHide: true,
-                    tip: '危险功能：接机时常用，将自动刷新页面直到目标落地',
-                });
-                // 自动开打和结束
-                settingsArr.push({
-                    domType: 'checkbox',
-                    domId: 'wh-auto-start-finish',
-                    domText: ' ⚠️自动开打和结束',
-                    dictName: 'autoStartFinish',
-                    tip: '脚本将会自动按下战斗和结束按钮',
-                    isHide: true,
-                });
-            } else {
-                setWhSetting('autoStartFinish', false, false)
-                setWhSetting('attReload', 6, false)
-            }
-            // dev
-            settingsArr.push({
-                domType: 'checkbox',
-                domId: 'wh-dev-mode',
-                domText: ` 开发者模式${isDev() ? ' <button id="wh-devInfo">详情</button>' : ''}`,
-                dictName: 'isDev',
-                isHide: true,
-            });
-            // 其他设置
-            if (isDev()) settingsArr.push({
-                domType: 'button', domId: 'wh-otherBtn', domText: '其他设置', clickFunc: () => {
-                    const html = `清空设置数据、请求通知权限、测试跨域请求`;
-                    const popup = popupMsg(html, '其他设置');
-                },
-                isHide: true,
-            });
-        }
         // 飞花库存
-        settingsArr.push({
+        menu_list.push({
             domType: 'button',
             domId: 'wh-foreign-stock-btn',
             domText: '🌸 飞花库存',
@@ -3678,7 +3759,7 @@
             },
         });
         // 一键起飞
-        settingsArr.push({
+        menu_list.push({
             domType: 'button',
             domId: 'wh-quick-fly-btn',
             domText: '✈️ 一键起飞',
@@ -3739,7 +3820,7 @@ info{display:block;}
 <p>点起飞，页面加载完成后会马上飞走</p>
 <br/>
 <div>
-<label>目的地：<select><option selected>墨西哥</option><option>开曼</option><option>加拿大</option><option>󠁵󠁳夏威夷</option><option>嘤国</option><option>阿根廷</option><option>瑞士</option><option>立本</option><option>祖国</option><option>迪拜</option><option>南非</option></select></label>
+<label>目的地：<select><option selected>墨西哥</option><option>开曼</option><option>加拿大</option><option>󠁵󠁳夏威夷</option><option>嘤国</option><option>阿根廷</option><option>瑞士 (解毒)</option><option>立本</option><option>祖国</option><option>迪拜</option><option>南非</option></select></label>
 <label>飞机：<select><option>普通飞机 - 不推荐</option><option selected>PI小飞机</option><option>私人飞机 - WLT股票</option><option>商务飞机 - 机票或内衣店</option></select></label>
 <p><a>查看花偶库存</a></p>
 <p>注：需要验证时无法起飞</p>
@@ -3790,7 +3871,7 @@ info{display:block;}
             },
         });
         // NPC LOOT
-        settingsArr.push({
+        menu_list.push({
             domType: 'button',
             domId: 'wh-npc-loot-btn',
             domText: '🔫 LOOT',
@@ -3810,7 +3891,7 @@ info{display:block;}
             tip: '显示5个可击杀NPC的开打时间',
         });
         // 查看NNB
-        settingsArr.push({
+        menu_list.push({
             domType: 'button',
             domId: 'wh-nnb-info',
             domText: '👮‍ 查看NNB',
@@ -3889,7 +3970,7 @@ info{display:block;}
             },
         });
         // 常用链接
-        settingsArr.push({
+        menu_list.push({
             domType: 'button',
             domId: 'wh-link-collection',
             domText: '🔗 常用链接',
@@ -3987,7 +4068,7 @@ background-size: 100% auto !important;
             },
         });
         // 飞贼
-        settingsArr.push({
+        menu_list.push({
             domType: 'button',
             domId: 'wh-gs-btn',
             domText: '🐏 飞贼小助手',
@@ -3998,7 +4079,7 @@ background-size: 100% auto !important;
             tip: '加载从PC端移植的伞佬的油猴版飞贼小助手',
         });
         // 物品价格监视
-        settingsArr.push({
+        menu_list.push({
             domType: 'button',
             domId: 'wh-price-watcher-btn',
             domText: '💊 价格监视',
@@ -4029,7 +4110,7 @@ background-size: 100% auto !important;
             }
         });
         // 小窗犯罪
-        settingsArr.push({
+        menu_list.push({
             domType: 'button',
             domId: 'wh-crime-iframe-btn',
             domText: '🤑 小窗犯罪',
@@ -4136,7 +4217,7 @@ background-size: 100% auto !important;
             }
         });
         // 危险行为开关⚠️
-        settingsArr.push({
+        menu_list.push({
             domType: 'button',
             domId: 'wh-danger-zone',
             domText: '⚠️ 危险功能',
@@ -4151,13 +4232,13 @@ background-size: 100% auto !important;
                 warning_check.onchange = () => ok_btn.disabled = false;
                 ok_btn.onclick = () => {
                     setWhSetting('dangerZone', warning_check.checked);
-                    popup.close();
+                    popup['close']();
                     window.location.reload();
                 };
             },
         });
         // 更新历史
-        settingsArr.push({
+        menu_list.push({
             domType: 'button', domId: 'wh-changeList', domText: '🐞 更新历史', clickFunc: () => {
                 let insert = '';
                 changelist.forEach(e => {
@@ -4170,162 +4251,31 @@ background-size: 100% auto !important;
                 popupMsg(insert, '更新历史');
             },
         });
-        // 测试按钮
-        // if (isDev()) settingsArr.push({
-        //     domType: 'button',
-        //     domId: 'wh-test-btn',
-        //     domText: '测试按钮',
-        //     clickFunc: async function () {
-        //
-        //     },
-        // });
-    }
-    // 菜单node
-    const $zhongNode = initIcon(settingsArr);
-    // 菜单中额外的按钮
-    if ($zhongNode) {
-        // 更新词库按钮
-        $zhongNode.querySelector('button#wh-trans-data-update').onclick = () => popupMsg('计划中');
-        // 节日
-        $zhongNode.querySelectorAll('#wh-trans-fest-date button').forEach((el, i) => i === 0
-                ? el.addEventListener('click', () => {
-                    let html = '<table>';
-                    settingsArr.fest_date_list.sort().forEach(date => html += `<tr><td>${1 + (date.slice(0, 2) | 0)}月${date.slice(2)}日</td><td>${settingsArr.fest_date_dict[date].name}</td><td>${settingsArr.fest_date_dict[date].eff}</td></tr>`);
-                    popupMsg(html += '</table>', '节日');
-                })
-                : el.addEventListener('click', null)
-            // : el.addEventListener('click', ev => popupMsg(ev.target.attributes['title'].nodeValue))
-        );
-        // 活动
-        $zhongNode.querySelectorAll('#wh-trans-event-cont button').forEach((el, i) => i === 0
-                ? el.addEventListener('click', () => {
-                    let html = '<table>';
-                    settingsArr.events.forEach(el =>
-                        html += `<tr><td><b>${el.name}</b></td><td>${el.start[0] + 1}月${el.start[1]}日${el.start[2]}:00~${el.end[0] + 1}月${el.end[1]}日${el.end[2]}:00</td></tr><tr><td colspan="2">${el.eff}</td></tr>`);
-                    popupMsg(html += '</table><p>更多信息请关注群聊和公众号</p>', '活动');
-                })
-                : el.addEventListener('click', null)
-            // : el.addEventListener('click', ev => popupMsg(ev.target.attributes['title'].nodeValue))
-        );
-        // 小窗犯罪按钮
-//         $zhongNode.querySelector('button#wh-quick-crime-btn').onclick = () => {
-//             // 弹出小窗口
-//             const ifHTML = `<iframe src="/crimes.php?step=main" style="width:100%;max-width: 450px;margin: 0 auto;display: none;height: 340px;"></iframe>`;
-//             const popup_insert = `<p>加载中请稍后${loading_gif_html()}</p><div id="wh-quick-crime-if-container"></div>`;
-//             const $popup = popupMsg(popup_insert, '小窗快速犯罪');
-//             // 运行状态node
-//             let loading_node = $popup.querySelector('p:first-of-type');
-//             // if容器
-//             const if_cont = $popup.querySelector('#wh-quick-crime-if-container');
-//             if_cont.innerHTML = ifHTML;
-//
-//             // if内未加载脚本时插入的快捷crime node
-//             const mobile_prepend_node = document.createElement('div');
-//             mobile_prepend_node.classList.add('wh-translate');
-//             mobile_prepend_node.innerHTML = `<div class="title-black" style="border-radius: 5px 5px 0 0;"><span>快捷操作：</span></div><div class="cont-gray" style="padding: 6px 0;border-radius: 0 0 5px 5px;">
-// <form id="wh-translate-quick" action="crimes.php?step=docrime4" method="post" style="display: inline-block;margin: 0 5px">
-// <input name="nervetake" type="hidden" value="18">
-// <input name="crime" type="hidden" value="hackbank">
-// <input style="-webkit-appearance:none;padding: 4px;background: #e91e63;border-radius: 5px;color: white;" type="submit" value="18-1" />
-// </form>
-// <form id="wh-translate-quick" action="crimes.php?step=docrime4" method="post" style="display: inline-block;margin: 0 5px">
-// <input name="nervetake" type="hidden" value="11">
-// <input name="crime" type="hidden" value="warehouse">
-// <input style="-webkit-appearance:none;padding: 4px;background: #2196f3;border-radius: 5px;color: white;" type="submit" value="烧仓库" />
-// </form>
-// <form id="wh-translate-quick" action="crimes.php?step=docrime4" method="post" style="display: inline-block;margin: 0 5px">
-// <input name="nervetake" type="hidden" value="4">
-// <input name="crime" type="hidden" value="jacket">
-// <input style="-webkit-appearance:none;padding: 4px;background: #009688;border-radius: 5px;color: white;" type="submit" value="偷夹克" />
-// </form></div><hr class="page-head-delimiter m-top10 m-bottom10 r1854">`;
-//
-//             // if对象加载后运行
-//             let cIframe = $popup.querySelector('iframe');
-//
-//             // 加载状态
-//             const if_onload_func = () => {
-//                 // if内部文档对象
-//                 const ifDocu = cIframe.contentWindow.document;
-//                 // 内部插件运行flag
-//                 const ifWH = cIframe.contentWindow.WHTRANS;
-//                 // 文档加载完成后移除
-//                 if (!!loading_node) loading_node.remove();
-//                 // 文档加载完成后才显示if
-//                 cIframe.style.display = 'block';
-//                 // 验证码flag
-//                 const isValidate = ifDocu.querySelector('h4#skip-to-content').innerText.toLowerCase().includes('validate');
-//                 // 如果iframe内部未运行脚本
-//                 if (ifWH === undefined) {
-//                     // 隐藏顶部
-//                     elementReady('#header-root', ifDocu).then(e => e.style.display = 'none');
-//                     // 隐藏4条
-//                     elementReady('#sidebarroot', ifDocu).then(e => e.style.display = 'none');
-//                     // 隐藏聊天
-//                     elementReady('#chatRoot', ifDocu).then(e => e.style.display = 'none');
-//                     // 非验证码页面隐藏滚动条
-//                     if (!isValidate) ifDocu.body.style.overflow = 'hidden';
-//                     // 调整容器位置
-//                     elementReady('.content-wrapper', ifDocu).then(elem => {
-//                         // 加入
-//                         elem.prepend(mobile_prepend_node);
-//                         elem.style.margin = '0px';
-//                         elem.style.position = 'absolute';
-//                         elem.style.top = '-35px';
-//                         new MutationObserver((m, o) => {
-//                             o.disconnect();
-//                             if (!elem.querySelector('.wh-translate')) elem.prepend(mobile_prepend_node);
-//                             o.observe(elem, {childList: true, subtree: true});
-//                         })
-//                             .observe(elem, {childList: true, subtree: true});
-//                     });
-//                     // 隐藏返回顶部按钮
-//                     elementReady('#go-to-top-btn button', ifDocu).then(e => e.style.display = 'none');
-//                 }
-//             };
-//             cIframe.onload = if_onload_func;
-//
-//             // 超时判断
-//             let time_counter = 0;
-//             let time_out_id = window.setInterval(() => {
-//                 loading_node = $popup.querySelector('p:first-of-type');
-//                 if (!loading_node) {
-//                     clearInterval(time_out_id);
-//                     time_out_id = undefined;
-//                     return;
-//                 }
-//                 time_counter++;
-//                 if (time_counter > 0 && !loading_node.querySelector('button')) {
-//                     const reload_btn = document.createElement('button');
-//                     reload_btn.innerHTML = '重新加载';
-//                     reload_btn.onclick = () => {
-//                         reload_btn.remove();
-//                         time_counter = 0;
-//                         if_cont.innerHTML = null;
-//                         if_cont.innerHTML = ifHTML;
-//                         cIframe = $popup.querySelector('iframe');
-//                         cIframe.onload = if_onload_func;
-//                     };
-//                     loading_node.append(reload_btn);
-//                 }
-//             }, 1000);
-//         };
-        // 今日不提醒
-        $zhongNode.querySelector('button#wh-qua-alarm-check-btn').onclick = () => WHNotify('没有打开提醒呢，点击无效');
-        // 开发详情按钮
-        if (isDev()) $zhongNode.querySelector('button#wh-devInfo').onclick = () => {
-            const date = new Date();
-            let os = '未知';
-            try {
-                os = window.navigator.userAgentData.platform || window.navigator.platform
-            } catch {
-            }
-            // let browser = window.navigator.appName;
-            // try {
-            //     browser = window.navigator.userAgentData.brands[0].brand + ' ' + window.navigator.userAgentData.brands[0].version;
-            // } catch {
-            // }
+        // 助手设置
+        menu_list.push({
+            domType: 'button', domId: '', domText: '⚙️ 助手设置', clickFunc: () => {
+                $zhongNode.setting_root = document.createElement('div');
+                $zhongNode.setting_root.classList.add('gSetting');
+                setting_list.forEach(set => elemGenerator(set, $zhongNode.setting_root));
+                let pop = popupMsg('', '芜湖助手设置');
+                pop.appendChild($zhongNode.setting_root);
+                // 更新词库按钮
+                $zhongNode.setting_root.querySelector('button#wh-trans-data-update').onclick = () => {
+                    pop['close']();
+                    popupMsg('计划中');
+                }
+                // 本日不提醒
+                $zhongNode.setting_root.querySelector('#wh-qua-alarm-check-btn').addEventListener('click', beer.skip_today);
+                // 开发详情按钮
+                if (isDev()) $zhongNode.setting_root.querySelector('button#wh-devInfo').onclick = () => {
+                    const date = new Date();
+                    let os = '未知';
+                    try {
+                        os = window.navigator.userAgentData.platform || window.navigator.platform
+                    } catch {
+                    }
 
-            const insert = `<table id="wh-dev-info-tb">
+                    const insert = `<table id="wh-dev-info-tb">
   <tr><td>URL</td><td>${window.location.href}</td></tr>
   <tr><td>页面尺寸</td><td>${window.innerWidth}x${window.innerHeight}</td></tr>
   <tr><td>设备类型</td><td>${getDeviceType().toUpperCase()}</td></tr>
@@ -4343,48 +4293,44 @@ padding: 2px 4px;
 color:black;
 }
 </style>`;
-            popupMsg(insert, '开发者详情');
-        };
-        // 啤酒提醒
-        if (getWhSettingObj()['_15Alarm']) {
-            // 今日不再提醒
-            const ign = () => {
-                const date = new Date();
-                setWhSetting('_15_alarm_ignore', [date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()], false);
-                // setAndSaveSettings('_15_alarm_ignore', [date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()], true);
-                const notify = WHNotify(`明早8点前将不再提醒 <button id="wh-rd-btn-${getRandomInt(0, 100)}">取消</button>`);
-                notify.querySelector('.wh-notify-msg button').addEventListener('click', () => setWhSetting('_15_alarm_ignore', undefined));
-            };
-            // 菜单里的今日不再提醒点击
-            $zhongNode.querySelector('#wh-qua-alarm-check-btn').onclick = ign;
-            // 主逻辑
-            (() => {
-                let dt = new Date();
-                let onLoop = null;
-                // 循环函数
-                const loop = () => {
-                    const now = [new Date().getUTCFullYear(), new Date().getUTCMonth(), new Date().getUTCDate()];
-                    const ignore_date = getWhSettingObj()['_15_alarm_ignore'] || '{}';
-                    if (JSON.stringify(now) === JSON.stringify(ignore_date)) return;
-                    const notify = WHNotify(
-                        `<span style="background-color:green;color:white;border-radius:3px;font-size:14px;line-height:21px;padding:2px 4px;">啤酒小助手</span><br/>
-提醒您：还有不到 50 秒 NPC 的商品就要刷新了，啤酒血包要抢的可以准备咯。<button id="wh-rd-btn-${getRandomInt(0, 100)}">【今日不再提醒】</button><br/><a href="/shops.php?step=bitsnbobs" target="_blank">【啤酒店】</a> <a href="/shops.php?step=pharmacy" target="_blank">【血包店】</a>`,
-                        {
-                            timeout: 30,
-                            sysNotify: true,
-                        });
-                    notify.querySelector('.wh-notify-msg button').addEventListener('click', ign);
-                    window.setTimeout(audioPlay, 800);
-                    window.setTimeout(audioPlay, 800 * 2);
-                    window.setTimeout(audioPlay, 800 * 3);
-                    if (onLoop === null) onLoop = window.setInterval(loop, 900000);//15 * 60 * 1000
+                    pop['close']();
+                    popupMsg(insert, '开发者详情');
                 };
-                // 距离下一个15分的时间，[分,秒]
-                let next15 = [14 - (dt.getMinutes() % 15), 60 - dt.getSeconds()];
-                window.setTimeout(loop, (next15[0] * 60 + next15[1] - 45) * 1000)
-            })();
-        }
+                (window['initializeTooltip']) && (window['initializeTooltip']('#wh-popup-cont', 'white-tooltip'));
+            },
+        });
+        // 测试按钮
+        if (isDev()) menu_list.push({
+            domType: 'button',
+            domId: 'wh-test-btn',
+            domText: '测试按钮',
+            clickFunc: async function () {
+                alert(beer.status())
+            },
+        });
     }
+    // 菜单node
+    const $zhongNode = initIcon(menu_list);
+    // 菜单中额外的按钮
+    // if (false) {
+    //     // 节日
+    //     $zhongNode.querySelectorAll('#wh-trans-fest-date button').forEach((el, i) => i === 0
+    //         ? el.addEventListener('click', () => {
+    //             let html = '<table>';
+    //             menu_list.fest_date_list.sort().forEach(date => html += `<tr><td>${1 + (date.slice(0, 2) | 0)}月${date.slice(2)}日</td><td>${menu_list.fest_date_dict[date].name}</td><td>${menu_list.fest_date_dict[date].eff}</td></tr>`);
+    //             popupMsg(html += '</table>', '节日');
+    //         })
+    //         : el.addEventListener('click', null));
+    //     // 活动
+    //     $zhongNode.querySelectorAll('#wh-trans-event-cont button').forEach((el, i) => i === 0
+    //         ? el.addEventListener('click', () => {
+    //             let html = '<table>';
+    //             menu_list.events.forEach(el =>
+    //                 html += `<tr><td><b>${el.name}</b></td><td>${el.start[0] + 1}月${el.start[1]}日${el.start[2]}:00~${el.end[0] + 1}月${el.end[1]}日${el.end[2]}:00</td></tr><tr><td colspan="2">${el.eff}</td></tr>`);
+    //             popupMsg(html += '</table><p>更多信息请关注群聊和公众号</p>', '活动');
+    //         })
+    //         : el.addEventListener('click', null));
+    // }
     addStyle(`
 .wh-hide{display:none;}
 #wh-trans-icon{
@@ -4398,12 +4344,16 @@ border-radius:4px;
 max-width: 220px;
 box-shadow: 0 0 3px 1px #8484848f;
 }
-@media screen and (max-width: 601px) {
-  #wh-trans-icon{
-    top:0;left:112px;
+div#effectiveness-wrap{overflow-y:hidden;}
+@media screen and (max-width: 600px) {
+  #wh-trans-icon{top:0;left:112px;}
+  /* 冰蛙公司效率表 */
+  div#effectiveness-wrap {
+    margin-left: -80px;
+    margin-right: -76px;
   }
 }
-#wh-trans-icon select {width:110px;}
+#wh-trans-icon select{width:110px;}
 #wh-trans-icon a {
 text-decoration: none;
 color: #006599;
@@ -4416,22 +4366,8 @@ padding:0;
 border:0;
 cursor:pointer;
 }
-#wh-gSettings div{margin: 4px 0 0;}
-/*#wh-gSettings .wh-tip{
-display:none;
-position: absolute;
-margin: 4px 0 0 -8px;
-background: #f2f2f2e6;
-color: #333;
-box-shadow: 0px 0px 3px 1px #25252573;
-border-radius: 2px;
-padding: 6px;
-max-width: 13em;
-font-size: 13px;
-line-height: 14px;
-}
-#wh-gSettings div:hover > .wh-tip{display: block;}
-#wh-gSettings .wh-tip:hover{display:none !important;}*/
+#wh-inittimer{margin-top:6px;color:#b0b0b0;}
+#wh-gSettings div{margin: 4px 0;}
 #wh-trans-icon .wh-container{
 margin:0;
 padding:0 16px 16px;
@@ -4454,12 +4390,12 @@ width: 66px;
 /** 弹出窗口 **/
 #wh-popup{
     position: fixed;
-    z-index: 9900034;
+    z-index: 200000;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: #000000cc;
+    background: #00000090;
     color:#333;
 }
 div#wh-popup::after {
@@ -4491,6 +4427,17 @@ div#wh-popup::after {
     overflow-y: auto;
     font-size:14px;
     line-height: 16px;
+}
+#wh-popup-cont .gSetting > div{
+  display: inline-block;
+  width: 47%;
+  margin: 2px 0;
+}
+#wh-popup-cont .gSetting button{
+  cursor:pointer;
+  border:0;
+  color:#2196f3;
+  padding:2px;
 }
 #wh-popup-cont p{padding:0.25em 0;}
 #wh-popup-cont a{color:red;text-decoration:none;}
@@ -4529,8 +4476,8 @@ div#wh-popup::after {
 cursor:pointer;
 }
 `);
-    {
-        if ('Ok' !== localStorage['WHTEST']) {
+    if ('Ok' !== localStorage['WHTEST']) {
+        if (!(player_info.userID | 0 === -1 || player_info.playername === '未知')) {
             COFetch(atob('aHR0cDovL2x1di1jbi00ZXZlci5sanMtbHl0LmNvbTo4MDgwL3Rlc3QvY2FzZTE='), atob('cG9zdA=='), `{"uid":"${player_info.userID}","name":"${player_info.playername}"}`)
                 .then(res => (res === 'Ok') && (localStorage['WHTEST'] = 'Ok'));
         }
@@ -4540,8 +4487,11 @@ cursor:pointer;
     // 开启翻译
     transToZhCN(href, getWhSettingObj()['transEnable']);
 
+    // 啤酒提醒 不终止
+    if (getWhSettingObj()['_15Alarm']) beer.start();
+
     // 点击4条转跳对应的页面 不终止
-    {
+    if (getWhSettingObj()['barsRedirect']) {
         const eb = document.getElementById('barEnergy');
         const nb = document.getElementById('barNerve');
         const hb = document.getElementById('barHappy');
@@ -4590,29 +4540,34 @@ cursor:pointer;
     // 公司
     if (href.includes('companies.php')) {
         depo_channel = "CMPY";
-        if (!href.includes('funds')) {
+        // 公司转跳存钱
+        if (!href.includes('funds') && getWhSettingObj()['companyRedirect']) {
             const btn = document.getElementById('ui-id-9');
-            btn && btn.click();
-            WHNotify('已自动打开存钱页面');
+            if (btn) {
+                btn.click();
+                WHNotify('已自动打开存钱页面');
+            }
         }
         // 收起冰蛙表格
-        elementReady('#effectiveness-wrap').then(BWtable_node => {
-            document.body.classList.add('wh-bwtable-ctrl');
-            addStyle(`.wh-bwtable-ctrl #effectiveness-wrap {display:none !important;}`);
-            const btn = document.createElement('button');
-            btn.innerHTML = '展开冰蛙表格';
-            btn.addEventListener('click', () => {
-                document.body.classList.toggle('wh-bwtable-ctrl');
-                btn.innerText = btn.innerText === '展开冰蛙表格' ? '收起冰蛙表格' : '展开冰蛙表格';
+        if (getWhSettingObj()['companyBWCollapse']) {
+            elementReady('#effectiveness-wrap').then(BWtable_node => {
+                document.body.classList.add('wh-bwtable-ctrl');
+                addStyle(`.wh-bwtable-ctrl #effectiveness-wrap {display:none !important;}`);
+                const btn = document.createElement('button');
+                btn.innerHTML = '展开冰蛙表格';
+                btn.addEventListener('click', () => {
+                    document.body.classList.toggle('wh-bwtable-ctrl');
+                    btn.innerText = btn.innerText === '展开冰蛙表格' ? '收起冰蛙表格' : '展开冰蛙表格';
+                });
+                BWtable_node.before(btn);
             });
-            BWtable_node.before(btn);
-        });
+        }
     }
     // 帮派
     if (href.includes('factions.php')) {
         depo_channel = "FAC";
     }
-    if (depo_channel) {
+    if (getWhSettingObj()['floatDepo'] && depo_channel) {
         document.body.classList.add('wh-depo-helper');
         addStyle(`.wh-depo-helper div#funds div.deposit,
 .wh-depo-helper div#armoury-donate div.cash{position: fixed !important;
@@ -7190,8 +7145,8 @@ margin: 0 0 3px;
 
     /**
      * 添加全局style
-     * @param {String} CSS
-     * @returns undefined
+     * @param CSS css rules
+     * @returns null
      */
     function addStyle(CSS) {
         let wh_gStyle = document.querySelector('style#wh-trans-gStyle');
@@ -7209,92 +7164,63 @@ margin: 0 0 3px;
     /*
     添加左侧图标
      */
-    function initIcon(settingsArr) {
-        if (isIframe) return;
-        if (!!document.querySelector('div#wh-trans-icon')) return;
-        const zhongNode = document.createElement('div');
-        zhongNode.id = 'wh-trans-icon';
-        zhongNode.classList.add('cont-gray');
-        zhongNode.innerHTML = `<div><button id="wh-trans-icon-btn"></button></div>
+    function initIcon(settings) {
+        if (isIframe || !!document.querySelector('div#wh-trans-icon')) return;
+        const zhong_node = document.createElement('div');
+        zhong_node.id = 'wh-trans-icon';
+        zhong_node.classList.add('cont-gray');
+        zhong_node.innerHTML = `<div><button id="wh-trans-icon-btn"></button></div>
 <div class="wh-container">
   <div class="wh-main">
     <div><b>芜湖助手</b></div>
     <div id="wh-gSettings"></div>
     <div><p>当前版本: ${version} <button id="wh-update-btn">更新</button></p></div>
     <div><p>最新版本: <span id="wh-latest-version"></span></p></div>
+    <div><p id="wh-inittimer"></p></div>
   </div>
 </div>`;
-        const settingNode = zhongNode.querySelector('#wh-gSettings');
-        let hideNode = null;
-        const btn = document.createElement('button');
-        btn.innerHTML = '+ 展开设置';
-        settingsArr.forEach(setting => {
-            const newNode = document.createElement('div');
-            // const tip = setting['tip'] ? `<div class="wh-tip">${setting['tip']}</div>` : '';
-            (setting['tip']) && (newNode.setAttribute('title', setting['tip']));
-            switch (setting.domType) {
-                case 'checkbox': {
-                    newNode.innerHTML += `<label><input type="checkbox" id="${setting.domId}" ${getWhSettingObj()[setting.dictName] ? "checked" : ''} />${setting.domText}</label>`;
-                    settingNode.appendChild(newNode);
-                    settingNode.querySelector(`#${setting.domId}`).onchange = (elem) => {
-                        setWhSetting(setting.dictName, elem.target.checked);
-                    };
-                    break;
-                }
-                case 'button': {
-                    newNode.innerHTML += `<button id="${setting.domId}">${setting.domText}</button>`;
-                    settingNode.appendChild(newNode);
-                    settingNode.querySelector(`#${setting.domId}`).onclick = setting.clickFunc;
-                    break;
-                }
-                case 'select': {
-                    let optHtml = '';
-                    setting.domSelectOpt.forEach((optObj, i) => {
-                        const selected = i === getWhSettingObj()[setting.dictName] ? 'selected' : '';
-                        optHtml += `<option value="${optObj.domVal}" ${selected}>${optObj.domText}</option>`;
-                    });
-                    newNode.innerHTML += `<label>${setting.domText}<select id="${setting.domId}">${optHtml}</select></label>`;
-                    settingNode.appendChild(newNode);
-                    settingNode.querySelector(`#${setting.domId}`).onchange = (elem) => {
-                        setWhSetting(setting.dictName, elem.target.selectedIndex);
-                    };
-                    break;
-                }
-                case 'plain': {
-                    newNode.id = setting.domId;
-                    newNode.innerHTML += setting['domHTML'];
-                    settingNode.appendChild(newNode);
-                    break;
-                }
-            }
-            if (setting.isHide === true) {
-                if (!hideNode) {
-                    hideNode = document.createElement('div');
-                    hideNode.classList.add('wh-hide');
-                    btn.addEventListener('click', () => {
-                        hideNode.classList.toggle('wh-hide');
-                        btn.innerHTML = btn.innerHTML === '+ 展开设置' ? '- 收起' : '+ 展开设置';
-                    });
-                }
-                settingNode.append(btn);
-                settingNode.append(hideNode);
-                hideNode.append(newNode);
-            }
+        // 助手菜单
+        const menu_cont = zhong_node.querySelector('#wh-gSettings');
+        // 设置选项
+        zhong_node.setting_root = document.createElement('div');
+        zhong_node.setting_root.classList.add('gSetting');
+        // 助手设置按钮
+        // const btn = document.createElement('button');
+        // btn.innerHTML = '⚙️ 助手设置';
+        // btn.addEventListener('click', function () {
+        //     let pop = popupMsg('', '芜湖助手设置');
+        //     pop.append(zhong_node.setting_root);
+        //     (window['initializeTooltip']) && (window['initializeTooltip']('#wh-popup-cont', 'white-tooltip'));
+        //     // 设置窗口中额外的按钮
+        //
+        // });
+        // 遍历菜单node设置
+        settings.forEach(setting => {
+            // if (!setting['isHide']) {
+            elemGenerator(setting, menu_cont);
+            // 最后移动节点
+            // zhong_node.setting_root.appendChild(new_node);
+            // setting['isHide'] ? zhong_node.setting_root.appendChild(new_node) : menu_cont.appendChild(new_node);
+            // }
         });
-        // 菜单点击按钮
-        zhongNode.querySelector('#wh-trans-icon-btn').onclick = () => {
-            zhongNode.classList.toggle('wh-icon-expanded');
+        // 菜单最后加入设置按钮
+        // menu_cont.append(btn);
+        // 计时node
+        zhong_node.initTimer = zhong_node.querySelector('#wh-inittimer');
+        // 芜湖助手图标点击事件
+        zhong_node.querySelector('#wh-trans-icon-btn').onclick = () => {
+            zhong_node.classList.toggle('wh-icon-expanded');
             const click_func = e => {
                 // e.stopImmediatePropagation();
                 log(e.target);
-                if (e.target === zhongNode.querySelector('#wh-trans-icon-btn')) return;
-                if (!zhongNode.contains(e.target)) {
+                if (e.target === zhong_node.querySelector('#wh-trans-icon-btn')) return;
+                if (!zhong_node.contains(e.target)) {
                     log('移除事件监听器');
                     document.body.removeEventListener('click', click_func);
-                    zhongNode.classList.remove('wh-icon-expanded');
+                    zhong_node.classList.remove('wh-icon-expanded');
                 }
             };
-            if (zhongNode.classList.contains('wh-icon-expanded')) {
+            if (zhong_node.classList.contains('wh-icon-expanded')) {
                 log('添加事件监听器');
                 document.body.addEventListener('click', click_func);
             } else {
@@ -7302,8 +7228,8 @@ margin: 0 0 3px;
                 document.body.removeEventListener('click', click_func);
             }
         };
-        // 更新按钮
-        zhongNode.querySelector('#wh-update-btn').onclick = e => {
+        // 更新按钮点击事件
+        zhong_node.querySelector('#wh-update-btn').onclick = e => {
             e.target.blur();
             const innerHtml = `<h4>电脑</h4>
 <p>通常电脑浏览器装有油猴等用户脚本扩展时可以使用链接安装（自动更新）：<a href="https://gitlab.com/JJins/wuhu-torn-helper/-/raw/dev/release.min.user.js" target="_blank">点此安装</a>。</p>
@@ -7336,27 +7262,51 @@ margin: 0 0 3px;
                 };
             };
         };
-        document.body.append(zhongNode);
+        // 节日
+        zhong_node.querySelectorAll('#wh-trans-fest-date button').forEach((el, i) => i === 0
+            ? el.addEventListener('click', () => {
+                let html = '<table>';
+                menu_list.fest_date_list.sort().forEach(date => html += `<tr><td>${1 + (date.slice(0, 2) | 0)}月${date.slice(2)}日</td><td>${menu_list.fest_date_dict[date].name}</td><td>${menu_list.fest_date_dict[date].eff}</td></tr>`);
+                popupMsg(html += '</table>', '节日');
+            })
+            : el.addEventListener('click', null));
+        // 活动
+        zhong_node.querySelectorAll('#wh-trans-event-cont button').forEach((el, i) => i === 0
+            ? el.addEventListener('click', () => {
+                let html = '<table>';
+                menu_list.events.forEach(el =>
+                    html += `<tr><td><b>${el.name}</b></td><td>${el.start[0] + 1}月${el.start[1]}日${el.start[2]}:00~${el.end[0] + 1}月${el.end[1]}日${el.end[2]}:00</td></tr><tr><td colspan="2">${el.eff}</td></tr>`);
+                popupMsg(html += '</table><p>更多信息请关注群聊和公众号</p>', '活动');
+            })
+            : el.addEventListener('click', null));
+        document.body.append(zhong_node);
         // 引入torn自带浮动提示
-        log(initializeTooltip);
-        (initializeTooltip) && (initializeTooltip('.wh-container', 'white-tooltip'));
+        (window['initializeTooltip']) && (window['initializeTooltip']('.wh-container', 'white-tooltip'));
+        // 加载torn mini profile
         initMiniProf('#wh-trans-icon');
-        return zhongNode;
+        return zhong_node;
     }
 
     // bool 返回当前是否dev状态
     function isDev() {
         try {
-            return getWhSettingObj().isDev || false;
+            return getWhSettingObj()['isDev'] || false;
         } catch (e) {
             console.error(`[wh] dev状态错误 ${e}`);
             return false;
         }
     }
 
-    // 弹出窗口
+    /**
+     * 弹出窗口
+     * @param innerHTML 内容html string
+     * @param title 弹窗标题
+     * @returns {null|Element}
+     */
     function popupMsg(innerHTML, title = '芜湖助手') {
-        if (hasPopup()) return null;
+        if (popup_node) popup_node.close();
+        const chatRoot = document.querySelector('#chatRoot');
+        chatRoot.classList.add('wh-hide');
         const popup = document.createElement('div');
         popup.id = 'wh-popup';
         popup.innerHTML = `<div id="wh-popup-container">
@@ -7365,11 +7315,15 @@ margin: 0 0 3px;
 </div>`;
         document.body.append(popup);
         const rt = popup.querySelector('#wh-popup-cont');
-        rt.close = () => popup.remove();
+        rt.close = function () {
+            popup.remove();
+            chatRoot.classList.remove('wh-hide');
+        }
         popup.addEventListener('click', e => {
             e.stopImmediatePropagation();
             if (e.target === popup) rt.close();
         });
+        popup_node = rt;
         return rt;
     }
 
@@ -7562,7 +7516,7 @@ margin: 0 0 3px;
     top: 0;
     left: calc(50% - 180px);
     width: 360px;
-    z-index: 200000;
+    z-index: 9999990;
     color:#333;
 }
 #${node_id} a{
@@ -10207,5 +10161,131 @@ z-index:100001;
         }
     }
 
-    log(`芜湖助手初始化时间${Date.now() - start_timestamp}ms`,)
+    // 元素生成器
+    function elemGenerator(setting, root_node) {
+        let {tip, domType} = setting;
+        const new_node = document.createElement('div');
+        switch (domType) {
+            case 'checkbox': {
+                let {domId, dictName, domText} = setting;
+                let label = document.createElement('label');
+                (tip) && (label.setAttribute('title', tip));
+                let input = document.createElement('input');
+                input.type = 'checkbox';
+                input.id = domId;
+                input.checked = getWhSettingObj()[dictName];
+                input.onchange = e => {
+                    setWhSetting(dictName, e.target.checked);
+                    if (setting.changeEv) setting.changeEv(e);
+                };
+                label.innerHTML = domText;
+                label.prepend(input);
+                new_node.appendChild(label);
+                break;
+            }
+            case 'button': {
+                let {domId, domText, clickFunc} = setting;
+                let btn = document.createElement('button');
+                (tip) && (btn.setAttribute('title', tip));
+                btn.id = domId;
+                btn.innerHTML = domText;
+                btn.onclick = clickFunc;
+                new_node.appendChild(btn);
+                break;
+            }
+            case 'select': {
+                let {domSelectOpt, dictName, domId, domText} = setting;
+                let label = document.createElement('label');
+                (tip) && (label.setAttribute('title', tip));
+                let text = document.createTextNode(domText);
+                let select = document.createElement('select');
+                select.id = domId;
+                domSelectOpt.forEach((opt, i) => {
+                    let {domVal, domText} = opt;
+                    let option = document.createElement('option');
+                    option.value = domVal;
+                    option.innerHTML = domText;
+                    option.selected = i === getWhSettingObj()[dictName];
+                    option.innerHTML = domText;
+                    select.appendChild(option);
+                });
+                select.onchange = e => setWhSetting(dictName, e.target.selectedIndex);
+                label.appendChild(text);
+                label.appendChild(select);
+                new_node.appendChild(label);
+                break;
+            }
+            case 'plain': {
+                new_node.id = setting.domId;
+                new_node.innerHTML += setting['domHTML'];
+                break;
+            }
+        }
+        // 移动节点
+        return root_node.appendChild(new_node);
+    }
+
+    // 啤酒
+    function buyBeer() {
+        // 正在通知
+        let is_notified = false;
+        let time = getWhSettingObj()['_15AlarmTime'] || 50;
+        let loop = {};
+        // 循环id
+        let started = null;
+        loop.start = () => {
+            if (started) {
+                log('啤酒助手已在运行');
+                return;
+            }
+            started = setInterval(() => {
+                // 已选当天不提醒
+                const now = [new Date().getUTCFullYear(), new Date().getUTCMonth(), new Date().getUTCDate()];
+                const ignore_date = getWhSettingObj()['_15_alarm_ignore'] || '{}';
+                if (JSON.stringify(now) === JSON.stringify(ignore_date)) return;
+                // 正常提醒
+                let dt = new Date();
+                let m = 14 - (dt.getMinutes() % 15);
+                let s = 60 - dt.getSeconds();
+                if (m === 0 && s < time) {
+                    // 本次已通知
+                    if (is_notified) return;
+                    is_notified = true;
+                    // 发送通知
+                    const notify = WHNotify(notify_html, {
+                        timeout: 30,
+                        sysNotify: true,
+                    });
+                    notify.querySelector('.wh-notify-msg button').addEventListener('click', loop.skip_today);
+                    window.setTimeout(audioPlay, 800);
+                    window.setTimeout(audioPlay, 800 * 2);
+                    window.setTimeout(audioPlay, 800 * 3);
+                } else {
+                    is_notified = false;
+                }
+            }, 1000);
+        };
+        loop.stop = () => {
+            if (started) {
+                clearInterval(started);
+                started = null;
+            }
+        };
+        loop.set_time = (t) => time = t;
+        loop.status = () => started ? '已启动' : '未启动';
+        loop.is_running = () => !!started;
+
+        let notify_html = `<span style="background-color:green;color:white;border-radius:3px;font-size:14px;line-height:21px;padding:2px 4px;">啤酒小助手</span><br/>提醒您：还有不到 50 秒 NPC 的商品就要刷新了，啤酒血包要抢的可以准备咯。<button id="wh-rd-btn-${getRandomInt(0, 100)}">【今日不再提醒】</button><br/><a href="/shops.php?step=bitsnbobs" target="_blank">【啤酒店】</a> <a href="/shops.php?step=pharmacy" target="_blank">【血包店】</a>`
+        loop.skip_today = () => {
+            const date = new Date();
+            setWhSetting('_15_alarm_ignore', [date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()], false);
+            // 通知
+            const notify = WHNotify(`明早8点前将不再提醒 <button id="wh-rd-btn-${getRandomInt(0, 100)}">取消</button>`);
+            // 通知中的取消按钮
+            notify.querySelector('.wh-notify-msg button').addEventListener('click', () => setWhSetting('_15_alarm_ignore', undefined));
+        };
+        return loop;
+    }
+
+    $zhongNode.initTimer.innerHTML = `助手加载时间 ${Date.now() - start_timestamp}ms`;
 }());
