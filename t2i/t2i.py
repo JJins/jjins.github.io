@@ -281,7 +281,7 @@ def txt2im(txt, outfn, cfg=None, show=False):
 
 
 def test():
-    filename = "../fyfuzhi/torn-trans-zhcn.user.js"
+    filename = "../fyfuzhi/release.min.user.js"
     import linecache
     result = linecache.getline(filename, 5)
     result = result.split(' ')[-1].strip()
