@@ -1,6 +1,7 @@
 !async function () {
     'use strict';
     const start_timestamp = Date.now();
+    if (document.title.toLowerCase().includes('just a moment')) return;
     // unsafewindow副本
     const UWCopy = window.unsafeWindow;
     try {
@@ -3858,6 +3859,15 @@ background-size: 100% auto !important;
             domText: '📜️ 传单助手',
             clickFunc: adHelper
         });
+        // 守望者
+        menu_list.push({
+            domType: 'button',
+            domId: '',
+            domText: '🛡️ 守望者',
+            clickFunc: function () {
+                safeKeeper();
+            },
+        });
         // 更新历史
         menu_list.push({
             domType: 'button', domId: '', domText: '🐞 更新历史', clickFunc: () => {
@@ -3912,13 +3922,13 @@ color:black;
                 (window['initializeTooltip']) && (window['initializeTooltip']('#wh-popup-cont', 'white-tooltip'));
             },
         });
-        // 测试按钮
+        // 测试
         if (isDev()) menu_list.push({
             domType: 'button',
-            domId: 'wh-test-btn',
-            domText: '测试按钮',
-            clickFunc: async function () {
-                await companyDeposit();
+            domId: '',
+            domText: '📐️ 测试',
+            clickFunc: function () {
+                WHNotify('芜湖助手', {sysNotify: true, timeout: 3})
             },
         });
     }
@@ -6750,7 +6760,7 @@ margin: 0 0 3px;
   <div class="wh-main">
     <div><b>芜湖助手</b></div>
     <div id="wh-gSettings"></div>
-    <div><p>当前版本: ${version} <button id="wh-update-btn">更新</button></p></div>
+    <div><p>当前版本: ${version.slice(-1) === '$' ? 'DEV' : version} <button id="wh-update-btn">更新</button></p></div>
     <div><p>最新版本: <span id="wh-latest-version"></span></p></div>
     <div><p id="wh-inittimer"></p></div>
   </div>
@@ -7012,7 +7022,7 @@ margin: 0 0 3px;
         callback = doNothing,
         sysNotify = false,
         sysNotifyTag = '芜湖助手',
-        sysNotifyClick = () => window.focus(),
+        sysNotifyClick = () => window.focus()
     } = {}) {
         if (!isWindowActive() || isIframe) return null;
         const date = new Date();
@@ -7119,7 +7129,7 @@ cursor: pointer;
                 body: date_local_string + notify_contain.msgInnerText,
                 requireInteraction: true,
                 renotify: true,
-                tag: sysNotifyTag,
+                tag: sysNotifyTag + getRandomInt(0, 99),
             });
             sys_notify.onclick = sysNotifyClick;
         }
@@ -9940,7 +9950,7 @@ z-index:100001;
         popup.appendChild(clear_button);
     }
 
-    // 官方更新钱数方法
+    // 一键存钱
     async function companyDeposit() {
         if (!location.href.contains('option=funds')) {
             WHNotify('请先打开公司金库');
@@ -9986,6 +9996,46 @@ z-index:100001;
         btn.innerHTML = txt;
         btn.addEventListener('click', func);
         mainBtnNode.querySelector('button').after(btn);
+    }
+
+    // 守望者
+    function safeKeeper() {
+        let url = `https://www.torn.com/loader.php?sid=attackData&mode=json&step=poll&user2ID=`;
+        let popup = popupMsg('<p>到底是谁在打他？</p>', '守望者 (测试中)');
+        let p = document.createElement('p');
+        let uid = document.createElement('input');
+        let start = document.createElement('button');
+        let stop = document.createElement('button');
+
+        let count = 0;
+        let id = null;
+
+        uid.type = 'text';
+        start.innerHTML = '开';
+        stop.innerHTML = '关';
+        p.innerHTML = '状态：已关';
+
+        start.addEventListener('click', () => {
+            if (id !== null) return;
+            p.innerHTML = '状态：已开';
+            id = setInterval(async () => {
+                let res = await (await fetch(url + uid.value)).text();
+                console.log(count++, JSON.parse(res.split('<div')[0]));
+            }, 2000);
+        });
+
+        stop.addEventListener('click', () => {
+            if (id === null) return;
+            clearInterval(id);
+            id = null;
+            count = 0;
+            p.innerHTML = '状态：已关';
+        });
+
+        popup.appendChild(p);
+        popup.appendChild(uid);
+        popup.appendChild(start);
+        popup.appendChild(stop);
     }
 
     $zhongNode.initTimer.innerHTML = `助手加载时间 ${Date.now() - start_timestamp}ms`;
