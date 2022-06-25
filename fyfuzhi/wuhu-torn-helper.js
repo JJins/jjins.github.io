@@ -11,7 +11,6 @@
     if (window.WHTRANS) return;
     window.WHTRANS = true;
     const version = '$$WUHU_DEV_VERSION$$';
-    if (!getUserState()['isLoggedIn']) return;
     const isIframe = self !== top;
     const $ = window['jQuery'];
     // PDA
@@ -9868,8 +9867,8 @@ z-index:100001;
     function getUserState() {
         let obj = {};
         let hdd = sessionStorage['headerData'];
-        if (!hdd) return;
         if (hdd) obj = JSON.parse(hdd)['user']['state'];
+        console.info({obj})
         return obj;
     }
 
