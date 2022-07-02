@@ -2751,7 +2751,7 @@
         }
         let clone = res.clone();
         let text = await res.text();
-        log({url, init, text});
+        log({ url, init, text });
         return clone;
     };
 
@@ -2832,56 +2832,56 @@
     // 对新值应用「默认」设置
     [
         // 开启翻译
-        {key: 'transEnable', val: false},
+        { key: 'transEnable', val: false },
         // 快速犯罪
-        {key: 'quickCrime', val: true},
+        { key: 'quickCrime', val: true },
         // 任务助手
-        {key: 'missionHint', val: true},
+        { key: 'missionHint', val: true },
         // 小镇攻略
-        {key: 'xmasTownWT', val: true},
+        { key: 'xmasTownWT', val: true },
         // 小镇提醒
-        {key: 'xmasTownNotify', val: true},
+        { key: 'xmasTownNotify', val: true },
         // 起飞爆e
-        {key: 'energyAlert', val: true},
+        { key: 'energyAlert', val: true },
         // 飞行闹钟
-        {key: 'trvAlarm', val: true},
+        { key: 'trvAlarm', val: true },
         // 啤酒提醒
-        {key: '_15Alarm', val: true},
+        { key: '_15Alarm', val: true },
         // 捡垃圾助手
-        {key: 'cityFinder', val: false},
+        { key: 'cityFinder', val: false },
         // 叠E保护
-        {key: 'SEProtect', val: false},
+        { key: 'SEProtect', val: false },
         // PT一键购买
-        {key: 'ptQuickBuy', val: false},
+        { key: 'ptQuickBuy', val: false },
         // 光速拔刀 6-关闭
-        {key: 'quickAttIndex', val: 2},
+        { key: 'quickAttIndex', val: 2 },
         // 光速跑路 0-leave 1-mug 2-hos 3-关闭
-        {key: 'quickFinishAtt', val: 3},
+        { key: 'quickFinishAtt', val: 3 },
         // 自动开打和结束
-        {key: 'autoStartFinish', val: false},
+        { key: 'autoStartFinish', val: false },
         // 废弃
-        {key: 'attRelocate', val: true},
+        { key: 'attRelocate', val: true },
         // 攻击自刷新 0-无间隔 1-5s 6-关闭
-        {key: 'attReload', val: 6},
+        { key: 'attReload', val: 6 },
         // 价格监视
-        {key: 'priceWatcher', val: {xan: -1, pt: -1}},
+        { key: 'priceWatcher', val: { xan: -1, pt: -1 } },
         // 开发者模式
-        {key: 'isDev', val: false},
+        { key: 'isDev', val: false },
         // 啤酒提醒时间
-        {key: '_15AlarmTime', val: 50},
+        { key: '_15AlarmTime', val: 50 },
         // 4条转跳
-        {key: 'barsRedirect', val: true},
+        { key: 'barsRedirect', val: true },
         // 浮动存钱框
-        {key: 'floatDepo', val: true},
+        { key: 'floatDepo', val: true },
         // 公司转跳存钱
-        {key: 'companyRedirect', val: true},
+        { key: 'companyRedirect', val: true },
         // 收起公司冰蛙效率表
-        {key: 'companyBWCollapse', val: true},
+        { key: 'companyBWCollapse', val: true },
         // 清除多余的脚本
-        {key: 'removeScripts', val: true},
+        { key: 'removeScripts', val: true },
 
         // 危险行为⚠️
-        {key: 'dangerZone', val: false},
+        { key: 'dangerZone', val: false },
     ].forEach(df => {
         if (typeof getWhSettingObj()[df.key] !== typeof df.val) setWhSetting(df.key, df.val);
     });
@@ -3230,22 +3230,22 @@
         let fest_date_html = '<button>节日</button>: ';
         {
             const fest_date_dict = {
-                '0105': {name: '周末自驾游', eff: '获得双倍的赛车点数与赛车技能等级增益'},
-                '0114': {name: '情人节', eff: '使用爱情果汁(Love Juice)后获得降低攻击与复活的能量消耗的增益'},
-                '0204': {name: '员工激励日', eff: '获得三倍的工作点数与火车增益'},
-                '0217': {name: '圣帕特里克日', eff: '获得双倍的酒类效果增益，城市中可以捡到绿色世涛(Green Stout)'},
-                '0320': {name: '420日', eff: '获得三倍的大麻(Cannabis)效果增益'},
-                '0418': {name: '博物馆日', eff: '获得10%提高的博物馆PT兑换增益'},
-                '0514': {name: '世界献血日', eff: '获得减半的抽血CD和扣血增益'},
-                '0611': {name: '世界人口日', eff: '获得双倍的通过攻击获取的经验的增益'},
-                '0629': {name: '世界老虎日', eff: '获得5倍的狩猎技能增益'},
-                '0705': {name: '国际啤酒节', eff: '获得5倍的啤酒物品效果增益'},
-                '0827': {name: '旅游节', eff: '获得双倍的起飞后物品携带容量增益'},
-                '0915': {name: '饮料节', eff: '获得双倍的能量饮料效果增益'},
-                '1014': {name: '世界糖尿病日', eff: '获得三倍的糖类效果增益'},
-                '1015': {name: '周年庆', eff: '左上角的TORN图标可以食用'},
-                '1025': {name: '黑色星期五', eff: '某些商家将提供1元购活动'},
-                '1114': {name: '住院日', eff: '获得降低75%的住院时间增益'},
+                '0105': { name: '周末自驾游', eff: '获得双倍的赛车点数与赛车技能等级增益' },
+                '0114': { name: '情人节', eff: '使用爱情果汁(Love Juice)后获得降低攻击与复活的能量消耗的增益' },
+                '0204': { name: '员工激励日', eff: '获得三倍的工作点数与火车增益' },
+                '0217': { name: '圣帕特里克日', eff: '获得双倍的酒类效果增益，城市中可以捡到绿色世涛(Green Stout)' },
+                '0320': { name: '420日', eff: '获得三倍的大麻(Cannabis)效果增益' },
+                '0418': { name: '博物馆日', eff: '获得10%提高的博物馆PT兑换增益' },
+                '0514': { name: '世界献血日', eff: '获得减半的抽血CD和扣血增益' },
+                '0611': { name: '世界人口日', eff: '获得双倍的通过攻击获取的经验的增益' },
+                '0629': { name: '世界老虎日', eff: '获得5倍的狩猎技能增益' },
+                '0705': { name: '国际啤酒节', eff: '获得5倍的啤酒物品效果增益' },
+                '0827': { name: '旅游节', eff: '获得双倍的起飞后物品携带容量增益' },
+                '0915': { name: '饮料节', eff: '获得双倍的能量饮料效果增益' },
+                '1014': { name: '世界糖尿病日', eff: '获得三倍的糖类效果增益' },
+                '1015': { name: '周年庆', eff: '左上角的TORN图标可以食用' },
+                '1025': { name: '黑色星期五', eff: '某些商家将提供1元购活动' },
+                '1114': { name: '住院日', eff: '获得降低75%的住院时间增益' },
             };
             menu_list.fest_date_dict = fest_date_dict;
             menu_list.fest_date_list = Object.keys(fest_date_dict);
@@ -3795,9 +3795,9 @@ background-size: 100% auto !important;
                             new MutationObserver((m, o) => {
                                 o.disconnect();
                                 if (!elem.querySelector('.wh-translate')) elem.prepend(mobile_prepend_node);
-                                o.observe(elem, {childList: true, subtree: true});
+                                o.observe(elem, { childList: true, subtree: true });
                             })
-                                .observe(elem, {childList: true, subtree: true});
+                                .observe(elem, { childList: true, subtree: true });
                         });
                         // 隐藏返回顶部按钮
                         elementReady('#go-to-top-btn button', ifDocu).then(e => e.style.display = 'none');
@@ -3902,7 +3902,7 @@ background-size: 100% auto !important;
   <tr><td>URL</td><td>${window.location.href}</td></tr>
   <tr><td>页面尺寸</td><td>${window.innerWidth}x${window.innerHeight}</td></tr>
   <tr><td>设备类型</td><td>${getDeviceType().toUpperCase()}</td></tr>
-  <tr><td>脚本运行方式</td><td>${{'gm': '油猴', 'raw': '直接运行', 'pda': 'TornPDA'}[getScriptEngine()]}</td></tr>
+  <tr><td>脚本运行方式</td><td>${{ 'gm': '油猴', 'raw': '直接运行', 'pda': 'TornPDA' }[getScriptEngine()]}</td></tr>
   <tr><td>时间</td><td>${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}</td></tr>
   <tr><td>插件版本</td><td>${version}</td></tr>
   <tr><td>操作系统</td><td>${os}</td></tr>
@@ -3928,7 +3928,7 @@ color:black;
             domId: '',
             domText: '📐️ 测试',
             clickFunc: function () {
-                WHNotify('芜湖助手', {sysNotify: true, timeout: 3})
+                WHNotify('芜湖助手', { sysNotify: true, timeout: 3 })
             },
         });
     }
@@ -4149,7 +4149,7 @@ cursor:pointer;
 
     // 存钱CSS 不终止
     let depo_channel;
-    const depo_selector = {CMPY: "div#funds div.deposit", FAC: "div#armoury-donate div.cash"};
+    const depo_selector = { CMPY: "div#funds div.deposit", FAC: "div#armoury-donate div.cash" };
     // 公司
     if (href.includes('companies.php')) {
         depo_channel = "CMPY";
@@ -4218,7 +4218,7 @@ z-index: 999999;}`);
 
             const wh_trv_alarm = localStorage.getItem('wh_trv_alarm')
                 ? JSON.parse(localStorage.getItem('wh_trv_alarm'))
-                : {'enable': true, 'alert_time': 30, 'node_pos': [240, 240]};
+                : { 'enable': true, 'alert_time': 30, 'node_pos': [240, 240] };
             const save_trv_settings = () => localStorage.setItem('wh_trv_alarm', JSON.stringify(wh_trv_alarm));
 
             const wh_trv_alarm_node = document.createElement('div');
@@ -4487,7 +4487,7 @@ display:none;
     // 攻击页面
     if (href.contains(/loader\.php\?sid=attack/)) {
         let stop_reload = false;
-        const {quickAttIndex, quickFinishAtt, attReload} = getWhSettingObj();
+        const { quickAttIndex, quickFinishAtt, attReload } = getWhSettingObj();
 
         // 光速刷新按钮
         addActionBtn('光速刷新', doAttackReload, $zhongNode);
@@ -4726,7 +4726,7 @@ display:none;
                         }
                     }
                 });
-            }).observe(wrap, {subtree: true, attributes: true, childList: true});
+            }).observe(wrap, { subtree: true, attributes: true, childList: true });
         }
         return;
     }
@@ -4818,7 +4818,7 @@ display:inline-block;
                 const finder_item = document.createElement('span');
                 finder_item.id = 'wh-city-finder-item' + item_id;
                 finder_item.innerHTML = item_id;
-                founds.push({'id': item_id, 'node': finder_item, 'map_item': node});
+                founds.push({ 'id': item_id, 'node': finder_item, 'map_item': node });
                 container.append(finder_item);
             });
             // 未发现物品 返回
@@ -4897,7 +4897,7 @@ display:inline-block;
                     'LI' === e.tagName && rmv_cfm(e)
                 }
             }
-        }).observe(points_sales, {childList: true});
+        }).observe(points_sales, { childList: true });
     }
 
     // 叠e助手
@@ -5148,7 +5148,7 @@ $<span class="total">1,000</span>
     // 圣诞小镇
     if (href.contains(/christmas_town\.php/)) {
         let $root = document.querySelector('#christmastownroot');
-        const {xmasTownWT, xmasTownNotify} = getWhSettingObj()
+        const { xmasTownWT, xmasTownNotify } = getWhSettingObj()
         // 解密攻略
         if (xmasTownWT) {
             const insert_html = `<div id="wh-xmas-cont">
@@ -5185,7 +5185,7 @@ margin: 0 0 3px;
 }
 </style>`;
             const wt_dict = {
-                "None": {title: '', wt: ``,},
+                "None": { title: '', wt: ``, },
                 "Christmas Town": {
                     title: '圣诞小镇', wt: `<ul>
 <li>旧攻略提到的驯鹿车已被移除，只能手动找一条蓝色的小路[94,3]</li>
@@ -5454,16 +5454,16 @@ margin: 0 0 3px;
         }
         // 宝箱检测
         if (xmasTownNotify) {
-            const chestTypeDict = {'1': '金', '2': '银', '3': '铜',};
-            const chestTypeColorDict = {'1': 'gold', '2': 'silver', '3': 'sandybrown',};
-            const lootTypeDict = {'chests': '钥匙箱', 'gifts': '礼物', 'combinationChest': '密码箱', 'keys': '钥匙',};
-            const keyTypeDict = {'b': '铜', 's': '银', 'g': '金',};
+            const chestTypeDict = { '1': '金', '2': '银', '3': '铜', };
+            const chestTypeColorDict = { '1': 'gold', '2': 'silver', '3': 'sandybrown', };
+            const lootTypeDict = { 'chests': '钥匙箱', 'gifts': '礼物', 'combinationChest': '密码箱', 'keys': '钥匙', };
+            const keyTypeDict = { 'b': '铜', 's': '银', 'g': '金', };
             let dropHist = localStorage.getItem('wh-loot-store')
                 ? JSON.parse(localStorage.getItem('wh-loot-store'))
                 : {};
             const alertSettings = localStorage.getItem('wh-loot-setting')
                 ? JSON.parse(localStorage.getItem('wh-loot-setting'))
-                : {blink: 'y', sound: 'y', chest: 'y'};
+                : { blink: 'y', sound: 'y', chest: 'y' };
             let $ct_wrap;
             let soundLoopFlag = false;
             const getDOMOb = new MutationObserver(() => {
@@ -5574,7 +5574,7 @@ margin: 0 0 3px;
                     const soundIntervalID = window.setInterval(() => {
                         if (soundLoopFlag) $audio.play().then();
                     }, 1200);
-                    ob.observe($root, {childList: true, subtree: true});
+                    ob.observe($root, { childList: true, subtree: true });
                 }
             });
             const ob = new MutationObserver(() => {
@@ -5583,13 +5583,13 @@ margin: 0 0 3px;
                 $root = document.querySelector('#christmastownroot');
                 $ct_wrap = $root.querySelector('#ct-wrap');
                 if (!$ct_wrap) {
-                    ob.observe($root, {childList: true, subtree: true});
+                    ob.observe($root, { childList: true, subtree: true });
                     return;
                 }
                 const $ct_title = $ct_wrap.querySelector('.status-title');
                 const $pos = $ct_wrap.querySelector('.map-title span[class^="position___"]') || $ct_wrap.querySelector('.status-title span[class^="position___"]');
                 if (!$pos) {
-                    ob.observe($root, {childList: true, subtree: true});
+                    ob.observe($root, { childList: true, subtree: true });
                     return;
                 }
                 const $pos_spl = $pos.innerText.trim().split(',');
@@ -5599,7 +5599,7 @@ margin: 0 0 3px;
                 const $wh_loot_container = $root.querySelector('#wh-loot-container');
                 if (!$wh_loot_container) {
                     console.error('掉落助手未找到DOM容器');
-                    ob.observe($root, {childList: true, subtree: true});
+                    ob.observe($root, { childList: true, subtree: true });
                     return;
                 }
                 const $blink = $wh_loot_container.querySelector('#wh-loot-setting-blink');
@@ -5610,7 +5610,7 @@ margin: 0 0 3px;
                 const items = $root.querySelectorAll('div.grid-layer div.items-layer div.ct-item');
                 // 附近的所有物品
                 items.forEach(el => {
-                    const item_props = {x: 0, y: 0, name: '', type: '', url: '',};
+                    const item_props = { x: 0, y: 0, name: '', type: '', url: '', };
                     item_props.x = parseInt(el.style.left.replaceAll('px', '')) / 30;
                     item_props.y = -parseInt(el.style.top.replaceAll('px', '')) / 30;
                     item_props.url = el.firstElementChild.src;
@@ -5684,9 +5684,9 @@ margin: 0 0 3px;
                 });
                 $tbody.innerHTML = table_html;
                 localStorage.setItem('wh-loot-store', JSON.stringify(dropHist));
-                ob.observe($root, {childList: true, subtree: true});
+                ob.observe($root, { childList: true, subtree: true });
             });
-            getDOMOb.observe($root, {childList: true, subtree: true});
+            getDOMOb.observe($root, { childList: true, subtree: true });
         }
     }
 
@@ -6544,7 +6544,7 @@ margin: 0 0 3px;
              */
             if ($(e).text().indexOf('join the faction') >= 0) {
                 const rsName = e.childNodes[2].nodeValue.trim().split(' ')[2];
-                const rsDict = {'accepted': '通过', 'declined': '拒绝',};
+                const rsDict = { 'accepted': '通过', 'declined': '拒绝', };
                 e.firstChild.nodeValue = '加入帮派 ';
                 e.childNodes[2].nodeValue = ` 的申请已${rsDict[rsName]}。`;
                 return;
@@ -6924,7 +6924,7 @@ margin: 0 0 3px;
                     observer.disconnect();
                 });
             })
-                .observe(content.documentElement, {childList: true, subtree: true});
+                .observe(content.documentElement, { childList: true, subtree: true });
         });
     }
 
@@ -6958,7 +6958,7 @@ margin: 0 0 3px;
                 });
             }
             case UserScriptEngine.PDA: {
-                const {PDA_httpGet, PDA_httpPost} = window;
+                const { PDA_httpGet, PDA_httpPost } = window;
                 return method === 'get' ?
                     // get
                     new Promise((resolve, reject) => {
@@ -6979,7 +6979,7 @@ margin: 0 0 3px;
                             console.error('[wh] 跨域请求错误：PDA版本不支持');
                             reject('错误：PDA版本不支持');
                         }
-                        PDA_httpPost(url, {'content-type': 'application/json'}, body)
+                        PDA_httpPost(url, { 'content-type': 'application/json' }, body)
                             .catch(e => {
                                 console.error('[wh] 网络错误', e);
                                 reject(`[wh] 网络错误 ${e}`);
@@ -6997,7 +6997,7 @@ margin: 0 0 3px;
                         method: method,
                         url: url,
                         data: method === 'get' ? null : body,
-                        headers: method === 'get' ? null : {'content-type': 'application/json'},
+                        headers: method === 'get' ? null : { 'content-type': 'application/json' },
                         onload: res => resolve(res.response),
                         onerror: res => reject(`连接错误 ${JSON.stringify(res)}`),
                         ontimeout: res => reject(`连接超时 ${JSON.stringify(res)}`),
@@ -7196,7 +7196,7 @@ z-index:100001;
                                 _window.GM_setValue("gsp_x", 10);
                                 _window.GM_setValue("gsp_y", 10);
                                 notify.del();
-                                notify = WHNotify('飞贼小助手已加载', {timeout: 1});
+                                notify = WHNotify('飞贼小助手已加载', { timeout: 1 });
                                 const gsp = _docu.querySelector('#gsp');
                                 const init = () => {
                                     ifr.style.height = `${gsp.offsetHeight + 10}px`;
@@ -7204,7 +7204,7 @@ z-index:100001;
                                     gsp.style.top = '10px';
                                     gsp.style.left = '10px';
                                 };
-                                new MutationObserver(init).observe(gsp, {childList: true, subtree: true});
+                                new MutationObserver(init).observe(gsp, { childList: true, subtree: true });
                                 init();
                                 if (isDev()) _window.GM_setValue("gsp_showContent", true)
                             });
@@ -7278,7 +7278,7 @@ z-index:100001;
 
     // 返回玩家信息的对象 user
     function getPlayerInfo() {
-        const rs = {playername: '未知', userID: -1};
+        const rs = { playername: '未知', userID: -1 };
         // const headerData = JSON.parse(sessionStorage['headerData']);
         // if (!headerData['user']['state']['isLoggedIn']) return rs;
         // // string
@@ -7341,7 +7341,7 @@ z-index:100001;
             if (price_conf['pt'] !== -1) priceWatcherPt(apikey, price_conf['pt']).then();
             if (price_conf['xan'] !== -1) priceWatcherXan(apikey, price_conf['xan']).then();
         }, 10000)
-        return {status: true};
+        return { status: true };
     }
 
     // pt价格监视
@@ -7515,7 +7515,7 @@ z-index:100001;
             const headerOB = new MutationObserver(_ => {
                 headerOB.disconnect();
                 headerTrans();
-                headerOB.observe($('div#header-root')[0], {childList: true, subtree: true, attributes: true});
+                headerOB.observe($('div#header-root')[0], { childList: true, subtree: true, attributes: true });
             });
 
             const headerTrans = function headerTrans() {
@@ -7589,7 +7589,7 @@ z-index:100001;
                 });
             };
             headerTrans();
-            headerOB.observe($('div#header-root')[0], {childList: true, subtree: true, attributes: true});
+            headerOB.observe($('div#header-root')[0], { childList: true, subtree: true, attributes: true });
         }
 
         // chatbox
@@ -7597,7 +7597,7 @@ z-index:100001;
             const chatOB = new MutationObserver(_ => {
                 chatOB.disconnect();
                 chatTrans();
-                chatOB.observe($('div#chatRoot').get(0), {childList: true, subtree: true, attributes: true});
+                chatOB.observe($('div#chatRoot').get(0), { childList: true, subtree: true, attributes: true });
             });
             const chatTrans = function chatTrans() {
                 // 聊天框的标题
@@ -7647,7 +7647,7 @@ z-index:100001;
                 }
             };
             chatTrans();
-            chatOB.observe($('div#chatRoot').get(0), {childList: true, subtree: true, attributes: true});
+            chatOB.observe($('div#chatRoot').get(0), { childList: true, subtree: true, attributes: true });
         }
 
         // 搜索玩家的4个分类按钮
@@ -7681,7 +7681,7 @@ z-index:100001;
             function travelOBInit() {
                 travelOB.disconnect();
                 travelTrans();
-                travelOB.observe($('div.content-wrapper')[0], {childList: true, subtree: true});
+                travelOB.observe($('div.content-wrapper')[0], { childList: true, subtree: true });
             }
 
             function travelTrans() {
@@ -7706,7 +7706,7 @@ z-index:100001;
             }
 
             travelTrans();
-            travelOB.observe(document.querySelector('div.content-wrapper'), {childList: true, subtree: true});
+            travelOB.observe(document.querySelector('div.content-wrapper'), { childList: true, subtree: true });
         }
 
         // 主页
@@ -7763,7 +7763,7 @@ z-index:100001;
             function cityOBInit() {
                 cityOB.disconnect();
                 cityTrans();
-                cityOB.observe($('div.content-wrapper')[0], {childList: true, subtree: true});
+                cityOB.observe($('div.content-wrapper')[0], { childList: true, subtree: true });
             }
 
             function cityTrans() {
@@ -7833,7 +7833,7 @@ z-index:100001;
             }
 
             cityTrans();
-            cityOB.observe(document.querySelector('div.content-wrapper'), {childList: true, subtree: true});
+            cityOB.observe(document.querySelector('div.content-wrapper'), { childList: true, subtree: true });
             return;
         }
 
@@ -7844,7 +7844,7 @@ z-index:100001;
             function gymOBInit() {
                 gymOB.disconnect();
                 gymTrans();
-                gymOB.observe($('div.content-wrapper')[0], {childList: true, subtree: true, attributes: true});
+                gymOB.observe($('div.content-wrapper')[0], { childList: true, subtree: true, attributes: true });
             }
 
             function gymTrans() {
@@ -7948,7 +7948,7 @@ z-index:100001;
             }
 
             gymTrans();
-            gymOB.observe($('div.content-wrapper')[0], {childList: true, subtree: true, attributes: true});
+            gymOB.observe($('div.content-wrapper')[0], { childList: true, subtree: true, attributes: true });
             return;
         }
 
@@ -7956,7 +7956,7 @@ z-index:100001;
         if (href.contains(/item\.php/)) {
             if (href.includes('item.php?temp=')) return;
             // 标题和右边的链接
-            initOB(document.querySelector('.content-title'), {childList: true},
+            initOB(document.querySelector('.content-title'), { childList: true },
                 () => {
                     titleTrans();
                     contentTitleLinksTrans();
@@ -7964,7 +7964,7 @@ z-index:100001;
             // 套装预览中间的文字
             const $loadouts_root = document.getElementById('loadoutsRoot');
             if ($loadouts_root) {
-                initOB($loadouts_root, {subtree: true, attributes: true}, () => {
+                initOB($loadouts_root, { subtree: true, attributes: true }, () => {
                     const el = $loadouts_root.querySelector('div[class^="type___"]');
                     if (el && itemPageDict[el.innerText.trim()]) {
                         el.innerText = itemPageDict[el.innerText.trim()];
@@ -7977,8 +7977,8 @@ z-index:100001;
                 subtree: true,
                 attributeFilter: ["aria-hidden",]
             };
-            const translated = {cat: '', count: -1};
-            const translatedOnce = {item_opt: -1, opt_icon_count: -1};
+            const translated = { cat: '', count: -1 };
+            const translatedOnce = { item_opt: -1, opt_icon_count: -1 };
             initOB(document.getElementById('category-wrap'), options, () => {
                 // 手机操作选项
                 const $item_opt = document.querySelectorAll(`ul.itemsList span.opt-name`);
@@ -8047,7 +8047,7 @@ z-index:100001;
                 }
                 // 黑框分类标题
                 const $items_type_name = $title_black.querySelector('span.items-name');
-                initOB($items_type_name, {childList: true}, () => {
+                initOB($items_type_name, { childList: true }, () => {
                     if (itemPageDict[$items_type_name.innerText.trim()]) {
                         $items_type_name.innerText = itemPageDict[$items_type_name.innerText.trim()];
                     }
@@ -8067,7 +8067,7 @@ z-index:100001;
         if (href.contains(/(shops|bigalgunshop)\.php/)) {
             // 标题和右边的链接
             const $cont_title = document.querySelector('.content-title');
-            initOB($cont_title, {childList: true, subtree: true}, () => {
+            initOB($cont_title, { childList: true, subtree: true }, () => {
                 titleTrans();
                 contentTitleLinksTrans();
             });
@@ -8120,7 +8120,7 @@ z-index:100001;
                     });
                 });
                 // 展开的物品详情
-                initOB($wrapper, {childList: true, subtree: true}, () => {
+                initOB($wrapper, { childList: true, subtree: true }, () => {
                     const $item_desc = $wrapper.querySelector('.show-item-info') || $wrapper.querySelector('.view-item-info');
                     showItemInfoTrans($item_desc);
                 });
@@ -8162,7 +8162,7 @@ z-index:100001;
                 // select btn
                 const $select_btn = $sell_items_wrapper.querySelector('li.select button.wai-btn');
                 if ($select_btn) {
-                    initOB($select_btn, {childList: true}, () => {
+                    initOB($select_btn, { childList: true }, () => {
                         if ($select_btn && npcShopDict[$select_btn.innerText.trim()]) {
                             $select_btn.innerText = npcShopDict[$select_btn.innerText.trim()];
                         }
@@ -8316,7 +8316,7 @@ z-index:100001;
             function eduOBInit() {
                 eduOB.disconnect();
                 eduTrans();
-                eduOB.observe($('div.content-wrapper')[0], {childList: true, subtree: true});
+                eduOB.observe($('div.content-wrapper')[0], { childList: true, subtree: true });
             }
 
             function eduTrans() {
@@ -8401,7 +8401,7 @@ z-index:100001;
             }
 
             eduTrans();
-            eduOB.observe($('div.content-wrapper')[0], {childList: true, subtree: true});
+            eduOB.observe($('div.content-wrapper')[0], { childList: true, subtree: true });
             return;
         }
 
@@ -8632,7 +8632,7 @@ z-index:100001;
             const newspaperOB = new MutationObserver(() => {
                 newspaperOB.disconnect();
                 newspaperTrans();
-                newspaperOB.observe($('div.content-wrapper')[0], {childList: true, subtree: true});
+                newspaperOB.observe($('div.content-wrapper')[0], { childList: true, subtree: true });
             });
 
             function newspaperTrans() {
@@ -8652,7 +8652,7 @@ z-index:100001;
                 if ($date_label && $date_label.innerText.trim().contains(date_reg)) {
                     const date_format = $date_label.innerText.trim().replaceAll(',', '');
                     const date_spl = date_format.split(' ');
-                    const date = {w: date_spl[0], m: date_spl[1], d: date_spl[2], y: date_spl[3]};
+                    const date = { w: date_spl[0], m: date_spl[1], d: date_spl[2], y: date_spl[3] };
                     const month_trans = {
                         'Jan': 1,
                         'Feb': 2,
@@ -8811,7 +8811,7 @@ z-index:100001;
             }
 
             newspaperTrans();
-            newspaperOB.observe($('div.content-wrapper')[0], {childList: true, subtree: true});
+            newspaperOB.observe($('div.content-wrapper')[0], { childList: true, subtree: true });
             return;
         }
 
@@ -8838,7 +8838,7 @@ z-index:100001;
                 titleTrans();
                 contentTitleLinksTrans();
                 propertyTrans();
-                propertyOB.observe($('div.content-wrapper').get(0), {childList: true, subtree: true});
+                propertyOB.observe($('div.content-wrapper').get(0), { childList: true, subtree: true });
             });
             const propertyTrans = function propertyTrans() {
                 // 从玩家处租或买
@@ -8964,7 +8964,7 @@ z-index:100001;
             };
 
             propertyTrans();
-            propertyOB.observe($('div.content-wrapper').get(0), {childList: true, subtree: true});
+            propertyOB.observe($('div.content-wrapper').get(0), { childList: true, subtree: true });
             return;
         }
 
@@ -8975,10 +8975,10 @@ z-index:100001;
                 titleTrans();
                 contentTitleLinksTrans();
                 eventsTrans();
-                ob.observe($('div.content-wrapper')[0], {childList: true, subtree: true});
+                ob.observe($('div.content-wrapper')[0], { childList: true, subtree: true });
             });
             eventsTrans();
-            ob.observe($('div.content-wrapper')[0], {childList: true, subtree: true});
+            ob.observe($('div.content-wrapper')[0], { childList: true, subtree: true });
             return;
             // let events;
             // const eventMutation = new MutationObserver(() => {
@@ -9006,7 +9006,7 @@ z-index:100001;
             const awOB = new MutationObserver(() => {
                 awOB.disconnect();
                 awTrans();
-                awOB.observe($('div.content-wrapper')[0], {childList: true, subtree: true, attributes: true});
+                awOB.observe($('div.content-wrapper')[0], { childList: true, subtree: true, attributes: true });
             });
             const awTrans = function awTrans() {
                 titleTrans();
@@ -9132,7 +9132,7 @@ z-index:100001;
                 });
             };
             awTrans();
-            awOB.observe($('div.content-wrapper')[0], {childList: true, subtree: true, attributes: true});
+            awOB.observe($('div.content-wrapper')[0], { childList: true, subtree: true, attributes: true });
             return;
         }
 
@@ -9252,7 +9252,7 @@ z-index:100001;
             function hosOBInit() {
                 hospitalOB.disconnect();
                 hospTrans();
-                hospitalOB.observe($('div.content-wrapper')[0], {childList: true, subtree: true});
+                hospitalOB.observe($('div.content-wrapper')[0], { childList: true, subtree: true });
             }
 
             function hospTrans() {
@@ -9299,7 +9299,7 @@ z-index:100001;
             }
 
             hospTrans();
-            hospitalOB.observe($('div.content-wrapper')[0], {childList: true, subtree: true});
+            hospitalOB.observe($('div.content-wrapper')[0], { childList: true, subtree: true });
             return;
         }
 
@@ -9310,7 +9310,7 @@ z-index:100001;
             function factionOBInit() {
                 factionOB.disconnect();
                 factionTrans();
-                factionOB.observe($('div.content-wrapper')[0], {childList: true, subtree: true});
+                factionOB.observe($('div.content-wrapper')[0], { childList: true, subtree: true });
             }
 
             const factionDict = {
@@ -9420,7 +9420,7 @@ z-index:100001;
             }
 
             factionTrans();
-            factionOB.observe($('div.content-wrapper')[0], {childList: true, subtree: true});
+            factionOB.observe($('div.content-wrapper')[0], { childList: true, subtree: true });
             return;
         }
 
@@ -9460,7 +9460,7 @@ z-index:100001;
         if (href.contains(/calendar\.php/)) {
             const $root = document.querySelectorAll('#calendar-root');
             $root.forEach(el => {
-                initOB(el, {childList: true, subtree: true}, () => {
+                initOB(el, { childList: true, subtree: true }, () => {
                     // 页标题
                     const $h4_title = el.querySelectorAll('h4[class^="title___"]');
                     titleTransReact($h4_title);
@@ -9484,7 +9484,7 @@ z-index:100001;
             let $root = document.querySelector('#christmastownroot');
             const $title_wrapper = $root.querySelector('div[class^="appHeaderWrapper___"]');
             // 标题和右边的链接
-            initOB($title_wrapper, {childList: true, subtree: true}, () => {
+            initOB($title_wrapper, { childList: true, subtree: true }, () => {
                 titleTransReact();
                 contentTitleLinksTransReact();
             });
@@ -9647,47 +9647,47 @@ z-index:100001;
             const dest = [
                 {
                     name: 'mex', show: '墨西哥',
-                    stocks: {'Dahlia': '花', 'Jaguar Plushie': '偶'}
+                    stocks: { 'Dahlia': '花', 'Jaguar Plushie': '偶' }
                 },
                 {
                     name: 'cay', show: '开曼',
-                    stocks: {'Banana Orchid': '花', 'Stingray Plushie': '偶'}
+                    stocks: { 'Banana Orchid': '花', 'Stingray Plushie': '偶' }
                 },
                 {
                     name: 'can', show: '加拿大',
-                    stocks: {'Crocus': '花', 'Wolverine Plushie': '偶'}
+                    stocks: { 'Crocus': '花', 'Wolverine Plushie': '偶' }
                 },
                 {
                     name: 'haw', show: '夏威夷',
-                    stocks: {'Orchid': '花', 'Large Suitcase': '大箱'}
+                    stocks: { 'Orchid': '花', 'Large Suitcase': '大箱' }
                 },
                 {
                     name: 'uni', show: '嘤国',
-                    stocks: {'Heather': '花', 'Red Fox Plushie': '赤狐', 'Nessie Plushie': '水怪'}
+                    stocks: { 'Heather': '花', 'Red Fox Plushie': '赤狐', 'Nessie Plushie': '水怪' }
                 },
                 {
                     name: 'arg', show: '阿根廷',
-                    stocks: {'Ceibo Flower': '花', 'Monkey Plushie': '偶', 'Tear Gas': '催泪弹'},
+                    stocks: { 'Ceibo Flower': '花', 'Monkey Plushie': '偶', 'Tear Gas': '催泪弹' },
                 },
                 {
                     name: 'swi', show: '瑞士',
-                    stocks: {'Edelweiss': '花', 'Chamois Plushie': '偶'},
+                    stocks: { 'Edelweiss': '花', 'Chamois Plushie': '偶' },
                 },
                 {
                     name: 'jap', show: '日本',
-                    stocks: {'Cherry Blossom': '花'},
+                    stocks: { 'Cherry Blossom': '花' },
                 },
                 {
                     name: 'chi', show: '祖国',
-                    stocks: {'Peony': '花', 'Panda Plushie': '偶'},
+                    stocks: { 'Peony': '花', 'Panda Plushie': '偶' },
                 },
                 {
                     name: 'uae', show: '迪拜',
-                    stocks: {'Tribulus Omanense': '花', 'Camel Plushie': '偶'},
+                    stocks: { 'Tribulus Omanense': '花', 'Camel Plushie': '偶' },
                 },
                 {
                     name: 'sou', show: '南非',
-                    stocks: {'African Violet': '花', 'Lion Plushie': '偶', 'Xanax': 'XAN'},
+                    stocks: { 'African Violet': '花', 'Lion Plushie': '偶', 'Xanax': 'XAN' },
                 }];
             const now = new Date();
             const res = await fstock.get();
@@ -9732,11 +9732,11 @@ z-index:100001;
 
     // 元素生成器
     function elemGenerator(setting, root_node) {
-        let {tip, domType} = setting;
+        let { tip, domType } = setting;
         const new_node = document.createElement('div');
         switch (domType) {
             case 'checkbox': {
-                let {domId, dictName, domText} = setting;
+                let { domId, dictName, domText } = setting;
                 let label = document.createElement('label');
                 (tip) && (label.setAttribute('title', tip));
                 let input = document.createElement('input');
@@ -9753,7 +9753,7 @@ z-index:100001;
                 break;
             }
             case 'button': {
-                let {domId, domText, clickFunc} = setting;
+                let { domId, domText, clickFunc } = setting;
                 let btn = document.createElement('button');
                 (tip) && (btn.setAttribute('title', tip));
                 btn.id = domId;
@@ -9763,14 +9763,14 @@ z-index:100001;
                 break;
             }
             case 'select': {
-                let {domSelectOpt, dictName, domId, domText} = setting;
+                let { domSelectOpt, dictName, domId, domText } = setting;
                 let label = document.createElement('label');
                 (tip) && (label.setAttribute('title', tip));
                 let text = document.createTextNode(domText);
                 let select = document.createElement('select');
                 select.id = domId;
                 domSelectOpt.forEach((opt, i) => {
-                    let {domVal, domText} = opt;
+                    let { domVal, domText } = opt;
                     let option = document.createElement('option');
                     option.value = domVal;
                     option.innerHTML = domText;
@@ -9878,7 +9878,7 @@ z-index:100001;
         let obj = {};
         let hdd = sessionStorage['headerData'];
         if (hdd) obj = JSON.parse(hdd)['user']['state'];
-        console.info({obj})
+        console.info({ obj })
         return obj;
     }
 
@@ -10019,9 +10019,12 @@ z-index:100001;
             if (id !== null) return;
             p.innerHTML = '状态：已开';
             id = setInterval(async () => {
-                let res = await (await fetch(url + uid.value)).text();
+                let res = await (await fetch(url + uid.value, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                    referrer: "loader.php?sid=attack&user2ID=" + uid.value
+                })).text();
                 console.log(count++, JSON.parse(res.split('<div')[0]));
-            }, 2000);
+            }, 500);
         });
 
         stop.addEventListener('click', () => {
