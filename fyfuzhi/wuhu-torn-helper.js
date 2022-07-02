@@ -2889,16 +2889,14 @@
     // 助手各项「设置」
     let setting_list = [];
     {
-        // 开启翻译
-        setting_list.push({
-            domType: 'checkbox',
-            domId: 'wh-trans-enable',
-            domText: ' 开启翻译 <button id="wh-trans-data-update">更新词库</button>',
-            dictName: 'transEnable',
-            isHide: true,
-        });
         // 12月时加入圣诞小镇选项
         if (date.getMonth() === 11) {
+            setting_list.push({
+                domType: 'plain',
+                domId: '',
+                domHTML: '圣诞小镇',
+                tagName: 'h4',
+            })
             setting_list.push({
                 domType: 'checkbox',
                 domId: 'wh-xmastown-wt',
@@ -2914,126 +2912,36 @@
                 isHide: true,
             });
         }
-        // 任务助手
+
+        // 翻译
+        setting_list.push({
+            domType: 'plain',
+            domId: '',
+            domHTML: '翻译',
+            tagName: 'h4',
+        });
+        // 开启翻译
         setting_list.push({
             domType: 'checkbox',
-            domId: 'wh-mission-lint',
-            domText: ' 任务助手',
-            dictName: 'missionHint',
-            tip: 'Duke任务的一些中文小提示',
+            domId: 'wh-trans-enable',
+            domText: ' 开启翻译',
+            dictName: 'transEnable',
             isHide: true,
         });
-        // 起飞警告
-        setting_list.push({
-            domType: 'checkbox',
-            domId: 'wh-energy-alert',
-            domText: ' 起飞爆E警告',
-            dictName: 'energyAlert',
-            tip: '起飞前计算来回是否会爆体，红字警告',
-            isHide: true,
-        });
-        // 飞行闹钟
-        setting_list.push({
-            domType: 'checkbox',
-            domId: 'wh-trv-alarm-check',
-            domText: ' 飞行闹钟',
-            dictName: 'trvAlarm',
-            tip: '(仅PC) 飞行页面将显示一个内建的闹钟，落地前声音提醒，需要打开浏览器声音权限',
-            isHide: true,
-        });
-        // 啤酒提醒
-        setting_list.push({
-            domType: 'checkbox',
-            domId: 'wh-qua-alarm-check',
-            domText: '<span> 啤酒提醒 </span><button id="wh-qua-alarm-check-btn">今日不提醒</button>',
-            dictName: '_15Alarm',
-            tip: '每小时的整15分钟的倍数时通知提醒抢啤酒或者血包',
-            isHide: true,
-            changeEv: function (ev) {
-                ev.target.checked ? beer.start() : beer.stop();
-            },
-        });
-        // 啤酒提醒状态
+        // 更新翻译词库
         setting_list.push({
             domType: 'button',
             domId: '',
-            domText: '啤酒提醒状态',
-            clickFunc: function () {
-                WHNotify(beer.status());
-            }
+            domText: '更新翻译词库',
+            clickFunc: updateTransDict
         });
-        // 啤酒提醒时间
+
+        // 战斗优化
         setting_list.push({
-            domType: 'button',
+            domType: 'plain',
             domId: '',
-            domText: '啤酒提醒时间设定',
-            // tip: '通知提前时间',
-            clickFunc: function () {
-                popup_node.close();
-                let popup = popupMsg(`<label>提前提醒时间(秒)：<input type="number" value="${getWhSettingObj()['_15AlarmTime']}" /></label><p>区间为 1 ~ 60，默认 50</p>`, '啤酒提醒时间设定');
-                let confirm = document.createElement('button');
-                confirm.innerHTML = '确定';
-                confirm.style.float = 'right';
-                confirm.addEventListener('click', () => {
-                    let input = popup.querySelector('input');
-                    let num = input.value | 0;
-                    if (num === getWhSettingObj()['_15AlarmTime']) return;
-                    if (num < 1 || num > 60) num = 50;
-                    input.value = num.toString();
-                    setWhSetting('_15AlarmTime', num);
-                    // 之前的运行状态
-                    let before_state = beer.is_running();
-                    beer.set_time(num);
-                    if (before_state) beer.start();
-                    popup.close();
-                });
-                popup.appendChild(confirm);
-            },
-        });
-        // 攻击链接转跳
-        setting_list.push({
-            domType: 'checkbox',
-            domId: 'wh-attack-relocate',
-            domText: ' 真·攻击界面转跳',
-            dictName: 'attRelocate',
-            tip: '在无法打开攻击界面的情况下依然可以转跳到正确的攻击页面',
-            isHide: true,
-        });
-        // 捡垃圾助手
-        setting_list.push({
-            domType: 'checkbox',
-            domId: 'wh-city-finder',
-            domText: ' 捡垃圾助手',
-            dictName: 'cityFinder',
-            tip: '城市地图中放大显示物品并且估计价值',
-            isHide: true,
-        });
-        // 快速crime
-        setting_list.push({
-            domType: 'checkbox',
-            domId: 'wh-quick-crime',
-            domText: ' 快速犯罪',
-            dictName: 'quickCrime',
-            tip: '显示快捷操作按钮，目前不支持自定义',
-            isHide: true,
-        });
-        // 叠E保护
-        setting_list.push({
-            domType: 'checkbox',
-            domId: 'wh-SEProtect-check',
-            domText: ' 叠E保护',
-            dictName: 'SEProtect',
-            tip: '隐藏健身房的锻炼按钮，防止误操作',
-            isHide: true,
-        });
-        // PT一键购买
-        setting_list.push({
-            domType: 'checkbox',
-            domId: 'wh-ptQuickBuy-check',
-            domText: ' PT一键购买',
-            dictName: 'ptQuickBuy',
-            tip: 'PT市场页面购买时跳过确认',
-            isHide: true,
+            domHTML: '战斗优化',
+            tagName: 'h4',
         });
         // 光速拔刀
         setting_list.push({
@@ -3101,13 +3009,48 @@
             isHide: true,
             tip: '将结束后指定按钮移动到上面指定的格子上',
         });
-        // 4条转跳
+        // 攻击链接转跳
         setting_list.push({
             domType: 'checkbox',
+            domId: 'wh-attack-relocate',
+            domText: ' 真·攻击界面转跳',
+            dictName: 'attRelocate',
+            tip: '在无法打开攻击界面的情况下依然可以转跳到正确的攻击页面',
+            isHide: true,
+        });
+
+        // 飞行
+        setting_list.push({
+            domType: 'plain',
             domId: '',
-            domText: ' 4条转跳',
-            dictName: 'barsRedirect',
-            tip: '点击4条时转跳对应页面',
+            domHTML: '飞行',
+            tagName: 'h4',
+        });
+        // 起飞警告
+        setting_list.push({
+            domType: 'checkbox',
+            domId: 'wh-energy-alert',
+            domText: ' 起飞爆E警告',
+            dictName: 'energyAlert',
+            tip: '起飞前计算来回是否会爆体，红字警告',
+            isHide: true,
+        });
+        // 飞行闹钟
+        setting_list.push({
+            domType: 'checkbox',
+            domId: 'wh-trv-alarm-check',
+            domText: ' 飞行闹钟',
+            dictName: 'trvAlarm',
+            tip: '(仅PC) 飞行页面将显示一个内建的闹钟，落地前声音提醒，需要打开浏览器声音权限',
+            isHide: true,
+        });
+
+        // 公司
+        setting_list.push({
+            domType: 'plain',
+            domId: '',
+            domHTML: '公司',
+            tagName: 'h4',
         });
         // 浮动存钱框
         setting_list.push({
@@ -3132,6 +3075,124 @@
             domText: ' 收起公司冰蛙效率表',
             dictName: 'companyBWCollapse',
             tip: '开启后可手动显示隐藏冰蛙公司表格',
+        });
+
+        // 啤酒
+        setting_list.push({
+            domType: 'plain',
+            domId: '',
+            domHTML: '啤酒',
+            tagName: 'h4',
+        });
+        // 啤酒提醒
+        setting_list.push({
+            domType: 'checkbox',
+            domId: 'wh-qua-alarm-check',
+            domText: '<span> 啤酒提醒 </span><button id="wh-qua-alarm-check-btn">今日不提醒</button>',
+            dictName: '_15Alarm',
+            tip: '每小时的整15分钟的倍数时通知提醒抢啤酒或者血包',
+            isHide: true,
+            changeEv: function (ev) {
+                ev.target.checked ? beer.start() : beer.stop();
+            },
+        });
+        // 啤酒提醒状态
+        setting_list.push({
+            domType: 'button',
+            domId: '',
+            domText: '啤酒提醒状态',
+            clickFunc: function () {
+                WHNotify(`啤酒提醒${beer.status()}`);
+            }
+        });
+        // 啤酒提醒时间
+        setting_list.push({
+            domType: 'button',
+            domId: '',
+            domText: '啤酒提醒时间设定',
+            // tip: '通知提前时间',
+            clickFunc: function () {
+                popup_node.close();
+                let popup = popupMsg(`<label>提前提醒时间(秒)：<input type="number" value="${getWhSettingObj()['_15AlarmTime']}" /></label><p>区间为 1 ~ 60，默认 50</p>`, '啤酒提醒时间设定');
+                let confirm = document.createElement('button');
+                confirm.innerHTML = '确定';
+                confirm.style.float = 'right';
+                confirm.addEventListener('click', () => {
+                    let input = popup.querySelector('input');
+                    let num = input.value | 0;
+                    if (num === getWhSettingObj()['_15AlarmTime']) return;
+                    if (num < 1 || num > 60) num = 50;
+                    input.value = num.toString();
+                    setWhSetting('_15AlarmTime', num);
+                    // 之前的运行状态
+                    let before_state = beer.is_running();
+                    beer.set_time(num);
+                    if (before_state) beer.start();
+                    popup.close();
+                });
+                popup.appendChild(confirm);
+            },
+        });
+
+        // 其他
+        setting_list.push({
+            domType: 'plain',
+            domId: '',
+            domHTML: '其他',
+            tagName: 'h4',
+        });
+        // 任务助手
+        setting_list.push({
+            domType: 'checkbox',
+            domId: 'wh-mission-lint',
+            domText: ' 任务助手',
+            dictName: 'missionHint',
+            tip: 'Duke任务的一些中文小提示',
+            isHide: true,
+        });
+        // 捡垃圾助手
+        setting_list.push({
+            domType: 'checkbox',
+            domId: 'wh-city-finder',
+            domText: ' 捡垃圾助手',
+            dictName: 'cityFinder',
+            tip: '城市地图中放大显示物品并且估计价值',
+            isHide: true,
+        });
+        // 快速crime
+        setting_list.push({
+            domType: 'checkbox',
+            domId: 'wh-quick-crime',
+            domText: ' 快速犯罪',
+            dictName: 'quickCrime',
+            tip: '显示快捷操作按钮，目前不支持自定义',
+            isHide: true,
+        });
+        // 叠E保护
+        setting_list.push({
+            domType: 'checkbox',
+            domId: 'wh-SEProtect-check',
+            domText: ' 叠E保护',
+            dictName: 'SEProtect',
+            tip: '隐藏健身房的锻炼按钮，防止误操作',
+            isHide: true,
+        });
+        // PT一键购买
+        setting_list.push({
+            domType: 'checkbox',
+            domId: 'wh-ptQuickBuy-check',
+            domText: ' PT一键购买',
+            dictName: 'ptQuickBuy',
+            tip: 'PT市场页面购买时跳过确认',
+            isHide: true,
+        });
+        // 4条转跳
+        setting_list.push({
+            domType: 'checkbox',
+            domId: '',
+            domText: ' 4条转跳',
+            dictName: 'barsRedirect',
+            tip: '点击4条时转跳对应页面',
         });
         // 清除多余的脚本
         setting_list.push({
@@ -3203,11 +3264,11 @@
             dictName: 'isDev',
             isHide: true,
         });
-        // 其他设置
+        // 更多设定
         if (isDev()) setting_list.push({
-            domType: 'button', domId: 'wh-otherBtn', domText: '其他设置', clickFunc: () => {
+            domType: 'button', domId: 'wh-otherBtn', domText: '更多设定', clickFunc: () => {
                 const html = `清空设置数据、请求通知权限、测试跨域请求`;
-                const popup = popupMsg(html, '其他设置');
+                const popup = popupMsg(html, '更多设定');
             },
             isHide: true,
         });
@@ -3882,11 +3943,6 @@ background-size: 100% auto !important;
                 setting_list.forEach(set => elemGenerator(set, $zhongNode.setting_root));
                 let pop = popupMsg('', '芜湖助手设置');
                 pop.appendChild($zhongNode.setting_root);
-                // 更新词库按钮
-                $zhongNode.setting_root.querySelector('button#wh-trans-data-update').onclick = () => {
-                    pop['close']();
-                    popupMsg('计划中');
-                }
                 // 本日不提醒
                 $zhongNode.setting_root.querySelector('#wh-qua-alarm-check-btn').addEventListener('click', beer.skip_today);
                 // 开发详情按钮
@@ -3928,7 +3984,7 @@ color:black;
             domId: '',
             domText: '📐️ 测试',
             clickFunc: function () {
-                WHNotify('芜湖助手', { sysNotify: true, timeout: 3 })
+                WHNotify('芜湖助手', { sysNotify: true, timeout: 1 })
             },
         });
     }
@@ -4902,16 +4958,17 @@ display:inline-block;
 
     // 叠e助手
     if (href.includes('gym.php')) {
+        let cont = null;
         const switch_node = document.createElement('div');
         switch_node.innerHTML = `<label><input type="checkbox" ${getWhSettingObj()['SEProtect'] ? 'checked' : ''}/> 叠E保护</label>`;
         switch_node.id = 'wh-gym-info-cont';
-        switch_node.querySelector('input').onchange = (e) => {
-            $zhongNode.querySelector('#wh-SEProtect-check').checked = e.target.checked;
-            node.classList.toggle('wh-display-none');
+        switch_node.querySelector('input').onchange = e => {
+            cont.classList.toggle('wh-display-none');
             setWhSetting('SEProtect', e.target.checked);
         };
-        if (getWhSettingObj()['SEProtect']) elementReady('#gymroot').then(node => {
-            node.classList.add('wh-display-none');
+        elementReady('#gymroot').then(node => {
+            cont = node;
+            if(getWhSettingObj()['SEProtect'])node.classList.add('wh-display-none');
             node.before(switch_node);
         });
     }
@@ -6731,20 +6788,19 @@ margin: 0 0 3px;
 
     /**
      * 添加全局style
-     * @param CSS css rules
-     * @returns null
+     * @param {string} css CSS Rules
      */
-    function addStyle(CSS) {
+    function addStyle(css) {
         let wh_gStyle = document.querySelector('style#wh-trans-gStyle');
         if (wh_gStyle) {
-            wh_gStyle.innerHTML += CSS;
+            wh_gStyle.innerHTML += css;
         } else {
             wh_gStyle = document.createElement("style");
             wh_gStyle.id = 'wh-trans-gStyle';
-            wh_gStyle.innerHTML = CSS;
+            wh_gStyle.innerHTML = css;
             document.head.append(wh_gStyle);
         }
-        log('新的CSS规则已注入', wh_gStyle);
+        log('CSS规则已添加', wh_gStyle);
     }
 
     /*
@@ -6873,8 +6929,8 @@ margin: 0 0 3px;
 
     /**
      * 弹出窗口
-     * @param innerHTML 内容html string
-     * @param title 弹窗标题
+     * @param {String} innerHTML 内容html string
+     * @param {String} title 弹窗标题
      * @returns {null|Element}
      */
     function popupMsg(innerHTML, title = '芜湖助手') {
@@ -6902,11 +6958,9 @@ margin: 0 0 3px;
     }
 
     /**
-     * Waits for an element satisfying selector to exist, then resolves promise with the element.
-     * Useful for resolving race conditions.
-     *
-     * @param selector
-     * @param content
+     * 通过 mutation.observe 方法异步返回元素
+     * @param {String} selector - CSS规则的HTML元素选择器
+     * @param {Document} content - 上下文
      * @returns {Promise}
      */
     function elementReady(selector, content = document) {
@@ -7017,13 +7071,25 @@ margin: 0 0 3px;
         if (isDev()) console.log('[WH]', ...o)
     }
 
-    function WHNotify(msg = '', {
-        timeout = 3,
-        callback = doNothing,
-        sysNotify = false,
-        sysNotifyTag = '芜湖助手',
-        sysNotifyClick = () => window.focus()
-    } = {}) {
+    /**
+     * 通知方法
+     * @param {string} msg - 通知内容
+     * @param {Object} [options] - 通知选项
+     * @param {number} [options.timeout] - 通知超时时间
+     * @param {function} [options.callback] - 通知回调
+     * @param {boolean} [options.sysNotify] - 是否开启系统通知
+     * @param {string} [options.sysNotifyTag] - 系统通知标记
+     * @param {function} [options.sysNotifyClick] - 系统通知点击事件
+     * @return {HTMLElement}
+     */
+    function WHNotify(msg, options = {}) {
+        let {
+            timeout = 3,
+            callback = doNothing,
+            sysNotify = false,
+            sysNotifyTag = '芜湖助手',
+            sysNotifyClick = () => window.focus()
+        } = options;
         if (!isWindowActive() || isIframe) return null;
         const date = new Date();
         // 通知的唯一id
@@ -7132,6 +7198,7 @@ cursor: pointer;
                 tag: sysNotifyTag + getRandomInt(0, 99),
             });
             sys_notify.onclick = sysNotifyClick;
+            sys_notify.onshow = () => setTimeout(() => sys_notify.close(), timeout * 1000);
         }
         return notify_obj;
     }
@@ -9733,9 +9800,10 @@ z-index:100001;
     // 元素生成器
     function elemGenerator(setting, root_node) {
         let { tip, domType } = setting;
-        const new_node = document.createElement('div');
+        let new_node = null;
         switch (domType) {
             case 'checkbox': {
+                new_node = document.createElement('div');
                 let { domId, dictName, domText } = setting;
                 let label = document.createElement('label');
                 (tip) && (label.setAttribute('title', tip));
@@ -9753,6 +9821,7 @@ z-index:100001;
                 break;
             }
             case 'button': {
+                new_node = document.createElement('div');
                 let { domId, domText, clickFunc } = setting;
                 let btn = document.createElement('button');
                 (tip) && (btn.setAttribute('title', tip));
@@ -9763,6 +9832,7 @@ z-index:100001;
                 break;
             }
             case 'select': {
+                new_node = document.createElement('div');
                 let { domSelectOpt, dictName, domId, domText } = setting;
                 let label = document.createElement('label');
                 (tip) && (label.setAttribute('title', tip));
@@ -9785,7 +9855,9 @@ z-index:100001;
                 break;
             }
             case 'plain': {
-                new_node.id = setting.domId;
+                let tag = setting.tagName || 'div';
+                new_node = document.createElement(tag);
+                if (setting.domId) new_node.id = setting.domId;
                 new_node.innerHTML += setting['domHTML'];
                 break;
             }
@@ -9807,17 +9879,28 @@ z-index:100001;
                 log('啤酒助手已在运行');
                 return;
             }
-            if (getUserState()['isTravelling']) return;
             started = setInterval(() => {
+                // 海外取消提醒
+                let { isTravelling, isAbroad } = getUserState();
+                if (isTravelling || isAbroad) {
+                    loop.stop();
+                    return;
+                }
+                let dt = new Date();
                 // 已选当天不提醒
-                const now = [new Date().getUTCFullYear(), new Date().getUTCMonth(), new Date().getUTCDate()];
+                const now = [dt.getUTCFullYear(), dt.getUTCMonth(), dt.getUTCDate()];
                 const ignore_date = getWhSettingObj()['_15_alarm_ignore'] || '{}';
                 if (JSON.stringify(now) === JSON.stringify(ignore_date)) return;
                 // 正常提醒
-                let dt = new Date();
                 let m = 14 - (dt.getMinutes() % 15);
                 let s = 60 - dt.getSeconds();
                 if (m === 0 && s < time) {
+                    // 如从通知点开，则本次通知跳过
+                    if (location.href.includes('#clickfromnotify')) {
+                        is_notified = true;
+                        location.hash = '';
+                        return;
+                    }
                     // 本次已通知
                     if (is_notified) return;
                     is_notified = true;
@@ -9845,7 +9928,7 @@ z-index:100001;
         loop.status = () => started ? '已启动' : '未启动';
         loop.is_running = () => !!started;
 
-        let notify_html = `<span style="background-color:green;color:white;border-radius:3px;font-size:14px;line-height:21px;padding:2px 4px;">啤酒小助手</span><br/>提醒您：还有不到 50 秒 NPC 的商品就要刷新了，啤酒血包要抢的可以准备咯。<button id="wh-rd-btn-${getRandomInt(0, 100)}">【今日不再提醒】</button><br/><a href="/shops.php?step=bitsnbobs" target="_blank">【啤酒店】</a> <a href="/shops.php?step=pharmacy" target="_blank">【血包店】</a>`
+        let notify_html = `<span style="background-color:green;color:white;border-radius:3px;font-size:14px;line-height:21px;padding:2px 4px;">啤酒小助手</span><br/>提醒您：还有不到 50 秒 NPC 的商品就要刷新了，啤酒血包要抢的可以准备咯。<button id="wh-rd-btn-${getRandomInt(0, 100)}">【今日不再提醒】</button><br/><a href="/shops.php?step=bitsnbobs#clickfromnotify" target="_blank">【啤酒店】</a> <a href="/shops.php?step=pharmacy#clickfromnotify" target="_blank">【血包店】</a>`
         loop.skip_today = () => {
             const date = new Date();
             setWhSetting('_15_alarm_ignore', [date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()], false);
@@ -9878,7 +9961,6 @@ z-index:100001;
         let obj = {};
         let hdd = sessionStorage['headerData'];
         if (hdd) obj = JSON.parse(hdd)['user']['state'];
-        console.info({ obj })
         return obj;
     }
 
@@ -10001,44 +10083,89 @@ z-index:100001;
     // 守望者
     function safeKeeper() {
         let url = `https://www.torn.com/loader.php?sid=attackData&mode=json&step=poll&user2ID=`;
-        let popup = popupMsg('<p>到底是谁在打他？</p>', '守望者 (测试中)');
+        let popup = popupMsg('<p>监测目标ID玩家的防御状态，找出隐身攻击者</p>', '守望者 (测试中)');
         let p = document.createElement('p');
         let uid = document.createElement('input');
         let start = document.createElement('button');
         let stop = document.createElement('button');
+        let self_target = document.createElement('button');
+        let attackers = document.createElement('div');
+        attackers.obj = {};
+        let records = document.createElement('div');
+        records.list = [];
+        let updateAttackersDOM = function () {
+            let html = '进攻者：<br/>'
+            attackers.obj.keys().forEach(id => html += `${id}<br/>`);
+            attackers.innerHTML = html;
+        };
+        let updateRecordsDOM = function () {
+        };
 
         let count = 0;
         let id = null;
 
         uid.type = 'text';
-        start.innerHTML = '开';
-        stop.innerHTML = '关';
+        start.innerHTML = '开启';
+        stop.innerHTML = '关闭';
+        self_target.innerHTML = '填入自己';
         p.innerHTML = '状态：已关';
+
+        popup.appendChild(p);
+        popup.appendChild(uid);
+        popup.appendChild(start);
+        popup.appendChild(stop);
+        popup.appendChild(self_target);
+        popup.appendChild(attackers);
+        popup.appendChild(records);
 
         start.addEventListener('click', () => {
             if (id !== null) return;
+            start.disabled = true;
+            stop.disabled = false;
+            uid.readOnly = true;
             p.innerHTML = '状态：已开';
             id = setInterval(async () => {
                 let res = await (await fetch(url + uid.value, {
                     headers: { 'X-Requested-With': 'XMLHttpRequest' },
                     referrer: "loader.php?sid=attack&user2ID=" + uid.value
                 })).text();
-                console.log(count++, JSON.parse(res.split('<div')[0]));
-            }, 500);
+                let data = JSON.parse(res.split('<div')[0]);
+                log(count++, data);
+                let { DB, currentFightStatistics } = data;
+                // 攻击历史
+                if (DB['currentFightHistory']) {
+                    let { currentFightHistory } = DB;
+                }
+                // 攻击人
+                // 格式：currentFightStatistics = {uid: {...}, uid2: {...}}
+                if (currentFightStatistics) {
+                    currentFightStatistics.keys().forEach(id => {
+                        if (id === uid.value) return;
+                        if (!attackers.obj[id]) {
+                            attackers.obj[id] = true;
+                            updateAttackersDOM();
+                        }
+                    });
+                }
+            }, 200);
         });
 
         stop.addEventListener('click', () => {
             if (id === null) return;
+            start.disabled = false;
+            stop.disabled = true;
+            uid.readOnly = false;
             clearInterval(id);
             id = null;
             count = 0;
             p.innerHTML = '状态：已关';
         });
+        self_target.addEventListener('click', () => uid.value = getPlayerInfo()['userID']);
+    }
 
-        popup.appendChild(p);
-        popup.appendChild(uid);
-        popup.appendChild(start);
-        popup.appendChild(stop);
+    // 更新词库
+    function updateTransDict() {
+        popupMsg('计划中');
     }
 
     $zhongNode.initTimer.innerHTML = `助手加载时间 ${Date.now() - start_timestamp}ms`;
