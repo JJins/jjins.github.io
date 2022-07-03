@@ -4109,6 +4109,7 @@ div#wh-popup::after {
     color: black;
     border-radius: 3px;
 }
+#wh-popup-cont button[disabled]{opacity: 0.5;}
 #wh-popup-cont input{
     padding: 2px;
     text-align: center;
@@ -4968,7 +4969,7 @@ display:inline-block;
         };
         elementReady('#gymroot').then(node => {
             cont = node;
-            if(getWhSettingObj()['SEProtect'])node.classList.add('wh-display-none');
+            if (getWhSettingObj()['SEProtect']) node.classList.add('wh-display-none');
             node.before(switch_node);
         });
     }
@@ -10093,22 +10094,36 @@ z-index:100001;
         attackers.obj = {};
         let records = document.createElement('div');
         records.list = [];
+        records.details = {};
+        // interval loop_id
+        let loop_id = null;
         let updateAttackersDOM = function () {
-            let html = '进攻者：<br/>'
-            attackers.obj.keys().forEach(id => html += `${id}<br/>`);
+            let html = '进攻者：<br/>';
+            Object.keys(attackers.obj).forEach(id => html += `[${id}]<br/>`);
             attackers.innerHTML = html;
         };
         let updateRecordsDOM = function () {
+            let html = '战斗记录：<br/>';
+            records.list.forEach(rid => {
+                let { TimeCreated, attackID, attackerID, attackerItemID, result, text } = records.details[rid];
+                html += `[${TimeCreated}] [${attackerID}] [${attackerItemID}] ${result} ${text}<br/>`;
+            });
+            records.innerHTML = html;
         };
 
-        let count = 0;
-        let id = null;
-
         uid.type = 'text';
+        uid.placeholder = '目标ID';
         start.innerHTML = '开启';
         stop.innerHTML = '关闭';
+        stop.disabled = true;
         self_target.innerHTML = '填入自己';
-        p.innerHTML = '状态：已关';
+        // p.innerHTML = '状态：已关';
+        // 弹出窗口关闭时结束
+        let popup_close = popup.close;
+        popup.close = () => {
+            if (loop_id === null) popup_close();
+            else WHNotify('守望者运行中，请先停止', { timeout: 2 });
+        }
 
         popup.appendChild(p);
         popup.appendChild(uid);
@@ -10119,53 +10134,73 @@ z-index:100001;
         popup.appendChild(records);
 
         start.addEventListener('click', () => {
-            if (id !== null) return;
+            if (loop_id !== null || !uid.value) return;
             start.disabled = true;
             stop.disabled = false;
             uid.readOnly = true;
-            p.innerHTML = '状态：已开';
-            id = setInterval(async () => {
+            p.innerHTML = '状态：已开 ✅';
+            let count = 0;
+            loop_id = setInterval(async () => {
+                // 记录当前循环的id
+                let that_id = loop_id;
                 let res = await (await fetch(url + uid.value, {
                     headers: { 'X-Requested-With': 'XMLHttpRequest' },
                     referrer: "loader.php?sid=attack&user2ID=" + uid.value
                 })).text();
+                if (loop_id !== that_id) return;
                 let data = JSON.parse(res.split('<div')[0]);
                 log(count++, data);
-                let { DB, currentFightStatistics } = data;
-                // 攻击历史
-                if (DB['currentFightHistory']) {
-                    let { currentFightHistory } = DB;
-                }
+                let { DB, currentFightStatistics, histLog } = data;
                 // 攻击人
                 // 格式：currentFightStatistics = {uid: {...}, uid2: {...}}
-                if (currentFightStatistics) {
-                    currentFightStatistics.keys().forEach(id => {
-                        if (id === uid.value) return;
-                        if (!attackers.obj[id]) {
-                            attackers.obj[id] = true;
-                            updateAttackersDOM();
-                        }
-                    });
-                }
-            }, 200);
+                Object.keys(currentFightStatistics || {}).forEach(id => {
+                    if (id === uid.value) return;
+                    if (!attackers.obj[id]) {
+                        attackers.obj[id] = true;
+                        updateAttackersDOM();
+                    }
+                });
+                // 攻击历史
+                (DB['currentFightHistory'] || []).forEach(record => {
+                    if (records.list.includes(record['ID'])) return;
+                    let { ID, TimeCreated, attackID, attackerID, attackerItemID, result, text } = record;
+                    records.list.push(ID);
+                    records.details[ID] = { TimeCreated, attackID, attackerID, attackerItemID, result, text };
+                    updateRecordsDOM();
+                });
+                // 攻击历史日志
+                if (histLog && histLog[uid.value]) histLog[uid.value].forEach(log => {
+                    if (records.list.includes(log['ID'])) return;
+                    let { ID, TimeCreated, attackID, attackResult, userID } = log;
+                    records.list.push(ID);
+                    records.details[ID] = {
+                        TimeCreated,
+                        attackID,
+                        attackerID: userID,
+                        attackerItemID: 0,
+                        result: attackResult,
+                        text: ''
+                    };
+                    updateRecordsDOM();
+                });
+            }, 500);
         });
 
         stop.addEventListener('click', () => {
-            if (id === null) return;
+            if (loop_id === null) return;
             start.disabled = false;
             stop.disabled = true;
             uid.readOnly = false;
-            clearInterval(id);
-            id = null;
-            count = 0;
-            p.innerHTML = '状态：已关';
+            clearInterval(loop_id);
+            loop_id = null;
+            p.innerHTML = '状态：已关 ❎';
         });
         self_target.addEventListener('click', () => uid.value = getPlayerInfo()['userID']);
     }
 
     // 更新词库
     function updateTransDict() {
-        popupMsg('计划中');
+        WHNotify('计划中');
     }
 
     $zhongNode.initTimer.innerHTML = `助手加载时间 ${Date.now() - start_timestamp}ms`;
