@@ -4160,7 +4160,7 @@ cursor:pointer;
             eb.addEventListener('click', () => location.href = '/gym.php');
             eb.href = '/gym.php';
         } else {
-            elementReady('#barEnergy').then(() => {
+            elementReady('#barEnergy').then(eb => {
                 eb.addEventListener('click', () => location.href = '/gym.php');
                 eb.href = '/gym.php';
             });
@@ -4169,7 +4169,7 @@ cursor:pointer;
             nb.addEventListener('click', () => location.href = '/crimes.php');
             nb.href = '/crimes.php';
         } else {
-            elementReady('#barNerve').then(() => {
+            elementReady('#barNerve').then(nb => {
                 nb.addEventListener('click', () => location.href = '/crimes.php');
                 nb.href = '/crimes.php';
             });
@@ -4178,7 +4178,7 @@ cursor:pointer;
             hb.addEventListener('click', () => location.href = '/item.php#boosters-items');
             hb.href = '/item.php#boosters-items';
         } else {
-            elementReady('#barHappy').then(() => {
+            elementReady('#barHappy').then(hb => {
                 hb.addEventListener('click', () => location.href = '/item.php#boosters-items');
                 hb.href = '/item.php#boosters-items';
             });
@@ -4187,7 +4187,7 @@ cursor:pointer;
             lb.addEventListener('click', () => location.href = '/item.php#medical-items');
             lb.href = '/item.php#medical-items';
         } else {
-            elementReady('#barLife').then(() => {
+            elementReady('#barLife').then(lb => {
                 lb.addEventListener('click', () => location.href = '/item.php#medical-items');
                 lb.href = '/item.php#medical-items';
             });
