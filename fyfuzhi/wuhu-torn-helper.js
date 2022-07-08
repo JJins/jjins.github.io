@@ -3449,7 +3449,7 @@
     color: white;
     font-size: 15px;
     width: 220px;
-    z-index: 999999;
+    z-index: 199999;
 }
 #wh-quick-fly-opt p{margin:4px 0;}
 #wh-quick-fly-opt a{
@@ -3740,7 +3740,13 @@ background-size: 100% auto !important;
                     insert += `<a href="${el.url}"${el.new_tab ? ' target="_blank"' : ''}><span class="wh-link-collection-img" style="background: url(${el.img})"></span><span>${el.name}</span></a>`;
                 });
                 insert += '</p>'
-                popupMsg(insert, '常用链接').classList.add('wh-link-collection-cont');
+                let popup = popupMsg(insert, '常用链接');
+                popup.classList.add('wh-link-collection-cont');
+                popup.addEventListener('click', ev => {
+                    if (ev.target.tagName.toLowerCase() === 'a' || ev.target.tagName.toLowerCase() === 'span') {
+                        popup.close();
+                    }
+                });
             },
         });
         // 飞贼
@@ -7120,6 +7126,12 @@ margin: 0 0 3px;
             new_node.addEventListener('mouseleave', () => mouse_enter = false);
             // 通知进度条
             let progressCount = 101;
+            // 删除通知
+            new_node.close = () => {
+                clearInterval(intervalID);
+                new_node.remove();
+                callback();
+            };
             // 计时器
             let intervalID = window.setInterval(() => {
                 if (mouse_enter) {
@@ -7129,16 +7141,9 @@ margin: 0 0 3px;
                 }
                 progressCount--;
                 progressBar.style.width = `${progressCount}%`;
-                if (progressCount === 0) removeNode();
+                if (progressCount === 0) new_node.remove();
             }, timeout * 1000 / 100);
-            // 删除通知
-            const removeNode = () => {
-                clearInterval(intervalID);
-                new_node.remove();
-                callback();
-            };
-            new_node.del = removeNode;
-            new_node.querySelector('.wh-notify-close').addEventListener('click', removeNode);
+            new_node.querySelector('.wh-notify-close').addEventListener('click', new_node.close);
             return new_node;
         };
         // 不存在容器 创建
@@ -7192,14 +7197,14 @@ cursor: pointer;
         // 浏览器通知
         if (window.Notification && Notification.permission === 'granted' && sysNotify) {
             const date_local_string = `[${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}]\r`;
-            const sys_notify = new Notification('芜湖助手', {
+            notify_obj.sys_notify = new Notification('芜湖助手', {
                 body: date_local_string + notify_contain.msgInnerText,
                 requireInteraction: true,
                 renotify: true,
                 tag: sysNotifyTag + getRandomInt(0, 99),
             });
-            sys_notify.onclick = sysNotifyClick;
-            sys_notify.onshow = () => setTimeout(() => sys_notify.close(), timeout * 1000);
+            notify_obj.sys_notify.onclick = sysNotifyClick;
+            notify_obj.sys_notify.onshow = () => setTimeout(() => notify_obj.sys_notify.close(), timeout * 1000);
         }
         return notify_obj;
     }
@@ -9911,6 +9916,12 @@ z-index:100001;
                         sysNotify: true,
                     });
                     notify.querySelector('.wh-notify-msg button').addEventListener('click', loop.skip_today);
+                    notify.addEventListener('click', ev => {
+                        if (ev.target.tagName.toLowerCase() === 'a') {
+                            notify.sys_notify.close();
+                            notify.close();
+                        }
+                    });
                     window.setTimeout(audioPlay, 800);
                     window.setTimeout(audioPlay, 800 * 2);
                     window.setTimeout(audioPlay, 800 * 3);
@@ -10009,13 +10020,17 @@ z-index:100001;
         let ad_input = document.createElement('textarea');
         let place_button = document.createElement('button');
         let clear_button = document.createElement('button');
+        let paste_button = document.createElement('button');
+        let style = document.createElement('style');
 
-        info.innerText = '打开多个聊天框后，点击[传单]按钮将自动粘贴文本框中的内容进入所有已打开的聊天框。页面外的聊天框同样有效。';
+        info.innerHTML = '打开多个聊天框后，点击<b>填写传单</b>将自动粘贴文本框中的内容进入所有<b>已打开的聊天框</b>。页面外的聊天框同样有效。';
         ad_input.placeholder = '此处输入广告语';
         ad_input.style.width = '100%';
         ad_input.style.minHeight = '80px';
-        place_button.innerText = '传单';
+        place_button.innerText = '填写传单';
         clear_button.innerText = '清空所有聊天框';
+        paste_button.innerText = '粘贴剪切板';
+        style.innerHTML = '#chatRoot > div{z-index:199999 !important;}';
 
         place_button.addEventListener('click', () => {
             let chats = document.querySelectorAll('#chatRoot textarea[name="chatbox2"]');
@@ -10025,12 +10040,18 @@ z-index:100001;
             let chats = document.querySelectorAll('#chatRoot textarea[name="chatbox2"]');
             chats.forEach(chat => chat.value = '');
         });
+        paste_button.addEventListener('click', async () => {
+            ad_input.focus();
+            ad_input.value = await navigator.clipboard.readText();
+        });
 
+        popup.appendChild(style);
         popup.appendChild(info);
         popup.appendChild(ad_input);
         popup.appendChild(document.createElement('br'));
         popup.appendChild(place_button);
         popup.appendChild(clear_button);
+        popup.appendChild(paste_button);
     }
 
     // 一键存钱
