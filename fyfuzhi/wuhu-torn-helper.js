@@ -10265,9 +10265,14 @@ z-index:100001;
                 });
             });
         };
-        WHNotify(await backHomeAction());
-        WHNotify('成功，即将刷新页面……');
-        setTimeout(location.reload, 3000);
+        let res = await backHomeAction();
+        WHNotify(res);
+        if (!res.includes('error')) {
+            WHNotify('成功，即将刷新');
+            setTimeout(() => location.reload(), 3000);
+        } else {
+            WHNotify('出错了');
+        }
     }
 
     $zhongNode.initTimer.innerHTML = `助手加载时间 ${Date.now() - start_timestamp}ms`;
