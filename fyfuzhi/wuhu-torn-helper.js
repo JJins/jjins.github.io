@@ -2879,6 +2879,8 @@
         { key: 'companyBWCollapse', val: true },
         // 清除多余的脚本
         { key: 'removeScripts', val: true },
+        // 外海警告
+        { key: 'abroadWarning', val: true },
 
         // 危险行为⚠️
         { key: 'dangerZone', val: false },
@@ -3043,6 +3045,14 @@
             dictName: 'trvAlarm',
             tip: '(仅PC) 飞行页面将显示一个内建的闹钟，落地前声音提醒，需要打开浏览器声音权限',
             isHide: true,
+        });
+        // 外海警告
+        setting_list.push({
+            domType: 'checkbox',
+            domId: '',
+            domText: ' 外海警告',
+            dictName: 'abroadWarning',
+            tip: '海外落地后每30秒通知警告',
         });
 
         // 公司
@@ -4491,6 +4501,17 @@ display:none;
                 flying_index = (flying_index + 1) % flying_arr.length;
             }, 1000);
         });
+    }
+
+    // 海外落地
+    if (href.includes('index.php') && document.querySelector('#travel-home') !== null) {
+        // 添加回城按钮
+        addActionBtn('直接回城', getHome, $zhongNode);
+        // 海外警告
+        if (getWhSettingObj()['abroadWarning']) {
+            let c = 1;
+            setInterval(() => WHNotify(`警告：您已海外落地${c++ * 30}秒`, { timeout: 30, sysNotify: true }), 30000);
+        }
     }
 
     // 起飞提醒
@@ -10100,6 +10121,9 @@ z-index:100001;
         btn.innerHTML = txt;
         btn.addEventListener('click', func);
         mainBtnNode.querySelector('button').after(btn);
+        addActionBtn = function () {
+            log('错误：附加按钮已存在')
+        };
     }
 
     // 守望者
@@ -10222,6 +10246,28 @@ z-index:100001;
     // 更新词库
     function updateTransDict() {
         WHNotify('计划中');
+    }
+
+    // 直接回城
+    async function getHome() {
+        if (typeof window['getAction'] !== 'function') return;
+        let backHomeAction = function () {
+            return new Promise(resolve => {
+                window['getAction']({
+                    type: "post",
+                    action: 'travelagency.php',
+                    data: {
+                        step: 'backHomeAction'
+                    },
+                    success: function (msg) {
+                        resolve(msg);
+                    }
+                });
+            });
+        };
+        WHNotify(await backHomeAction());
+        WHNotify('成功，即将刷新页面……');
+        setTimeout(location.reload, 3000);
     }
 
     $zhongNode.initTimer.innerHTML = `助手加载时间 ${Date.now() - start_timestamp}ms`;
