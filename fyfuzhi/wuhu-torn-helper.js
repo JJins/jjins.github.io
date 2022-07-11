@@ -10307,5 +10307,16 @@ z-index:100001;
         return JSON.parse(document.querySelector('#sidebar_data').innerHTML)
     }
 
+    /**
+     * 遍历所有子节点
+     * @param {Node} node 需要遍历的容器父元素
+     * @param {Function} handler 调用的方法
+     */
+    function walkNode(node, handler) {
+        let list = node.childNodes;
+        if (list.length === 0) handler(node);
+        else list.forEach(n => walkNode(n, handler));
+    }
+
     $zhongNode.initTimer.innerHTML = `助手加载时间 ${Date.now() - start_timestamp}ms`;
 }();
