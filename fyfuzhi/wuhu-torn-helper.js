@@ -27,6 +27,7 @@
         })
     }
 
+    // region 翻译字典
     const titleDict = {
         'Home': '主页',
         'Estate Agents': '地产中介',
@@ -2725,36 +2726,6 @@
     };
     // 中文字符集正则
     const CC_set = /[\u4e00-\u9fa5]/;
-
-    // regexp test
-    String.prototype.contains = function contains(keywords) {
-        if ('string' === typeof keywords) {
-            return new RegExp(keywords).test(this);
-        }
-        if (keywords.test) {
-            return keywords.test(this);
-        }
-    };
-
-    // 原始fetch
-    const ori_fetch = window.fetch;
-    // 监听fetch
-    window.fetch = async (url, init) => {
-        if (url.contains('newsTickers')) {
-            // 阻止获取新闻横幅
-            return new Response('{}');
-        }
-        const res = await ori_fetch(url, init);
-        // mini profile 翻译
-        if (url.includes('profiles.php?step=getUserNameContextMenu') && getWhSettingObj()['transEnable']) {
-            setTimeout(() => miniprofTrans(), 200);
-        }
-        let clone = res.clone();
-        let text = await res.text();
-        log({ url, init, text });
-        return clone;
-    };
-
     // const transDict = {};
     // transDict.titleDict = titleDict;
     // transDict.titleLinksDict = titleLinksDict;
@@ -2794,6 +2765,36 @@
     // transDict.npcShopDict = npcShopDict;
     // transDict.calDict = calDict;
     // if (!localStorage.getItem('wh_trans_transDict')) localStorage.setItem('wh_trans_transDict', JSON.stringify(transDict))
+    // endregion
+
+    // regexp test
+    String.prototype.contains = function contains(keywords) {
+        if ('string' === typeof keywords) {
+            return new RegExp(keywords).test(this);
+        }
+        if (keywords.test) {
+            return keywords.test(this);
+        }
+    };
+
+    // 原始fetch
+    const ori_fetch = window.fetch;
+    // 监听fetch
+    window.fetch = async (url, init) => {
+        if (url.contains('newsTickers')) {
+            // 阻止获取新闻横幅
+            return new Response('{}');
+        }
+        const res = await ori_fetch(url, init);
+        // mini profile 翻译
+        if (url.includes('profiles.php?step=getUserNameContextMenu') && getWhSettingObj()['transEnable']) {
+            setTimeout(() => miniprofTrans(), 200);
+        }
+        let clone = res.clone();
+        let text = await res.text();
+        log({ url, init, text });
+        return clone;
+    };
 
     const date = new Date();
     // 伪enum 设备类型 PC MOBILE TABLET
@@ -2888,567 +2889,564 @@
         if (typeof getWhSettingObj()[df.key] !== typeof df.val) setWhSetting(df.key, df.val);
     });
 
-    // 助手各项「设置」
+    // region 助手各项「设置」
     let setting_list = [];
-    {
-        // 12月时加入圣诞小镇选项
-        if (date.getMonth() === 11) {
-            setting_list.push({
-                domType: 'plain',
-                domId: '',
-                domHTML: '圣诞小镇',
-                tagName: 'h4',
-            })
-            setting_list.push({
-                domType: 'checkbox',
-                domId: 'wh-xmastown-wt',
-                domText: ' 圣诞小镇攻略',
-                dictName: 'xmasTownWT',
-                isHide: true,
-            });
-            setting_list.push({
-                domType: 'checkbox',
-                domId: 'wh-xmastown-notify',
-                domText: ' 圣诞小镇物品提示',
-                dictName: 'xmasTownNotify',
-                isHide: true,
-            });
-        }
-
-        // 翻译
+    // 12月时加入圣诞小镇选项
+    if (date.getMonth() === 11) {
         setting_list.push({
             domType: 'plain',
             domId: '',
-            domHTML: '翻译',
+            domHTML: '圣诞小镇',
             tagName: 'h4',
-        });
-        // 开启翻译
+        })
         setting_list.push({
             domType: 'checkbox',
-            domId: 'wh-trans-enable',
-            domText: ' 开启翻译',
-            dictName: 'transEnable',
+            domId: 'wh-xmastown-wt',
+            domText: ' 圣诞小镇攻略',
+            dictName: 'xmasTownWT',
             isHide: true,
         });
-        // 更新翻译词库
-        setting_list.push({
-            domType: 'button',
-            domId: '',
-            domText: '更新翻译词库',
-            clickFunc: updateTransDict
-        });
-
-        // 战斗优化
-        setting_list.push({
-            domType: 'plain',
-            domId: '',
-            domHTML: '战斗优化',
-            tagName: 'h4',
-        });
-        // 光速拔刀
-        setting_list.push({
-            domType: 'select',
-            domId: 'wh-quick-attack-index',
-            domText: '光速拔刀 ',
-            domSelectOpt: [
-                {
-                    domVal: 'pri',
-                    domText: '主手',
-                },
-                {
-                    domVal: 'sec',
-                    domText: '副手',
-                },
-                {
-                    domVal: 'wea',
-                    domText: '近战',
-                },
-                {
-                    domVal: 'gre',
-                    domText: '手雷',
-                },
-                {
-                    domVal: 'fis',
-                    domText: '拳头',
-                },
-                {
-                    domVal: 'kic',
-                    domText: '脚踢',
-                },
-                {
-                    domVal: 'none',
-                    domText: '关闭',
-                },
-            ],
-            dictName: 'quickAttIndex',
-            isHide: true,
-            tip: '将Start Fight按钮移动到指定格子上',
-        });
-        // 光速跑路
-        setting_list.push({
-            domType: 'select',
-            domId: 'wh-quick-mug',
-            domText: '光速跑路 ',
-            domSelectOpt: [
-                {
-                    domVal: 'leave',
-                    domText: '跑路(LEAVE)',
-                },
-                {
-                    domVal: 'mug',
-                    domText: '打劫(MUG)',
-                },
-                {
-                    domVal: 'hosp',
-                    domText: '住院(HOSP)',
-                },
-                {
-                    domVal: 'none',
-                    domText: '关闭',
-                },
-            ],
-            dictName: 'quickFinishAtt',
-            isHide: true,
-            tip: '将结束后指定按钮移动到上面指定的格子上',
-        });
-        // 攻击链接转跳
         setting_list.push({
             domType: 'checkbox',
-            domId: 'wh-attack-relocate',
-            domText: ' 真·攻击界面转跳',
-            dictName: 'attRelocate',
-            tip: '在无法打开攻击界面的情况下依然可以转跳到正确的攻击页面',
-            isHide: true,
-        });
-
-        // 飞行
-        setting_list.push({
-            domType: 'plain',
-            domId: '',
-            domHTML: '飞行',
-            tagName: 'h4',
-        });
-        // 起飞警告
-        setting_list.push({
-            domType: 'checkbox',
-            domId: 'wh-energy-alert',
-            domText: ' 起飞爆E警告',
-            dictName: 'energyAlert',
-            tip: '起飞前计算来回是否会爆体，红字警告',
-            isHide: true,
-        });
-        // 飞行闹钟
-        setting_list.push({
-            domType: 'checkbox',
-            domId: 'wh-trv-alarm-check',
-            domText: ' 飞行闹钟',
-            dictName: 'trvAlarm',
-            tip: '(仅PC) 飞行页面将显示一个内建的闹钟，落地前声音提醒，需要打开浏览器声音权限',
-            isHide: true,
-        });
-        // 外海警告
-        setting_list.push({
-            domType: 'checkbox',
-            domId: '',
-            domText: ' 外海警告',
-            dictName: 'abroadWarning',
-            tip: '海外落地后每30秒通知警告',
-        });
-
-        // 公司
-        setting_list.push({
-            domType: 'plain',
-            domId: '',
-            domHTML: '公司',
-            tagName: 'h4',
-        });
-        // 浮动存钱框
-        setting_list.push({
-            domType: 'checkbox',
-            domId: '',
-            domText: ' 浮动存钱框',
-            dictName: 'floatDepo',
-            tip: '打开公司或帮派的存钱页面后存钱框将浮动显示',
-        });
-        // 公司转跳存钱
-        setting_list.push({
-            domType: 'checkbox',
-            domId: '',
-            domText: ' 公司转跳存钱',
-            dictName: 'companyRedirect',
-            tip: '打开公司页面时自动打开存钱选项卡',
-        });
-        // 收起公司冰蛙效率表
-        setting_list.push({
-            domType: 'checkbox',
-            domId: '',
-            domText: ' 收起公司冰蛙效率表',
-            dictName: 'companyBWCollapse',
-            tip: '开启后可手动显示隐藏冰蛙公司表格',
-        });
-
-        // 啤酒
-        setting_list.push({
-            domType: 'plain',
-            domId: '',
-            domHTML: '啤酒',
-            tagName: 'h4',
-        });
-        // 啤酒提醒
-        setting_list.push({
-            domType: 'checkbox',
-            domId: 'wh-qua-alarm-check',
-            domText: '<span> 啤酒提醒 </span><button id="wh-qua-alarm-check-btn">今日不提醒</button>',
-            dictName: '_15Alarm',
-            tip: '每小时的整15分钟的倍数时通知提醒抢啤酒或者血包',
-            isHide: true,
-            changeEv: function (ev) {
-                ev.target.checked ? beer.start() : beer.stop();
-            },
-        });
-        // 啤酒提醒状态
-        setting_list.push({
-            domType: 'button',
-            domId: '',
-            domText: '啤酒提醒状态',
-            clickFunc: function () {
-                WHNotify(`啤酒提醒${beer.status()}`);
-            }
-        });
-        // 啤酒提醒时间
-        setting_list.push({
-            domType: 'button',
-            domId: '',
-            domText: '啤酒提醒时间设定',
-            // tip: '通知提前时间',
-            clickFunc: function () {
-                popup_node.close();
-                let popup = popupMsg(`<label>提前提醒时间(秒)：<input type="number" value="${getWhSettingObj()['_15AlarmTime']}" /></label><p>区间为 1 ~ 60，默认 50</p>`, '啤酒提醒时间设定');
-                let confirm = document.createElement('button');
-                confirm.innerHTML = '确定';
-                confirm.style.float = 'right';
-                confirm.addEventListener('click', () => {
-                    let input = popup.querySelector('input');
-                    let num = input.value | 0;
-                    if (num === getWhSettingObj()['_15AlarmTime']) return;
-                    if (num < 1 || num > 60) num = 50;
-                    input.value = num.toString();
-                    setWhSetting('_15AlarmTime', num);
-                    // 之前的运行状态
-                    let before_state = beer.is_running();
-                    beer.set_time(num);
-                    if (before_state) beer.start();
-                    popup.close();
-                });
-                popup.appendChild(confirm);
-            },
-        });
-
-        // 其他
-        setting_list.push({
-            domType: 'plain',
-            domId: '',
-            domHTML: '其他',
-            tagName: 'h4',
-        });
-        // 任务助手
-        setting_list.push({
-            domType: 'checkbox',
-            domId: 'wh-mission-lint',
-            domText: ' 任务助手',
-            dictName: 'missionHint',
-            tip: 'Duke任务的一些中文小提示',
-            isHide: true,
-        });
-        // 捡垃圾助手
-        setting_list.push({
-            domType: 'checkbox',
-            domId: 'wh-city-finder',
-            domText: ' 捡垃圾助手',
-            dictName: 'cityFinder',
-            tip: '城市地图中放大显示物品并且估计价值',
-            isHide: true,
-        });
-        // 快速crime
-        setting_list.push({
-            domType: 'checkbox',
-            domId: 'wh-quick-crime',
-            domText: ' 快速犯罪',
-            dictName: 'quickCrime',
-            tip: '显示快捷操作按钮，目前不支持自定义',
-            isHide: true,
-        });
-        // 叠E保护
-        setting_list.push({
-            domType: 'checkbox',
-            domId: 'wh-SEProtect-check',
-            domText: ' 叠E保护',
-            dictName: 'SEProtect',
-            tip: '隐藏健身房的锻炼按钮，防止误操作',
-            isHide: true,
-        });
-        // PT一键购买
-        setting_list.push({
-            domType: 'checkbox',
-            domId: 'wh-ptQuickBuy-check',
-            domText: ' PT一键购买',
-            dictName: 'ptQuickBuy',
-            tip: 'PT市场页面购买时跳过确认',
-            isHide: true,
-        });
-        // 4条转跳
-        setting_list.push({
-            domType: 'checkbox',
-            domId: '',
-            domText: ' 4条转跳',
-            dictName: 'barsRedirect',
-            tip: '点击4条时转跳对应页面',
-        });
-        // 清除多余的脚本
-        setting_list.push({
-            domType: 'checkbox',
-            domId: '',
-            domText: ' 清除多余的脚本',
-            dictName: 'removeScripts',
-            tip: '清除Google相关脚本、顶部横幅等',
-        });
-        // 危险行为⚠️
-        if (getWhSettingObj()['dangerZone'] === true) {
-            // 攻击界面自刷新
-            setting_list.push({
-                domType: 'select',
-                domId: 'wh-attack-reload',
-                domText: '⚠️攻击界面自动刷新 ',
-                dictName: 'attReload',
-                domSelectOpt: [
-                    {
-                        domVal: 'none',
-                        domText: '无间隔',
-                    },
-                    {
-                        domVal: '1',
-                        domText: '约1s',
-                    },
-                    {
-                        domVal: '2',
-                        domText: '约2s',
-                    },
-                    {
-                        domVal: '3',
-                        domText: '约3s',
-                    },
-                    {
-                        domVal: '4',
-                        domText: '约4s',
-                    },
-                    {
-                        domVal: '5',
-                        domText: '约5s',
-                    },
-                    {
-                        domVal: 'disabled',
-                        domText: '关闭',
-                    },
-                ],
-                isHide: true,
-                tip: '危险功能：接机时常用，将自动刷新页面直到目标落地',
-            });
-            // 自动开打和结束
-            setting_list.push({
-                domType: 'checkbox',
-                domId: 'wh-auto-start-finish',
-                domText: ' ⚠️自动开打和结束',
-                dictName: 'autoStartFinish',
-                tip: '脚本将会自动按下战斗和结束按钮',
-                isHide: true,
-            });
-        } else {
-            setWhSetting('autoStartFinish', false, false)
-            setWhSetting('attReload', 6, false)
-        }
-        // dev
-        setting_list.push({
-            domType: 'checkbox',
-            domId: 'wh-dev-mode',
-            domText: ` 开发者模式${isDev() ? ' <button id="wh-devInfo">详情</button>' : ''}`,
-            dictName: 'isDev',
-            isHide: true,
-        });
-        // 更多设定
-        if (isDev()) setting_list.push({
-            domType: 'button', domId: 'wh-otherBtn', domText: '更多设定', clickFunc: () => {
-                const html = `清空设置数据、请求通知权限、测试跨域请求`;
-                const popup = popupMsg(html, '更多设定');
-            },
+            domId: 'wh-xmastown-notify',
+            domText: ' 圣诞小镇物品提示',
+            dictName: 'xmasTownNotify',
             isHide: true,
         });
     }
-    // 菜单中的「选项」
-    const menu_list = [];
-    {
-        // 测试日期
-        //const date = new Date(2022, 2, 4, 23);
 
-        // 欢迎 显示玩家id
-        if (player_info.userID !== 0) {
-            menu_list.push({
-                domType: 'plain',
-                domId: 'wh-trans-welcome',
-                domHTML: `<span>欢迎 <a href="/profiles.php?XID=${player_info.userID}" target="_blank">${player_info.playername}</a>[${player_info.userID}] 大佬</span>`,
+    // 翻译
+    setting_list.push({
+        domType: 'plain',
+        domId: '',
+        domHTML: '翻译',
+        tagName: 'h4',
+    });
+    // 开启翻译
+    setting_list.push({
+        domType: 'checkbox',
+        domId: 'wh-trans-enable',
+        domText: ' 开启翻译',
+        dictName: 'transEnable',
+        isHide: true,
+    });
+    // 更新翻译词库
+    setting_list.push({
+        domType: 'button',
+        domId: '',
+        domText: '更新翻译词库',
+        clickFunc: updateTransDict
+    });
+
+    // 战斗优化
+    setting_list.push({
+        domType: 'plain',
+        domId: '',
+        domHTML: '战斗优化',
+        tagName: 'h4',
+    });
+    // 光速拔刀
+    setting_list.push({
+        domType: 'select',
+        domId: 'wh-quick-attack-index',
+        domText: '光速拔刀 ',
+        domSelectOpt: [
+            {
+                domVal: 'pri',
+                domText: '主手',
+            },
+            {
+                domVal: 'sec',
+                domText: '副手',
+            },
+            {
+                domVal: 'wea',
+                domText: '近战',
+            },
+            {
+                domVal: 'gre',
+                domText: '手雷',
+            },
+            {
+                domVal: 'fis',
+                domText: '拳头',
+            },
+            {
+                domVal: 'kic',
+                domText: '脚踢',
+            },
+            {
+                domVal: 'none',
+                domText: '关闭',
+            },
+        ],
+        dictName: 'quickAttIndex',
+        isHide: true,
+        tip: '将Start Fight按钮移动到指定格子上',
+    });
+    // 光速跑路
+    setting_list.push({
+        domType: 'select',
+        domId: 'wh-quick-mug',
+        domText: '光速跑路 ',
+        domSelectOpt: [
+            {
+                domVal: 'leave',
+                domText: '跑路(LEAVE)',
+            },
+            {
+                domVal: 'mug',
+                domText: '打劫(MUG)',
+            },
+            {
+                domVal: 'hosp',
+                domText: '住院(HOSP)',
+            },
+            {
+                domVal: 'none',
+                domText: '关闭',
+            },
+        ],
+        dictName: 'quickFinishAtt',
+        isHide: true,
+        tip: '将结束后指定按钮移动到上面指定的格子上',
+    });
+    // 攻击链接转跳
+    setting_list.push({
+        domType: 'checkbox',
+        domId: 'wh-attack-relocate',
+        domText: ' 真·攻击界面转跳',
+        dictName: 'attRelocate',
+        tip: '在无法打开攻击界面的情况下依然可以转跳到正确的攻击页面',
+        isHide: true,
+    });
+
+    // 飞行
+    setting_list.push({
+        domType: 'plain',
+        domId: '',
+        domHTML: '飞行',
+        tagName: 'h4',
+    });
+    // 起飞警告
+    setting_list.push({
+        domType: 'checkbox',
+        domId: 'wh-energy-alert',
+        domText: ' 起飞爆E警告',
+        dictName: 'energyAlert',
+        tip: '起飞前计算来回是否会爆体，红字警告',
+        isHide: true,
+    });
+    // 飞行闹钟
+    setting_list.push({
+        domType: 'checkbox',
+        domId: 'wh-trv-alarm-check',
+        domText: ' 飞行闹钟',
+        dictName: 'trvAlarm',
+        tip: '(仅PC) 飞行页面将显示一个内建的闹钟，落地前声音提醒，需要打开浏览器声音权限',
+        isHide: true,
+    });
+    // 外海警告
+    setting_list.push({
+        domType: 'checkbox',
+        domId: '',
+        domText: ' 外海警告',
+        dictName: 'abroadWarning',
+        tip: '海外落地后每30秒通知警告',
+    });
+
+    // 公司
+    setting_list.push({
+        domType: 'plain',
+        domId: '',
+        domHTML: '公司',
+        tagName: 'h4',
+    });
+    // 浮动存钱框
+    setting_list.push({
+        domType: 'checkbox',
+        domId: '',
+        domText: ' 浮动存钱框',
+        dictName: 'floatDepo',
+        tip: '打开公司或帮派的存钱页面后存钱框将浮动显示',
+    });
+    // 公司转跳存钱
+    setting_list.push({
+        domType: 'checkbox',
+        domId: '',
+        domText: ' 公司转跳存钱',
+        dictName: 'companyRedirect',
+        tip: '打开公司页面时自动打开存钱选项卡',
+    });
+    // 收起公司冰蛙效率表
+    setting_list.push({
+        domType: 'checkbox',
+        domId: '',
+        domText: ' 收起公司冰蛙效率表',
+        dictName: 'companyBWCollapse',
+        tip: '开启后可手动显示隐藏冰蛙公司表格',
+    });
+
+    // 啤酒
+    setting_list.push({
+        domType: 'plain',
+        domId: '',
+        domHTML: '啤酒',
+        tagName: 'h4',
+    });
+    // 啤酒提醒
+    setting_list.push({
+        domType: 'checkbox',
+        domId: 'wh-qua-alarm-check',
+        domText: '<span> 啤酒提醒 </span><button id="wh-qua-alarm-check-btn">今日不提醒</button>',
+        dictName: '_15Alarm',
+        tip: '每小时的整15分钟的倍数时通知提醒抢啤酒或者血包',
+        isHide: true,
+        changeEv: function (ev) {
+            ev.target.checked ? beer.start() : beer.stop();
+        },
+    });
+    // 啤酒提醒状态
+    setting_list.push({
+        domType: 'button',
+        domId: '',
+        domText: '啤酒提醒状态',
+        clickFunc: function () {
+            WHNotify(`啤酒提醒${beer.status()}`);
+        }
+    });
+    // 啤酒提醒时间
+    setting_list.push({
+        domType: 'button',
+        domId: '',
+        domText: '啤酒提醒时间设定',
+        // tip: '通知提前时间',
+        clickFunc: function () {
+            popup_node.close();
+            let popup = popupMsg(`<label>提前提醒时间(秒)：<input type="number" value="${getWhSettingObj()['_15AlarmTime']}" /></label><p>区间为 1 ~ 60，默认 50</p>`, '啤酒提醒时间设定');
+            let confirm = document.createElement('button');
+            confirm.innerHTML = '确定';
+            confirm.style.float = 'right';
+            confirm.addEventListener('click', () => {
+                let input = popup.querySelector('input');
+                let num = input.value | 0;
+                if (num === getWhSettingObj()['_15AlarmTime']) return;
+                if (num < 1 || num > 60) num = 50;
+                input.value = num.toString();
+                setWhSetting('_15AlarmTime', num);
+                // 之前的运行状态
+                let before_state = beer.is_running();
+                beer.set_time(num);
+                if (before_state) beer.start();
+                popup.close();
             });
-        }
-        // 节日
-        let fest_date_html = '<button>节日</button>: ';
-        {
-            const fest_date_dict = {
-                '0105': { name: '周末自驾游', eff: '获得双倍的赛车点数与赛车技能等级增益' },
-                '0114': { name: '情人节', eff: '使用爱情果汁(Love Juice)后获得降低攻击与复活的能量消耗的增益' },
-                '0204': { name: '员工激励日', eff: '获得三倍的工作点数与火车增益' },
-                '0217': { name: '圣帕特里克日', eff: '获得双倍的酒类效果增益，城市中可以捡到绿色世涛(Green Stout)' },
-                '0320': { name: '420日', eff: '获得三倍的大麻(Cannabis)效果增益' },
-                '0418': { name: '博物馆日', eff: '获得10%提高的博物馆PT兑换增益' },
-                '0514': { name: '世界献血日', eff: '获得减半的抽血CD和扣血增益' },
-                '0611': { name: '世界人口日', eff: '获得双倍的通过攻击获取的经验的增益' },
-                '0629': { name: '世界老虎日', eff: '获得5倍的狩猎技能增益' },
-                '0705': { name: '国际啤酒节', eff: '获得5倍的啤酒物品效果增益' },
-                '0827': { name: '旅游节', eff: '获得双倍的起飞后物品携带容量增益' },
-                '0915': { name: '饮料节', eff: '获得双倍的能量饮料效果增益' },
-                '1014': { name: '世界糖尿病日', eff: '获得三倍的糖类效果增益' },
-                '1015': { name: '周年庆', eff: '左上角的TORN图标可以食用' },
-                '1025': { name: '黑色星期五', eff: '某些商家将提供1元购活动' },
-                '1114': { name: '住院日', eff: '获得降低75%的住院时间增益' },
-            };
-            menu_list.fest_date_dict = fest_date_dict;
-            menu_list.fest_date_list = Object.keys(fest_date_dict);
-            const formatMMDD = (m, d) => {
-                const MM = m < 10 ? `0${m}` : m.toString();
-                const DD = d < 10 ? `0${d}` : d.toString();
-                return MM + DD;
-            }
-            const fest_date_key = formatMMDD(date.getUTCMonth(), date.getUTCDate());
-            if (fest_date_dict[fest_date_key]) fest_date_html += `今天 - ${fest_date_dict[fest_date_key]['name']}(<button title="${fest_date_dict[fest_date_key]['eff']}">效果</button>)`;
-            else {
-                // 月日列表
-                let fest_date_list = Object.keys(fest_date_dict);
-                fest_date_list.push(fest_date_key);
-                // 下个节日的位置
-                const next_fest_date_index = fest_date_list.sort().indexOf(fest_date_key) + 1;
-                // 下个节日obj
-                const next_fest_date = fest_date_dict[fest_date_list[next_fest_date_index] || fest_date_list[0]];
-                // 下个节日的时间
-                const days_left = (new Date(
-                    next_fest_date_index !== fest_date_list.length ? date.getUTCFullYear() : date.getUTCFullYear() + 1,
-                    fest_date_list[next_fest_date_index !== fest_date_list.length ? next_fest_date_index : 0].slice(0, 2) / 1,
-                    fest_date_list[next_fest_date_index !== fest_date_list.length ? next_fest_date_index : 0].slice(2) / 1,
-                    8
-                ) - date) / 86400000 | 0;
-                fest_date_html += `${days_left}天后 - ${next_fest_date.name}(<button title="${next_fest_date.eff}">效果</button>)`;
-            }
-        }
-        menu_list.push({
-            domType: 'plain',
-            domId: 'wh-trans-fest-date',
-            domHTML: fest_date_html,
-        });
-        // 活动
-        let eventObj = {
-            onEv: false,
-            daysLeft: Infinity,
-            events: [
+            popup.appendChild(confirm);
+        },
+    });
+
+    // 其他
+    setting_list.push({
+        domType: 'plain',
+        domId: '',
+        domHTML: '其他',
+        tagName: 'h4',
+    });
+    // 任务助手
+    setting_list.push({
+        domType: 'checkbox',
+        domId: 'wh-mission-lint',
+        domText: ' 任务助手',
+        dictName: 'missionHint',
+        tip: 'Duke任务的一些中文小提示',
+        isHide: true,
+    });
+    // 捡垃圾助手
+    setting_list.push({
+        domType: 'checkbox',
+        domId: 'wh-city-finder',
+        domText: ' 捡垃圾助手',
+        dictName: 'cityFinder',
+        tip: '城市地图中放大显示物品并且估计价值',
+        isHide: true,
+    });
+    // 快速crime
+    setting_list.push({
+        domType: 'checkbox',
+        domId: 'wh-quick-crime',
+        domText: ' 快速犯罪',
+        dictName: 'quickCrime',
+        tip: '显示快捷操作按钮，目前不支持自定义',
+        isHide: true,
+    });
+    // 叠E保护
+    setting_list.push({
+        domType: 'checkbox',
+        domId: 'wh-SEProtect-check',
+        domText: ' 叠E保护',
+        dictName: 'SEProtect',
+        tip: '隐藏健身房的锻炼按钮，防止误操作',
+        isHide: true,
+    });
+    // PT一键购买
+    setting_list.push({
+        domType: 'checkbox',
+        domId: 'wh-ptQuickBuy-check',
+        domText: ' PT一键购买',
+        dictName: 'ptQuickBuy',
+        tip: 'PT市场页面购买时跳过确认',
+        isHide: true,
+    });
+    // 4条转跳
+    setting_list.push({
+        domType: 'checkbox',
+        domId: '',
+        domText: ' 4条转跳',
+        dictName: 'barsRedirect',
+        tip: '点击4条时转跳对应页面',
+    });
+    // 清除多余的脚本
+    setting_list.push({
+        domType: 'checkbox',
+        domId: '',
+        domText: ' 清除多余的脚本',
+        dictName: 'removeScripts',
+        tip: '清除Google相关脚本、顶部横幅等',
+    });
+    // 危险行为⚠️
+    if (getWhSettingObj()['dangerZone'] === true) {
+        // 攻击界面自刷新
+        setting_list.push({
+            domType: 'select',
+            domId: 'wh-attack-reload',
+            domText: '⚠️攻击界面自动刷新 ',
+            dictName: 'attReload',
+            domSelectOpt: [
                 {
-                    start: [0, 17, 8], end: [0, 24, 8],
-                    name: '捡垃圾周',
-                    eff: '获得捡垃圾概率提升的增益',
+                    domVal: 'none',
+                    domText: '无间隔',
                 },
                 {
-                    start: [3, 5, 20], end: [3, 25, 20],
-                    name: '复活节狩猎',
-                    eff: '复活节彩蛋会随机出现，集齐10个可兑换金蛋和一个独特的头像框(章)。',
+                    domVal: '1',
+                    domText: '约1s',
                 },
                 {
-                    start: [5, 20, 20], end: [5, 29, 20],
-                    name: '狗牌',
-                    eff: '击败其他玩家以获得狗牌，小心保护你的狗牌。',
+                    domVal: '2',
+                    domText: '约2s',
                 },
                 {
-                    start: [6, 5, 20], end: [6, 25, 20],
-                    name: '托恩先生和托恩女士',
-                    eff: '上传你的真实图片，然后拿章',
+                    domVal: '3',
+                    domText: '约3s',
                 },
                 {
-                    start: [8, 5, 20], end: [8, 23, 20],
-                    name: '大逃杀',
-                    eff: '加入特定队伍后，攻击其他队伍玩家，存活下来的3个队伍可以拿章',
+                    domVal: '4',
+                    domText: '约4s',
                 },
                 {
-                    start: [9, 25, 20], end: [10, 1, 20],
-                    name: '不给糖就捣蛋',
-                    eff: '买篮子之后攻击其他玩家后会随机掉落糖果，可用于兑换许多高价值物品',
+                    domVal: '5',
+                    domText: '约5s',
                 },
                 {
-                    start: [11, 14, 20], end: [11, 31, 20],
-                    name: '圣诞小镇',
-                    eff: '在小镇中闲逛来获取随机掉落的物品',
+                    domVal: 'disabled',
+                    domText: '关闭',
                 },
             ],
-        };
-        menu_list.events = eventObj.events;
-        eventObj.events.forEach((obj, index) => {
-            if (eventObj.onEv) return;
-            // 当前年份
-            const nowYear = date.getFullYear();
-            // 当前遍历的活动开始时间
-            const start = new Date(nowYear, obj.start[0], obj.start[1], obj.start[2]);
-            // 当前遍历的活动结束时间
-            const end = new Date(nowYear, obj.end[0], obj.end[1], obj.end[2]);
-            // 当前处于活动中
-            if (start < date && date < end) {
-                eventObj.onEv = true;
-                eventObj.daysLeft = (end - date) / 86400000 | 0;
-                eventObj.current = obj;
-            }
-            // 当前没有活动
-            else {
-                // 当前遍历的活动如果已经经过了，那么下次活动就是遍历的下一个活动对象，否则为当前活动。
-                // 如果本年度活动都经过了，那么下次活动是列表的第一个活动对象
-                const next = end < date ? eventObj.events[index + 1] || eventObj.events[0] : obj;
-                // 经过了最后一个活动所以下次活动开始时间是第二年
-                const start = new Date(next !== obj && index === eventObj.events.length - 1 ? nowYear + 1 : nowYear, next.start[0], next.start[1], next.start[2]);
-                const daysLeft = (start - date) / 86400000 | 0;
-                if (0 <= daysLeft && daysLeft < eventObj.daysLeft) {
-                    eventObj.daysLeft = daysLeft;
-                    eventObj.next = next;
-                }
-            }
+            isHide: true,
+            tip: '危险功能：接机时常用，将自动刷新页面直到目标落地',
         });
-        eventObj.html = '<button>活动</button>: ';
-        eventObj.onEv
-            ? eventObj.html += `${eventObj.current.name}(<button title="${eventObj.current.eff}">详情</button>) - 剩余${eventObj.daysLeft}天`
-            : eventObj.html += `${eventObj.daysLeft}天后 - ${eventObj.next.name}(<button title="${eventObj.next.eff}">详情</button>)`;
+        // 自动开打和结束
+        setting_list.push({
+            domType: 'checkbox',
+            domId: 'wh-auto-start-finish',
+            domText: ' ⚠️自动开打和结束',
+            dictName: 'autoStartFinish',
+            tip: '脚本将会自动按下战斗和结束按钮',
+            isHide: true,
+        });
+    } else {
+        setWhSetting('autoStartFinish', false, false)
+        setWhSetting('attReload', 6, false)
+    }
+    // dev
+    setting_list.push({
+        domType: 'checkbox',
+        domId: 'wh-dev-mode',
+        domText: ` 开发者模式${isDev() ? ' <button id="wh-devInfo">详情</button>' : ''}`,
+        dictName: 'isDev',
+        isHide: true,
+    });
+    // 更多设定
+    if (isDev()) setting_list.push({
+        domType: 'button', domId: 'wh-otherBtn', domText: '更多设定', clickFunc: () => {
+            const html = `清空设置数据、请求通知权限、测试跨域请求`;
+            const popup = popupMsg(html, '更多设定');
+        },
+        isHide: true,
+    });
+    // endregion
+    // region 菜单中的「选项」
+    const menu_list = [];
+    //const date = new Date(2022, 2, 4, 23);
+
+    // 欢迎 显示玩家id
+    if (player_info.userID !== 0) {
         menu_list.push({
             domType: 'plain',
-            domId: 'wh-trans-event-cont',
-            domHTML: eventObj.html,
+            domId: 'wh-trans-welcome',
+            domHTML: `<span>欢迎 <a href="/profiles.php?XID=${player_info.userID}" target="_blank">${player_info.playername}</a>[${player_info.userID}] 大佬</span>`,
         });
-        // 飞花库存
-        menu_list.push({
-            domType: 'button',
-            domId: 'wh-foreign-stock-btn',
-            domText: '🌸 飞花库存',
-            clickFunc: async function (e) {
-                e.target.blur();
-                forStock().then();
+    }
+    // 节日
+    let fest_date_html = '<button>节日</button>: ';
+    {
+        const fest_date_dict = {
+            '0105': { name: '周末自驾游', eff: '获得双倍的赛车点数与赛车技能等级增益' },
+            '0114': { name: '情人节', eff: '使用爱情果汁(Love Juice)后获得降低攻击与复活的能量消耗的增益' },
+            '0204': { name: '员工激励日', eff: '获得三倍的工作点数与火车增益' },
+            '0217': { name: '圣帕特里克日', eff: '获得双倍的酒类效果增益，城市中可以捡到绿色世涛(Green Stout)' },
+            '0320': { name: '420日', eff: '获得三倍的大麻(Cannabis)效果增益' },
+            '0418': { name: '博物馆日', eff: '获得10%提高的博物馆PT兑换增益' },
+            '0514': { name: '世界献血日', eff: '获得减半的抽血CD和扣血增益' },
+            '0611': { name: '世界人口日', eff: '获得双倍的通过攻击获取的经验的增益' },
+            '0629': { name: '世界老虎日', eff: '获得5倍的狩猎技能增益' },
+            '0705': { name: '国际啤酒节', eff: '获得5倍的啤酒物品效果增益' },
+            '0827': { name: '旅游节', eff: '获得双倍的起飞后物品携带容量增益' },
+            '0915': { name: '饮料节', eff: '获得双倍的能量饮料效果增益' },
+            '1014': { name: '世界糖尿病日', eff: '获得三倍的糖类效果增益' },
+            '1015': { name: '周年庆', eff: '左上角的TORN图标可以食用' },
+            '1025': { name: '黑色星期五', eff: '某些商家将提供1元购活动' },
+            '1114': { name: '住院日', eff: '获得降低75%的住院时间增益' },
+        };
+        menu_list.fest_date_dict = fest_date_dict;
+        menu_list.fest_date_list = Object.keys(fest_date_dict);
+        const formatMMDD = (m, d) => {
+            const MM = m < 10 ? `0${m}` : m.toString();
+            const DD = d < 10 ? `0${d}` : d.toString();
+            return MM + DD;
+        }
+        const fest_date_key = formatMMDD(date.getUTCMonth(), date.getUTCDate());
+        if (fest_date_dict[fest_date_key]) fest_date_html += `今天 - ${fest_date_dict[fest_date_key]['name']}(<button title="${fest_date_dict[fest_date_key]['eff']}">效果</button>)`;
+        else {
+            // 月日列表
+            let fest_date_list = Object.keys(fest_date_dict);
+            fest_date_list.push(fest_date_key);
+            // 下个节日的位置
+            const next_fest_date_index = fest_date_list.sort().indexOf(fest_date_key) + 1;
+            // 下个节日obj
+            const next_fest_date = fest_date_dict[fest_date_list[next_fest_date_index] || fest_date_list[0]];
+            // 下个节日的时间
+            const days_left = (new Date(
+                next_fest_date_index !== fest_date_list.length ? date.getUTCFullYear() : date.getUTCFullYear() + 1,
+                fest_date_list[next_fest_date_index !== fest_date_list.length ? next_fest_date_index : 0].slice(0, 2) / 1,
+                fest_date_list[next_fest_date_index !== fest_date_list.length ? next_fest_date_index : 0].slice(2) / 1,
+                8
+            ) - date) / 86400000 | 0;
+            fest_date_html += `${days_left}天后 - ${next_fest_date.name}(<button title="${next_fest_date.eff}">效果</button>)`;
+        }
+    }
+    menu_list.push({
+        domType: 'plain',
+        domId: 'wh-trans-fest-date',
+        domHTML: fest_date_html,
+    });
+    // 活动
+    let eventObj = {
+        onEv: false,
+        daysLeft: Infinity,
+        events: [
+            {
+                start: [0, 17, 8], end: [0, 24, 8],
+                name: '捡垃圾周',
+                eff: '获得捡垃圾概率提升的增益',
             },
-        });
-        // 一键起飞
-        menu_list.push({
-            domType: 'button',
-            domId: 'wh-quick-fly-btn',
-            domText: '✈️ 一键起飞',
-            clickFunc: async function () {
-                if (window.hasWHQuickFlyOpt) return;
-                window.hasWHQuickFlyOpt = true;
-                addStyle(`#wh-quick-fly-opt{
+            {
+                start: [3, 5, 20], end: [3, 25, 20],
+                name: '复活节狩猎',
+                eff: '复活节彩蛋会随机出现，集齐10个可兑换金蛋和一个独特的头像框(章)。',
+            },
+            {
+                start: [5, 20, 20], end: [5, 29, 20],
+                name: '狗牌',
+                eff: '击败其他玩家以获得狗牌，小心保护你的狗牌。',
+            },
+            {
+                start: [6, 5, 20], end: [6, 25, 20],
+                name: '托恩先生和托恩女士',
+                eff: '上传你的真实图片，然后拿章',
+            },
+            {
+                start: [8, 5, 20], end: [8, 23, 20],
+                name: '大逃杀',
+                eff: '加入特定队伍后，攻击其他队伍玩家，存活下来的3个队伍可以拿章',
+            },
+            {
+                start: [9, 25, 20], end: [10, 1, 20],
+                name: '不给糖就捣蛋',
+                eff: '买篮子之后攻击其他玩家后会随机掉落糖果，可用于兑换许多高价值物品',
+            },
+            {
+                start: [11, 14, 20], end: [11, 31, 20],
+                name: '圣诞小镇',
+                eff: '在小镇中闲逛来获取随机掉落的物品',
+            },
+        ],
+    };
+    menu_list.events = eventObj.events;
+    eventObj.events.forEach((obj, index) => {
+        if (eventObj.onEv) return;
+        // 当前年份
+        const nowYear = date.getFullYear();
+        // 当前遍历的活动开始时间
+        const start = new Date(nowYear, obj.start[0], obj.start[1], obj.start[2]);
+        // 当前遍历的活动结束时间
+        const end = new Date(nowYear, obj.end[0], obj.end[1], obj.end[2]);
+        // 当前处于活动中
+        if (start < date && date < end) {
+            eventObj.onEv = true;
+            eventObj.daysLeft = (end - date) / 86400000 | 0;
+            eventObj.current = obj;
+        }
+        // 当前没有活动
+        else {
+            // 当前遍历的活动如果已经经过了，那么下次活动就是遍历的下一个活动对象，否则为当前活动。
+            // 如果本年度活动都经过了，那么下次活动是列表的第一个活动对象
+            const next = end < date ? eventObj.events[index + 1] || eventObj.events[0] : obj;
+            // 经过了最后一个活动所以下次活动开始时间是第二年
+            const start = new Date(next !== obj && index === eventObj.events.length - 1 ? nowYear + 1 : nowYear, next.start[0], next.start[1], next.start[2]);
+            const daysLeft = (start - date) / 86400000 | 0;
+            if (0 <= daysLeft && daysLeft < eventObj.daysLeft) {
+                eventObj.daysLeft = daysLeft;
+                eventObj.next = next;
+            }
+        }
+    });
+    eventObj.html = '<button>活动</button>: ';
+    eventObj.onEv
+        ? eventObj.html += `${eventObj.current.name}(<button title="${eventObj.current.eff}">详情</button>) - 剩余${eventObj.daysLeft}天`
+        : eventObj.html += `${eventObj.daysLeft}天后 - ${eventObj.next.name}(<button title="${eventObj.next.eff}">详情</button>)`;
+    menu_list.push({
+        domType: 'plain',
+        domId: 'wh-trans-event-cont',
+        domHTML: eventObj.html,
+    });
+    // 飞花库存
+    menu_list.push({
+        domType: 'button',
+        domId: 'wh-foreign-stock-btn',
+        domText: '🌸 飞花库存',
+        clickFunc: async function (e) {
+            e.target.blur();
+            forStock().then();
+        },
+    });
+    // 一键起飞
+    menu_list.push({
+        domType: 'button',
+        domId: 'wh-quick-fly-btn',
+        domText: '✈️ 一键起飞',
+        clickFunc: async function () {
+            if (window.hasWHQuickFlyOpt) return;
+            window.hasWHQuickFlyOpt = true;
+            addStyle(`#wh-quick-fly-opt{
     position:fixed;
     left:64px;
     top:64px;
@@ -3494,9 +3492,9 @@ display: inline-block;
 }
 info{display:block;}
 `);
-                const node = document.createElement('div');
-                node.id = 'wh-quick-fly-opt';
-                node.innerHTML = `
+            const node = document.createElement('div');
+            node.id = 'wh-quick-fly-opt';
+            node.innerHTML = `
 <input type="button" value=" - " />
 <p>主要用途：出院秒飞</p>
 <p>点起飞，页面加载完成后会马上飞走</p>
@@ -3509,61 +3507,61 @@ info{display:block;}
 <info></info><button>起飞</button>
 </div>
 `;
-                const [dest_node, type_node] = node.querySelectorAll('select');
-                node.querySelector('button').addEventListener('click', () => {
-                    sessionStorage['wh-quick-fly'] = `${dest_node.selectedIndex} ${type_node.selectedIndex} ${new Date().getTime()}`;
-                    if (!href.contains('travelagency.php')) {
-                        WHNotify('正在转跳');
-                        location.href = 'https://www.torn.com/travelagency.php';
-                    } else {
-                        doQuickFly();
-                    }
-                });
-                node.querySelector('a').addEventListener('click', (e) => {
-                    e.preventDefault();
-                    forStock();
-                });
-                node.querySelector('input').addEventListener('click', (e) => {
-                    node.classList.toggle('wh-quick-fly-opt-hide');
-                    const el = e.target;
-                    el.value = el.value === ' - ' ? ' + ' : ' - ';
-                });
-                const info_node = node.querySelector('info');
-                const time_predict = document.createElement('p');
-                const yaoCD = document.createElement('p');
-                info_node.append(time_predict);
-                info_node.append(yaoCD);
-                const predict = [
-                    ['~54分', '~36分', '~26分', '~16分',],
-                    ['~1时10分', '~50分', '~36分', '~22分',],
-                    ['~1时22分', '~58分', '~40分', '~24分',],
-                    ['~4时28分', '~3时8分', '~2时14分', '~1时20分',],
-                    ['~5时18分', '~3时42分', '~2时40分', '~1时36分',],
-                    ['~5时34分', '~3时54分', '~2时46分', '~1时40分',],
-                    ['~5时50分', '~4时6分', '~2时56分', '~1时46分',],
-                    ['~7时30分', '~5时16分', '~3时46分', '~2时16分',],
-                    ['~8时4分', '~5时38分', '~4时2分', '~2时24分',],
-                    ['~9时2分', '~6时20分', '~4时30分', '~2时42分',],
-                    ['~9时54分', '~6时56分', '~4时58分', '~2时58分',],
-                ];
-                const showTime = function () {
-                    time_predict.innerHTML = `往返时间：${predict[dest_node.selectedIndex][type_node.selectedIndex]}`;
+            const [dest_node, type_node] = node.querySelectorAll('select');
+            node.querySelector('button').addEventListener('click', () => {
+                sessionStorage['wh-quick-fly'] = `${dest_node.selectedIndex} ${type_node.selectedIndex} ${new Date().getTime()}`;
+                if (!href.contains('travelagency.php')) {
+                    WHNotify('正在转跳');
+                    location.href = 'https://www.torn.com/travelagency.php';
+                } else {
+                    doQuickFly();
                 }
-                dest_node.addEventListener('change', showTime);
-                type_node.addEventListener('change', showTime);
-                document.body.append(node);
-                showTime();
-                yaoCD.innerHTML = `药CD剩余：${getYaoCD()}`;
-            },
-        });
-        // NPC LOOT
-        menu_list.push({
-            domType: 'button',
-            domId: 'wh-npc-loot-btn',
-            domText: '🔫 LOOT',
-            clickFunc: function (e) {
-                e.target.blur();
-                const insert = `<p>点击开打：</p>
+            });
+            node.querySelector('a').addEventListener('click', (e) => {
+                e.preventDefault();
+                forStock();
+            });
+            node.querySelector('input').addEventListener('click', (e) => {
+                node.classList.toggle('wh-quick-fly-opt-hide');
+                const el = e.target;
+                el.value = el.value === ' - ' ? ' + ' : ' - ';
+            });
+            const info_node = node.querySelector('info');
+            const time_predict = document.createElement('p');
+            const yaoCD = document.createElement('p');
+            info_node.append(time_predict);
+            info_node.append(yaoCD);
+            const predict = [
+                ['~54分', '~36分', '~26分', '~16分',],
+                ['~1时10分', '~50分', '~36分', '~22分',],
+                ['~1时22分', '~58分', '~40分', '~24分',],
+                ['~4时28分', '~3时8分', '~2时14分', '~1时20分',],
+                ['~5时18分', '~3时42分', '~2时40分', '~1时36分',],
+                ['~5时34分', '~3时54分', '~2时46分', '~1时40分',],
+                ['~5时50分', '~4时6分', '~2时56分', '~1时46分',],
+                ['~7时30分', '~5时16分', '~3时46分', '~2时16分',],
+                ['~8时4分', '~5时38分', '~4时2分', '~2时24分',],
+                ['~9时2分', '~6时20分', '~4时30分', '~2时42分',],
+                ['~9时54分', '~6时56分', '~4时58分', '~2时58分',],
+            ];
+            const showTime = function () {
+                time_predict.innerHTML = `往返时间：${predict[dest_node.selectedIndex][type_node.selectedIndex]}`;
+            }
+            dest_node.addEventListener('change', showTime);
+            type_node.addEventListener('change', showTime);
+            document.body.append(node);
+            showTime();
+            yaoCD.innerHTML = `药CD剩余：${getYaoCD()}`;
+        },
+    });
+    // NPC LOOT
+    menu_list.push({
+        domType: 'button',
+        domId: 'wh-npc-loot-btn',
+        domText: '🔫 LOOT',
+        clickFunc: function (e) {
+            e.target.blur();
+            const insert = `<p>点击开打：</p>
 <ul>
 <li><a href="https://www.torn.com/loader.php?sid=attack&user2ID=4" target="_blank">Duke</a></li>
 <li><a href="https://www.torn.com/loader.php?sid=attack&user2ID=15" target="_blank">Leslie</a></li>
@@ -3572,18 +3570,18 @@ info{display:block;}
 <li><a href="https://www.torn.com/loader.php?sid=attack&user2ID=21" target="_blank">Tiny(大锤)</a></li>
 </ul>
 <div><img alt="stock.png" src="https://jjins.github.io/t2i/loot.png?${performance.now()}" style="max-width:100%;display:block;margin:0 auto;" /></div>`;
-                popupMsg(insert, 'NPC LOOT');
-            },
-            tip: '显示5个可击杀NPC的开打时间',
-        });
-        // 查看NNB
-        menu_list.push({
-            domType: 'button',
-            domId: 'wh-nnb-info',
-            domText: '👮‍ 查看NNB',
-            clickFunc: function (e) {
-                e.target.blur();
-                const insert = `<style>
+            popupMsg(insert, 'NPC LOOT');
+        },
+        tip: '显示5个可击杀NPC的开打时间',
+    });
+    // 查看NNB
+    menu_list.push({
+        domType: 'button',
+        domId: 'wh-nnb-info',
+        domText: '👮‍ 查看NNB',
+        clickFunc: function (e) {
+            e.target.blur();
+            const insert = `<style>
 #wh-popup-cont label p{padding:0 0 0 1em;}
 #wh-popup-cont label span{font-weight:bold;}
 </style>
@@ -3607,62 +3605,62 @@ info{display:block;}
 </div>
 <button>计算</button>
 `;
-                const popup = popupMsg(insert, '查看NNB');
-                const select = popup.querySelector('input');
-                const node = popup.querySelector('p');
-                popup.querySelector('button').addEventListener('click', ev => {
-                    ev.target.style.display = 'none';
-                    node.innerHTML = '加载中';
-                    // API 计算
-                    if (select.checked) {
-                        const api_key = isPDA ? PDA_APIKey : window.localStorage.getItem('APIKey');
-                        fetch(`https://api.torn.com/user/?selections=bars,perks&key=${api_key}`)
-                            .then(res => res.json())
-                            .then(data => {
-                                if (data['error']) {
-                                    node.innerHTML = `出错了 ${Obj2Str(data['error'])}`;
-                                    ev.target.style.display = null;
-                                    return;
-                                }
-                                let nb = data['nerve']['maximum'];
-                                let perks = 0;
-                                Object.values(data).forEach(val => {
-                                    (val instanceof Array) && val.forEach(s => {
-                                        s = s.toLowerCase();
-                                        s.includes('maximum nerve') && (perks += /[0-9]./.exec(s)[0] | 0)
-                                    })
-                                });
-                                node.innerHTML = `NNB: ${nb - perks}`;
+            const popup = popupMsg(insert, '查看NNB');
+            const select = popup.querySelector('input');
+            const node = popup.querySelector('p');
+            popup.querySelector('button').addEventListener('click', ev => {
+                ev.target.style.display = 'none';
+                node.innerHTML = '加载中';
+                // API 计算
+                if (select.checked) {
+                    const api_key = isPDA ? PDA_APIKey : window.localStorage.getItem('APIKey');
+                    fetch(`https://api.torn.com/user/?selections=bars,perks&key=${api_key}`)
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data['error']) {
+                                node.innerHTML = `出错了 ${Obj2Str(data['error'])}`;
                                 ev.target.style.display = null;
-                            });
-                    }
-                    // 主页计算
-                    else {
-                        if (window.location.href.includes('index.php') && document.title.includes('Home')) {
-                            let nb = document.querySelector('#barNerve p[class^="bar-value___"]').innerText.split('/')[1] | 0;
+                                return;
+                            }
+                            let nb = data['nerve']['maximum'];
                             let perks = 0;
-                            document.querySelectorAll('#personal-perks li').forEach(elem => {
-                                const str = elem.innerText.toLowerCase();
-                                str.includes('maximum nerve') && (perks += /[0-9]./.exec(str)[0] | 0)
+                            Object.values(data).forEach(val => {
+                                (val instanceof Array) && val.forEach(s => {
+                                    s = s.toLowerCase();
+                                    s.includes('maximum nerve') && (perks += /[0-9]./.exec(s)[0] | 0)
+                                })
                             });
                             node.innerHTML = `NNB: ${nb - perks}`;
                             ev.target.style.display = null;
-                            return;
-                        }
-                        node.innerHTML = '不在主页面，<a href="/index.php">点击前往</a>';
+                        });
+                }
+                // 主页计算
+                else {
+                    if (window.location.href.includes('index.php') && document.title.includes('Home')) {
+                        let nb = document.querySelector('#barNerve p[class^="bar-value___"]').innerText.split('/')[1] | 0;
+                        let perks = 0;
+                        document.querySelectorAll('#personal-perks li').forEach(elem => {
+                            const str = elem.innerText.toLowerCase();
+                            str.includes('maximum nerve') && (perks += /[0-9]./.exec(str)[0] | 0)
+                        });
+                        node.innerHTML = `NNB: ${nb - perks}`;
                         ev.target.style.display = null;
+                        return;
                     }
-                });
-            },
-        });
-        // 常用链接
-        menu_list.push({
-            domType: 'button',
-            domId: 'wh-link-collection',
-            domText: '🔗 常用链接',
-            clickFunc: function (e) {
-                if (!this.styleAdded) {
-                    addStyle(`
+                    node.innerHTML = '不在主页面，<a href="/index.php">点击前往</a>';
+                    ev.target.style.display = null;
+                }
+            });
+        },
+    });
+    // 常用链接
+    menu_list.push({
+        domType: 'button',
+        domId: 'wh-link-collection',
+        domText: '🔗 常用链接',
+        clickFunc: function (e) {
+            if (!this.styleAdded) {
+                addStyle(`
 .wh-link-collection-cont a{
     display: inline-block;
     border: solid 1px #b3b3b3;
@@ -3685,100 +3683,100 @@ height:30px;
 background-size: 100% auto !important;
 }
 `);
-                    this.styleAdded = true;
+                this.styleAdded = true;
+            }
+            e.target.blur();
+            const quick_link_dict = [];
+            // 生存手册
+            quick_link_dict.push({
+                name: '生存手册',
+                url: 'https://docs.qq.com/doc/DTVpmV2ZaRnB0RG56',
+                new_tab: true,
+                img: 'https://www.torn.com/images/items/293/medium.png',
+            });
+            // 买啤酒
+            quick_link_dict.push({
+                name: '抢啤酒',
+                url: 'https://www.torn.com/shops.php?step=bitsnbobs',
+                new_tab: true,
+                img: 'https://www.torn.com/images/items/180/medium.png',
+            });
+            // 买XAN
+            quick_link_dict.push({
+                name: '买XAN',
+                url: 'https://www.torn.com/imarket.php#/p=shop&step=shop&type=&searchname=Xanax',
+                new_tab: true,
+                img: 'https://www.torn.com/images/items/206/medium.png',
+            });
+            // 起飞
+            quick_link_dict.push({
+                name: '起飞',
+                url: 'https://www.torn.com/travelagency.php',
+                new_tab: true,
+                img: 'https://www.torn.com/images/items/396/medium.png',
+            });
+            // 买PT
+            quick_link_dict.push({
+                name: '买PT',
+                url: 'https://www.torn.com/pmarket.php',
+                new_tab: true,
+                img: 'https://www.torn.com/images/items/722/medium.png',
+            });
+            // 租PI
+            quick_link_dict.push({
+                name: '租PI',
+                url: 'https://www.torn.com/properties.php?step=rentalmarket#/property=13',
+                new_tab: false,
+                img: 'https://www.torn.com/images/v2/properties/350x230/350x230_default_private_island.png',
+            });
+            // 找工作
+            quick_link_dict.push({
+                name: '找工作',
+                url: 'https://www.torn.com/joblist.php#!p=main',
+                new_tab: false,
+                img: 'https://www.torn.com/images/items/421/medium.png',
+            });
+            // 下悬赏
+            quick_link_dict.push({
+                name: '下悬赏',
+                url: 'https://www.torn.com/bounties.php#/p=add',
+                new_tab: false,
+                img: 'https://www.torn.com/images/items/431/medium.png',
+            });
+            let insert = '<p>';
+            quick_link_dict.forEach(el => {
+                insert += `<a href="${el.url}"${el.new_tab ? ' target="_blank"' : ''}><span class="wh-link-collection-img" style="background: url(${el.img})"></span><span>${el.name}</span></a>`;
+            });
+            insert += '</p>'
+            let popup = popupMsg(insert, '常用链接');
+            popup.classList.add('wh-link-collection-cont');
+            popup.addEventListener('click', ev => {
+                if (ev.target.tagName.toLowerCase() === 'a' || ev.target.tagName.toLowerCase() === 'span') {
+                    popup.close();
                 }
-                e.target.blur();
-                const quick_link_dict = [];
-                // 生存手册
-                quick_link_dict.push({
-                    name: '生存手册',
-                    url: 'https://docs.qq.com/doc/DTVpmV2ZaRnB0RG56',
-                    new_tab: true,
-                    img: 'https://www.torn.com/images/items/293/medium.png',
-                });
-                // 买啤酒
-                quick_link_dict.push({
-                    name: '抢啤酒',
-                    url: 'https://www.torn.com/shops.php?step=bitsnbobs',
-                    new_tab: true,
-                    img: 'https://www.torn.com/images/items/180/medium.png',
-                });
-                // 买XAN
-                quick_link_dict.push({
-                    name: '买XAN',
-                    url: 'https://www.torn.com/imarket.php#/p=shop&step=shop&type=&searchname=Xanax',
-                    new_tab: true,
-                    img: 'https://www.torn.com/images/items/206/medium.png',
-                });
-                // 起飞
-                quick_link_dict.push({
-                    name: '起飞',
-                    url: 'https://www.torn.com/travelagency.php',
-                    new_tab: true,
-                    img: 'https://www.torn.com/images/items/396/medium.png',
-                });
-                // 买PT
-                quick_link_dict.push({
-                    name: '买PT',
-                    url: 'https://www.torn.com/pmarket.php',
-                    new_tab: true,
-                    img: 'https://www.torn.com/images/items/722/medium.png',
-                });
-                // 租PI
-                quick_link_dict.push({
-                    name: '租PI',
-                    url: 'https://www.torn.com/properties.php?step=rentalmarket#/property=13',
-                    new_tab: false,
-                    img: 'https://www.torn.com/images/v2/properties/350x230/350x230_default_private_island.png',
-                });
-                // 找工作
-                quick_link_dict.push({
-                    name: '找工作',
-                    url: 'https://www.torn.com/joblist.php#!p=main',
-                    new_tab: false,
-                    img: 'https://www.torn.com/images/items/421/medium.png',
-                });
-                // 下悬赏
-                quick_link_dict.push({
-                    name: '下悬赏',
-                    url: 'https://www.torn.com/bounties.php#/p=add',
-                    new_tab: false,
-                    img: 'https://www.torn.com/images/items/431/medium.png',
-                });
-                let insert = '<p>';
-                quick_link_dict.forEach(el => {
-                    insert += `<a href="${el.url}"${el.new_tab ? ' target="_blank"' : ''}><span class="wh-link-collection-img" style="background: url(${el.img})"></span><span>${el.name}</span></a>`;
-                });
-                insert += '</p>'
-                let popup = popupMsg(insert, '常用链接');
-                popup.classList.add('wh-link-collection-cont');
-                popup.addEventListener('click', ev => {
-                    if (ev.target.tagName.toLowerCase() === 'a' || ev.target.tagName.toLowerCase() === 'span') {
-                        popup.close();
-                    }
-                });
-            },
-        });
-        // 飞贼
-        menu_list.push({
-            domType: 'button',
-            domId: 'wh-gs-btn',
-            domText: '🐏 飞贼小助手',
-            clickFunc: function (e) {
-                e.target.blur();
-                loadGS(getScriptEngine());
-            },
-            tip: '加载从PC端移植的伞佬的油猴版飞贼小助手',
-        });
-        // 物品价格监视
-        menu_list.push({
-            domType: 'button',
-            domId: 'wh-price-watcher-btn',
-            domText: '💊 价格监视',
-            clickFunc: function () {
-                const watcher_conf = getWhSettingObj()['priceWatcher'];
-                const pre_str = JSON.stringify(watcher_conf);
-                const html = `<style>
+            });
+        },
+    });
+    // 飞贼
+    menu_list.push({
+        domType: 'button',
+        domId: 'wh-gs-btn',
+        domText: '🐏 飞贼小助手',
+        clickFunc: function (e) {
+            e.target.blur();
+            loadGS(getScriptEngine());
+        },
+        tip: '加载从PC端移植的伞佬的油猴版飞贼小助手',
+    });
+    // 物品价格监视
+    menu_list.push({
+        domType: 'button',
+        domId: 'wh-price-watcher-btn',
+        domText: '💊 价格监视',
+        clickFunc: function () {
+            const watcher_conf = getWhSettingObj()['priceWatcher'];
+            const pre_str = JSON.stringify(watcher_conf);
+            const html = `<style>
 #wh-popup-cont input{width:12em;}
 #wh-popup-cont input[type="number"]{width:8em;}
 </style>
@@ -3791,36 +3789,36 @@ background-size: 100% auto !important;
 <p><b>XAN</b><label> $ <input type="number" value="${watcher_conf['xan'] || -1}" /></label></p>
 <p><button>确定</button></p>
 `;
-                const popup = popupMsg(html, '价格监视设置');
-                popup.querySelector('button').onclick = () => {
-                    const [pt_node, xan_node] = popup.querySelectorAll('input[type="number"]');
-                    watcher_conf.pt = pt_node.value | 0;
-                    watcher_conf.xan = xan_node.value | 0;
-                    if (JSON.stringify(watcher_conf) !== pre_str) setWhSetting('priceWatcher', watcher_conf);
-                    popup.close();
-                };
-            }
-        });
-        // 小窗犯罪
-        menu_list.push({
-            domType: 'button',
-            domId: 'wh-crime-iframe-btn',
-            domText: '🤑 小窗犯罪',
-            clickFunc: function () {
-                // 弹出小窗口
-                const ifHTML = `<iframe src="/crimes.php?step=main" style="width:100%;max-width: 450px;margin: 0 auto;display: none;height: 340px;"></iframe>`;
-                const popup_insert = `<p>加载中请稍后${loading_gif_html()}</p><div id="wh-quick-crime-if-container"></div>`;
-                const $popup = popupMsg(popup_insert, '小窗快速犯罪');
-                // 运行状态node
-                let loading_node = $popup.querySelector('p:first-of-type');
-                // if容器
-                const if_cont = $popup.querySelector('#wh-quick-crime-if-container');
-                if_cont.innerHTML = ifHTML;
+            const popup = popupMsg(html, '价格监视设置');
+            popup.querySelector('button').onclick = () => {
+                const [pt_node, xan_node] = popup.querySelectorAll('input[type="number"]');
+                watcher_conf.pt = pt_node.value | 0;
+                watcher_conf.xan = xan_node.value | 0;
+                if (JSON.stringify(watcher_conf) !== pre_str) setWhSetting('priceWatcher', watcher_conf);
+                popup.close();
+            };
+        }
+    });
+    // 小窗犯罪
+    menu_list.push({
+        domType: 'button',
+        domId: 'wh-crime-iframe-btn',
+        domText: '🤑 小窗犯罪',
+        clickFunc: function () {
+            // 弹出小窗口
+            const ifHTML = `<iframe src="/crimes.php?step=main" style="width:100%;max-width: 450px;margin: 0 auto;display: none;height: 340px;"></iframe>`;
+            const popup_insert = `<p>加载中请稍后${loading_gif_html()}</p><div id="wh-quick-crime-if-container"></div>`;
+            const $popup = popupMsg(popup_insert, '小窗快速犯罪');
+            // 运行状态node
+            let loading_node = $popup.querySelector('p:first-of-type');
+            // if容器
+            const if_cont = $popup.querySelector('#wh-quick-crime-if-container');
+            if_cont.innerHTML = ifHTML;
 
-                // if内未加载脚本时插入的快捷crime node
-                const mobile_prepend_node = document.createElement('div');
-                mobile_prepend_node.classList.add('wh-translate');
-                mobile_prepend_node.innerHTML = `<div class="title-black" style="border-radius: 5px 5px 0 0;"><span>快捷操作：</span></div><div class="cont-gray" style="padding: 6px 0;border-radius: 0 0 5px 5px;">
+            // if内未加载脚本时插入的快捷crime node
+            const mobile_prepend_node = document.createElement('div');
+            mobile_prepend_node.classList.add('wh-translate');
+            mobile_prepend_node.innerHTML = `<div class="title-black" style="border-radius: 5px 5px 0 0;"><span>快捷操作：</span></div><div class="cont-gray" style="padding: 6px 0;border-radius: 0 0 5px 5px;">
 <form id="wh-translate-quick" action="crimes.php?step=docrime4" method="post" style="display: inline-block;margin: 0 5px">
 <input name="nervetake" type="hidden" value="18">
 <input name="crime" type="hidden" value="hackbank">
@@ -3837,140 +3835,140 @@ background-size: 100% auto !important;
 <input style="-webkit-appearance:none;padding: 4px;background: #009688;border-radius: 5px;color: white;" type="submit" value="偷夹克" />
 </form></div><hr class="page-head-delimiter m-top10 m-bottom10 r1854">`;
 
-                // if对象加载后运行
-                let cIframe = $popup.querySelector('iframe');
+            // if对象加载后运行
+            let cIframe = $popup.querySelector('iframe');
 
-                // 加载状态
-                const if_onload_func = () => {
-                    // if内部文档对象
-                    const ifDocu = cIframe.contentWindow.document;
-                    // 内部插件运行flag
-                    const ifWH = cIframe.contentWindow.WHTRANS;
-                    // 文档加载完成后移除
-                    if (!!loading_node) loading_node.remove();
-                    // 文档加载完成后才显示if
-                    cIframe.style.display = 'block';
-                    // 验证码flag
-                    const isValidate = ifDocu.querySelector('h4#skip-to-content').innerText.toLowerCase().includes('validate');
-                    // 如果iframe内部未运行脚本
-                    if (ifWH === undefined) {
-                        // 隐藏顶部
-                        elementReady('#header-root', ifDocu).then(e => e.style.display = 'none');
-                        // 隐藏4条
-                        elementReady('#sidebarroot', ifDocu).then(e => e.style.display = 'none');
-                        // 隐藏聊天
-                        elementReady('#chatRoot', ifDocu).then(e => e.style.display = 'none');
-                        // 非验证码页面隐藏滚动条
-                        if (!isValidate) ifDocu.body.style.overflow = 'hidden';
-                        // 调整容器位置
-                        elementReady('.content-wrapper', ifDocu).then(elem => {
-                            // 加入
-                            elem.prepend(mobile_prepend_node);
-                            elem.style.margin = '0px';
-                            elem.style.position = 'absolute';
-                            elem.style.top = '-35px';
-                            new MutationObserver((m, o) => {
-                                o.disconnect();
-                                if (!elem.querySelector('.wh-translate')) elem.prepend(mobile_prepend_node);
-                                o.observe(elem, { childList: true, subtree: true });
-                            })
-                                .observe(elem, { childList: true, subtree: true });
-                        });
-                        // 隐藏返回顶部按钮
-                        elementReady('#go-to-top-btn button', ifDocu).then(e => e.style.display = 'none');
-                    }
-                };
-                cIframe.onload = if_onload_func;
+            // 加载状态
+            const if_onload_func = () => {
+                // if内部文档对象
+                const ifDocu = cIframe.contentWindow.document;
+                // 内部插件运行flag
+                const ifWH = cIframe.contentWindow.WHTRANS;
+                // 文档加载完成后移除
+                if (!!loading_node) loading_node.remove();
+                // 文档加载完成后才显示if
+                cIframe.style.display = 'block';
+                // 验证码flag
+                const isValidate = ifDocu.querySelector('h4#skip-to-content').innerText.toLowerCase().includes('validate');
+                // 如果iframe内部未运行脚本
+                if (ifWH === undefined) {
+                    // 隐藏顶部
+                    elementReady('#header-root', ifDocu).then(e => e.style.display = 'none');
+                    // 隐藏4条
+                    elementReady('#sidebarroot', ifDocu).then(e => e.style.display = 'none');
+                    // 隐藏聊天
+                    elementReady('#chatRoot', ifDocu).then(e => e.style.display = 'none');
+                    // 非验证码页面隐藏滚动条
+                    if (!isValidate) ifDocu.body.style.overflow = 'hidden';
+                    // 调整容器位置
+                    elementReady('.content-wrapper', ifDocu).then(elem => {
+                        // 加入
+                        elem.prepend(mobile_prepend_node);
+                        elem.style.margin = '0px';
+                        elem.style.position = 'absolute';
+                        elem.style.top = '-35px';
+                        new MutationObserver((m, o) => {
+                            o.disconnect();
+                            if (!elem.querySelector('.wh-translate')) elem.prepend(mobile_prepend_node);
+                            o.observe(elem, { childList: true, subtree: true });
+                        })
+                            .observe(elem, { childList: true, subtree: true });
+                    });
+                    // 隐藏返回顶部按钮
+                    elementReady('#go-to-top-btn button', ifDocu).then(e => e.style.display = 'none');
+                }
+            };
+            cIframe.onload = if_onload_func;
 
-                // 超时判断
-                let time_counter = 0;
-                let time_out_id = window.setInterval(() => {
-                    loading_node = $popup.querySelector('p:first-of-type');
-                    if (!loading_node) {
-                        clearInterval(time_out_id);
-                        time_out_id = undefined;
-                        return;
-                    }
-                    time_counter++;
-                    if (time_counter > 0 && !loading_node.querySelector('button')) {
-                        const reload_btn = document.createElement('button');
-                        reload_btn.innerHTML = '重新加载';
-                        reload_btn.onclick = () => {
-                            reload_btn.remove();
-                            time_counter = 0;
-                            if_cont.innerHTML = null;
-                            if_cont.innerHTML = ifHTML;
-                            cIframe = $popup.querySelector('iframe');
-                            cIframe.onload = if_onload_func;
-                        };
-                        loading_node.append(reload_btn);
-                    }
-                }, 1000);
-            }
-        });
-        // 危险行为开关⚠️
-        menu_list.push({
-            domType: 'button',
-            domId: 'wh-danger-zone',
-            domText: '⚠️ 危险功能',
-            clickFunc: function (e) {
-                e.target.blur();
-                const insert = `<p>即将打开危险功能，使用这些功能可能会造成账号封禁。请自行考虑是否使用。</p>
+            // 超时判断
+            let time_counter = 0;
+            let time_out_id = window.setInterval(() => {
+                loading_node = $popup.querySelector('p:first-of-type');
+                if (!loading_node) {
+                    clearInterval(time_out_id);
+                    time_out_id = undefined;
+                    return;
+                }
+                time_counter++;
+                if (time_counter > 0 && !loading_node.querySelector('button')) {
+                    const reload_btn = document.createElement('button');
+                    reload_btn.innerHTML = '重新加载';
+                    reload_btn.onclick = () => {
+                        reload_btn.remove();
+                        time_counter = 0;
+                        if_cont.innerHTML = null;
+                        if_cont.innerHTML = ifHTML;
+                        cIframe = $popup.querySelector('iframe');
+                        cIframe.onload = if_onload_func;
+                    };
+                    loading_node.append(reload_btn);
+                }
+            }, 1000);
+        }
+    });
+    // 危险行为开关⚠️
+    menu_list.push({
+        domType: 'button',
+        domId: 'wh-danger-zone',
+        domText: '⚠️ 危险功能',
+        clickFunc: function (e) {
+            e.target.blur();
+            const insert = `<p>即将打开危险功能，使用这些功能可能会造成账号封禁。请自行考虑是否使用。</p>
 <p><label><input type="checkbox" ${getWhSettingObj()['dangerZone'] ? 'checked ' : ' '}/> 知道了，开启</label></p>
 <div><button disabled>保存</button></div>`;
-                const popup = popupMsg(insert, '⚠️警告');
-                const warning_check = popup.querySelector('input');
-                const ok_btn = popup.querySelector('button');
-                warning_check.onchange = () => ok_btn.disabled = false;
-                ok_btn.onclick = () => {
-                    setWhSetting('dangerZone', warning_check.checked);
-                    popup['close']();
-                    window.location.reload();
-                };
-            },
-        });
-        // 传单助手
-        menu_list.push({
-            domType: 'button',
-            domId: '',
-            domText: '📜️ 传单助手',
-            clickFunc: adHelper
-        });
-        // 守望者
-        menu_list.push({
-            domType: 'button',
-            domId: '',
-            domText: '🛡️ 守望者',
-            clickFunc: function () {
-                safeKeeper();
-            },
-        });
-        // 更新历史
-        menu_list.push({
-            domType: 'button', domId: '', domText: '🐞 更新历史', clickFunc: () => {
-                popupMsg('更新历史现已迁移：<br/><a target="_blank" href="https://gitlab.com/JJins/wuhu-torn-helper/-/blob/dev/CHANGELOG.md">https://gitlab.com/JJins/wuhu-torn-helper/-/blob/dev/CHANGELOG.md</a>', '更新历史');
-            },
-        });
-        // 助手设置
-        menu_list.push({
-            domType: 'button', domId: '', domText: '⚙️ 助手设置', clickFunc: () => {
-                $zhongNode.setting_root = document.createElement('div');
-                $zhongNode.setting_root.classList.add('gSetting');
-                setting_list.forEach(set => elemGenerator(set, $zhongNode.setting_root));
-                let pop = popupMsg('', '芜湖助手设置');
-                pop.appendChild($zhongNode.setting_root);
-                // 本日不提醒
-                $zhongNode.setting_root.querySelector('#wh-qua-alarm-check-btn').addEventListener('click', beer.skip_today);
-                // 开发详情按钮
-                if (isDev()) $zhongNode.setting_root.querySelector('button#wh-devInfo').onclick = () => {
-                    const date = new Date();
-                    let os = '未知';
-                    try {
-                        os = window.navigator.userAgentData.platform || window.navigator.platform
-                    } catch {
-                    }
+            const popup = popupMsg(insert, '⚠️警告');
+            const warning_check = popup.querySelector('input');
+            const ok_btn = popup.querySelector('button');
+            warning_check.onchange = () => ok_btn.disabled = false;
+            ok_btn.onclick = () => {
+                setWhSetting('dangerZone', warning_check.checked);
+                popup['close']();
+                window.location.reload();
+            };
+        },
+    });
+    // 传单助手
+    menu_list.push({
+        domType: 'button',
+        domId: '',
+        domText: '📜️ 传单助手',
+        clickFunc: adHelper
+    });
+    // 守望者
+    menu_list.push({
+        domType: 'button',
+        domId: '',
+        domText: '🛡️ 守望者',
+        clickFunc: function () {
+            safeKeeper();
+        },
+    });
+    // 更新历史
+    menu_list.push({
+        domType: 'button', domId: '', domText: '🐞 更新历史', clickFunc: () => {
+            popupMsg('更新历史现已迁移：<br/><a target="_blank" href="https://gitlab.com/JJins/wuhu-torn-helper/-/blob/dev/CHANGELOG.md">https://gitlab.com/JJins/wuhu-torn-helper/-/blob/dev/CHANGELOG.md</a>', '更新历史');
+        },
+    });
+    // 助手设置
+    menu_list.push({
+        domType: 'button', domId: '', domText: '⚙️ 助手设置', clickFunc: () => {
+            $zhongNode.setting_root = document.createElement('div');
+            $zhongNode.setting_root.classList.add('gSetting');
+            setting_list.forEach(set => elemGenerator(set, $zhongNode.setting_root));
+            let pop = popupMsg('', '芜湖助手设置');
+            pop.appendChild($zhongNode.setting_root);
+            // 本日不提醒
+            $zhongNode.setting_root.querySelector('#wh-qua-alarm-check-btn').addEventListener('click', beer.skip_today);
+            // 开发详情按钮
+            if (isDev()) $zhongNode.setting_root.querySelector('button#wh-devInfo').onclick = () => {
+                const date = new Date();
+                let os = '未知';
+                try {
+                    os = window.navigator.userAgentData.platform || window.navigator.platform
+                } catch {
+                }
 
-                    const insert = `<table id="wh-dev-info-tb">
+                const insert = `<table id="wh-dev-info-tb">
   <tr><td>URL</td><td>${window.location.href}</td></tr>
   <tr><td>页面尺寸</td><td>${window.innerWidth}x${window.innerHeight}</td></tr>
   <tr><td>设备类型</td><td>${getDeviceType().toUpperCase()}</td></tr>
@@ -3988,22 +3986,23 @@ padding: 2px 4px;
 color:black;
 }
 </style>`;
-                    pop['close']();
-                    popupMsg(insert, '开发者详情');
-                };
-                (window['initializeTooltip']) && (window['initializeTooltip']('#wh-popup-cont', 'white-tooltip'));
-            },
-        });
-        // 测试
-        if (isDev()) menu_list.push({
-            domType: 'button',
-            domId: '',
-            domText: '📐️ 测试',
-            clickFunc: function () {
-                WHNotify('芜湖助手', { sysNotify: true, timeout: 1 })
-            },
-        });
-    }
+                pop['close']();
+                popupMsg(insert, '开发者详情');
+            };
+            (window['initializeTooltip']) && (window['initializeTooltip']('#wh-popup-cont', 'white-tooltip'));
+        },
+    });
+    // 测试
+    if (isDev()) menu_list.push({
+        domType: 'button',
+        domId: '',
+        domText: '📐️ 测试',
+        clickFunc: function () {
+            WHNotify('芜湖助手', { sysNotify: true, timeout: 1 })
+        },
+    });
+    // endregion
+
     // 菜单node
     const $zhongNode = initIcon(menu_list);
     addStyle(`
@@ -4220,7 +4219,7 @@ cursor:pointer;
         (gonline) && (gonline.remove());
     }
 
-    // 存钱CSS 不终止
+    // region 存钱CSS 不终止
     let depo_channel;
     const depo_selector = { CMPY: "div#funds div.deposit", FAC: "div#armoury-donate div.cash" };
     // 公司
@@ -4275,30 +4274,32 @@ z-index: 999999;}`);
             node.prepend(close_btn);
         });
     }
+    // endregion
 
-    // 飞行闹钟
-    if (href.includes('index.php') && !!document.querySelector('div.travelling h4') &&
-        device === Device.PC && getWhSettingObj()['trvAlarm']) {
-        elementReady('#countrTravel.hasCountdown').then(node => {
-            const logo_node = document.querySelector('#tcLogo[title]');
-            let dest_cn = '';
-            if (logo_node) dest_cn = {
-                'Mexico': '墨西哥', 'Canada': '加拿大', 'Cayman Islands': '开曼',
-                'Hawaii': '夏威夷', 'United Kingdom': '英国', 'Argentina': '阿根廷', 'Switzerland': '瑞士',
-                'Japan': '日本', 'China': '中国', 'United Arab Emirates': 'UAE', 'South Africa': '南非',
-            }[logo_node.attributes.title.nodeValue] || '回城';
-            const remaining_arr = node.innerText.trim().split(':');
+    // 飞行页面
+    if (href.includes('index.php') && getSidebarData()['traveling']) {
+        // 飞行闹钟
+        if (device === Device.PC && getWhSettingObj()['trvAlarm'])
+            elementReady('#countrTravel.hasCountdown').then(node => {
+                const logo_node = document.querySelector('#tcLogo[title]');
+                let dest_cn = '';
+                if (logo_node) dest_cn = {
+                    'Mexico': '墨西哥', 'Canada': '加拿大', 'Cayman Islands': '开曼',
+                    'Hawaii': '夏威夷', 'United Kingdom': '英国', 'Argentina': '阿根廷', 'Switzerland': '瑞士',
+                    'Japan': '日本', 'China': '中国', 'United Arab Emirates': 'UAE', 'South Africa': '南非',
+                }[logo_node.attributes.title.nodeValue] || '回城';
+                const remaining_arr = node.innerText.trim().split(':');
 
-            const wh_trv_alarm = localStorage.getItem('wh_trv_alarm')
-                ? JSON.parse(localStorage.getItem('wh_trv_alarm'))
-                : { 'enable': true, 'alert_time': 30, 'node_pos': [240, 240] };
-            const save_trv_settings = () => localStorage.setItem('wh_trv_alarm', JSON.stringify(wh_trv_alarm));
+                const wh_trv_alarm = localStorage.getItem('wh_trv_alarm')
+                    ? JSON.parse(localStorage.getItem('wh_trv_alarm'))
+                    : { 'enable': true, 'alert_time': 30, 'node_pos': [240, 240] };
+                const save_trv_settings = () => localStorage.setItem('wh_trv_alarm', JSON.stringify(wh_trv_alarm));
 
-            const wh_trv_alarm_node = document.createElement('div');
-            wh_trv_alarm_node.id = 'wh-trv-alarm';
-            wh_trv_alarm_node.style.left = `${wh_trv_alarm.node_pos[0]}px`;
-            wh_trv_alarm_node.style.top = `${wh_trv_alarm.node_pos[1]}px`;
-            wh_trv_alarm_node.innerHTML = `<div id="wh-trv-error"><p><b>❌ 没有权限</b><br/>点击网页内任意位置以激活闹钟</p></div>
+                const wh_trv_alarm_node = document.createElement('div');
+                wh_trv_alarm_node.id = 'wh-trv-alarm';
+                wh_trv_alarm_node.style.left = `${wh_trv_alarm.node_pos[0]}px`;
+                wh_trv_alarm_node.style.top = `${wh_trv_alarm.node_pos[1]}px`;
+                wh_trv_alarm_node.innerHTML = `<div id="wh-trv-error"><p><b>❌ 没有权限</b><br/>点击网页内任意位置以激活闹钟</p></div>
 <div id="wh-trv-alarm-title">
   <h5 id="wh-trv-alarm-header">飞行闹钟</h5>
 </div>
@@ -4312,7 +4313,7 @@ z-index: 999999;}`);
   </div>
 </div>
 `;
-            addStyle(`
+                addStyle(`
 #wh-trv-alarm{
 position:absolute;
 width:248px;
@@ -4377,133 +4378,133 @@ color:red;
 display:none;
 }
 `);
-            document.body.append(wh_trv_alarm_node);
-            // 报错dom
-            const error_node = wh_trv_alarm_node.querySelector('#wh-trv-error');
-            // jquery拖动
-            $(wh_trv_alarm_node).draggable({
-                containment: "body",
-                distance: 5,
-                handle: "#wh-trv-alarm-title",
-                stop: () => {
-                    wh_trv_alarm.node_pos = [parseInt(wh_trv_alarm_node.style.left), parseInt(wh_trv_alarm_node.style.top)];
-                    save_trv_settings();
-                },
-                scroll: false,
-            });
-            // 剩余时间dom
-            const remaining_node = wh_trv_alarm_node.querySelector('#wh-trv-alarm-remaining');
-            // 设定闹钟响的按钮
-            const set_node = wh_trv_alarm_node.querySelectorAll('#wh-trv-alarm-cont button')[0];
-            // 落地前响铃时长
-            const cd_time = wh_trv_alarm_node.querySelector('input[type="number"]');
-            let count_down_notify = {};
-            set_node.onclick = () => {
-                try {
-                    wh_trv_alarm.alert_time = parseInt(cd_time.value);
-                } catch {
-                    wh_trv_alarm.alert_time = 30;
-                }
-                save_trv_settings();
-                set_node.value = wh_trv_alarm.alert_time;
-                if (count_down_notify.del) count_down_notify.del();
-                count_down_notify = WHNotify('设置已更新');
-            };
-            // 停止响铃按钮
-            const stop_node = wh_trv_alarm_node.querySelectorAll('#wh-trv-alarm-cont button')[1];
-            stop_node.onclick = () => {
-                user_stop_alert = true;
-                stop_node.innerText = '本次已关闭';
-                stop_node.disabled = true;
-            }
-            // 开启闹钟勾选
-            const enable_node = wh_trv_alarm_node.querySelector('#wh-trv-alarm-cont input[type="checkbox"]');
-            let on_off_notify = {};
-            enable_node.onchange = ev => {
-                wh_trv_alarm.enable = ev.target.checked;
-                save_trv_settings();
-                if (on_off_notify.del) on_off_notify.del();
-                on_off_notify = WHNotify(wh_trv_alarm.enable ? '闹钟已开启' : '闹钟已关闭');
-            };
-            // 剩余时间 秒
-            const remaining_sec = parseInt(remaining_arr[0]) * 3600 + parseInt(remaining_arr[1]) * 60 + parseInt(remaining_arr[2]);
-            // 落地时timestamp
-            const land_timestamp = Date.now() + remaining_sec * 1000;
-            // 音频dom
-            const audio = document.createElement('audio');
-            audio.src = 'https://www.torn.com/js/chat/sounds/Warble_1.mp3';
-            audio.play()
-                .catch(() => {
-                    error_node.style.display = 'table';
-                    const func = () => {
-                        error_node.remove();
-                        document.body.removeEventListener('click', func);
-                    };
-                    document.body.addEventListener('click', func);
-                })
-                .then(() => audio.pause());
-            // 是否正在响铃
-            let audio_play_flag = false;
-            // 用户是否停止当前响铃
-            let user_stop_alert = false;
-            // 响铃循环id
-            let audio_play_id = null;
-            // 响铃的方法
-            let audio_play_handle = () => {
-                if (user_stop_alert) {
-                    clearInterval(audio_play_id);
-                    audio_play_id = null;
-                    return;
-                }
-                if (!audio_play_flag || !wh_trv_alarm.enable) return;
-                audio.play().then();
-            };
-            // 飞机小动画字符
-            const flying_arr = [
-                '✈ ',
-                '&nbsp;&nbsp;✈ ',
-                '&nbsp;&nbsp;&nbsp;&nbsp;✈ ',
-                '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;✈ ',
-                '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;✈ ',
-                '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;✈ ',
-                '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;✈ ',
-                '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;✈ ',
-                '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;✈ ',
-                '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;✈ ',
-            ];
-            // 飞行的状态dom
-            const flying_status = wh_trv_alarm_node.querySelector('#wh-trv-status');
-            // 飞机的小动画dom
-            const flying_ani = flying_status.nextElementSibling;
-            // 飞机的计数
-            let flying_index = 0;
-            const id = window.setInterval(() => {
-                const remaining_time = (land_timestamp - Date.now()) / 1000 | 0;
-                remaining_node.innerText = `${remaining_time / 3600 | 0}时${remaining_time % 3600 / 60 | 0}分${remaining_time % 60}秒`;
-
-                if (remaining_time < wh_trv_alarm.alert_time) {
-                    // flying_status.innerHTML = `即将落地...`;
-                    if (wh_trv_alarm.enable) {
-                        // 播放提示音
-                        audio_play_flag = true;
-                        if (audio_play_id === null && !user_stop_alert) audio_play_id = window.setInterval(audio_play_handle, 750);
-                        stop_node.parentElement.classList.remove('wh-trv-alarm-stop-hide');
+                document.body.append(wh_trv_alarm_node);
+                // 报错dom
+                const error_node = wh_trv_alarm_node.querySelector('#wh-trv-error');
+                // jquery拖动
+                $(wh_trv_alarm_node).draggable({
+                    containment: "body",
+                    distance: 5,
+                    handle: "#wh-trv-alarm-title",
+                    stop: () => {
+                        wh_trv_alarm.node_pos = [parseInt(wh_trv_alarm_node.style.left), parseInt(wh_trv_alarm_node.style.top)];
+                        save_trv_settings();
+                    },
+                    scroll: false,
+                });
+                // 剩余时间dom
+                const remaining_node = wh_trv_alarm_node.querySelector('#wh-trv-alarm-remaining');
+                // 设定闹钟响的按钮
+                const set_node = wh_trv_alarm_node.querySelectorAll('#wh-trv-alarm-cont button')[0];
+                // 落地前响铃时长
+                const cd_time = wh_trv_alarm_node.querySelector('input[type="number"]');
+                let count_down_notify = {};
+                set_node.onclick = () => {
+                    try {
+                        wh_trv_alarm.alert_time = parseInt(cd_time.value);
+                    } catch {
+                        wh_trv_alarm.alert_time = 30;
                     }
-                } else {
-                    // flying_status.innerHTML = `飞行中...`;
-                    if (wh_trv_alarm.enable) {
+                    save_trv_settings();
+                    set_node.value = wh_trv_alarm.alert_time;
+                    if (count_down_notify.del) count_down_notify.del();
+                    count_down_notify = WHNotify('设置已更新');
+                };
+                // 停止响铃按钮
+                const stop_node = wh_trv_alarm_node.querySelectorAll('#wh-trv-alarm-cont button')[1];
+                stop_node.onclick = () => {
+                    user_stop_alert = true;
+                    stop_node.innerText = '本次已关闭';
+                    stop_node.disabled = true;
+                }
+                // 开启闹钟勾选
+                const enable_node = wh_trv_alarm_node.querySelector('#wh-trv-alarm-cont input[type="checkbox"]');
+                let on_off_notify = {};
+                enable_node.onchange = ev => {
+                    wh_trv_alarm.enable = ev.target.checked;
+                    save_trv_settings();
+                    if (on_off_notify.del) on_off_notify.del();
+                    on_off_notify = WHNotify(wh_trv_alarm.enable ? '闹钟已开启' : '闹钟已关闭');
+                };
+                // 剩余时间 秒
+                const remaining_sec = parseInt(remaining_arr[0]) * 3600 + parseInt(remaining_arr[1]) * 60 + parseInt(remaining_arr[2]);
+                // 落地时timestamp
+                const land_timestamp = Date.now() + remaining_sec * 1000;
+                // 音频dom
+                const audio = document.createElement('audio');
+                audio.src = 'https://www.torn.com/js/chat/sounds/Warble_1.mp3';
+                audio.play()
+                    .catch(() => {
+                        error_node.style.display = 'table';
+                        const func = () => {
+                            error_node.remove();
+                            document.body.removeEventListener('click', func);
+                        };
+                        document.body.addEventListener('click', func);
+                    })
+                    .then(() => audio.pause());
+                // 是否正在响铃
+                let audio_play_flag = false;
+                // 用户是否停止当前响铃
+                let user_stop_alert = false;
+                // 响铃循环id
+                let audio_play_id = null;
+                // 响铃的方法
+                let audio_play_handle = () => {
+                    if (user_stop_alert) {
                         clearInterval(audio_play_id);
                         audio_play_id = null;
-                        stop_node.parentElement.classList.add('wh-trv-alarm-stop-hide');
+                        return;
                     }
-                }
-                flying_ani.innerHTML = `${flying_arr[flying_index]}`;
-                flying_index = (flying_index + 1) % flying_arr.length;
-            }, 1000);
-        });
+                    if (!audio_play_flag || !wh_trv_alarm.enable) return;
+                    audio.play().then();
+                };
+                // 飞机小动画字符
+                const flying_arr = [
+                    '✈ ',
+                    '&nbsp;&nbsp;✈ ',
+                    '&nbsp;&nbsp;&nbsp;&nbsp;✈ ',
+                    '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;✈ ',
+                    '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;✈ ',
+                    '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;✈ ',
+                    '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;✈ ',
+                    '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;✈ ',
+                    '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;✈ ',
+                    '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;✈ ',
+                ];
+                // 飞行的状态dom
+                const flying_status = wh_trv_alarm_node.querySelector('#wh-trv-status');
+                // 飞机的小动画dom
+                const flying_ani = flying_status.nextElementSibling;
+                // 飞机的计数
+                let flying_index = 0;
+                const id = window.setInterval(() => {
+                    const remaining_time = (land_timestamp - Date.now()) / 1000 | 0;
+                    remaining_node.innerText = `${remaining_time / 3600 | 0}时${remaining_time % 3600 / 60 | 0}分${remaining_time % 60}秒`;
+
+                    if (remaining_time < wh_trv_alarm.alert_time) {
+                        // flying_status.innerHTML = `即将落地...`;
+                        if (wh_trv_alarm.enable) {
+                            // 播放提示音
+                            audio_play_flag = true;
+                            if (audio_play_id === null && !user_stop_alert) audio_play_id = window.setInterval(audio_play_handle, 750);
+                            stop_node.parentElement.classList.remove('wh-trv-alarm-stop-hide');
+                        }
+                    } else {
+                        // flying_status.innerHTML = `飞行中...`;
+                        if (wh_trv_alarm.enable) {
+                            clearInterval(audio_play_id);
+                            audio_play_id = null;
+                            stop_node.parentElement.classList.add('wh-trv-alarm-stop-hide');
+                        }
+                    }
+                    flying_ani.innerHTML = `${flying_arr[flying_index]}`;
+                    flying_index = (flying_index + 1) % flying_arr.length;
+                }, 1000);
+            });
     }
 
-    // 海外落地
+    // 海外落地页面
     if (href.includes('index.php') && document.querySelector('#travel-home') !== null) {
         // 添加回城按钮
         addActionBtn('直接回城', getHome, $zhongNode);
@@ -4511,6 +4512,21 @@ display:none;
         if (getWhSettingObj()['abroadWarning']) {
             let c = 1;
             setInterval(() => WHNotify(`警告：您已海外落地${c++ * 30}秒`, { timeout: 30, sysNotify: true }), 30000);
+        }
+        // 解毒提醒
+        if (getSidebarData()['rehabilitation']) {
+            let page_title = document.querySelector('h4#skip-to-content');
+            let msg = document.createElement('div');
+            msg.innerHTML = `<div class="info-msg border-round">
+<i class="info-icon"></i>
+<div class="delimiter">
+<div class="msg right-round" tabindex="0" role="alert">
+<p><a href="/index.php?page=rehab">❤️ 点击前往解毒</a></p>
+</div>
+</div>
+</div>`;
+            msg.classList.add('info-msg-cont', 'green', 'border-round', 'm-bottom10');
+            page_title.before(msg);
         }
     }
 
@@ -5001,22 +5017,24 @@ display:inline-block;
         });
     }
 
-    // 加入啤酒
+    // 啤酒店
     if (href.includes('shops.php?step=bitsnbobs')) {
-        const add_btn_node = document.createElement('div');
-        add_btn_node.id = 'wh-gym-info-cont';
-        add_btn_node.innerHTML = `<button style="color:white;">👉添加啤酒商品</button><p>如果当前商店没有啤酒这个商品可以提前显示以省去刷新步骤，增加抢酒成功率。</p><p id="wh-msg"></p>`;
-        add_btn_node.querySelector('button').addEventListener('click', e => {
-            const msg_node = add_btn_node.querySelector('#wh-msg');
-            if (node.querySelector('span[id="180-name"]')) {
-                msg_node.innerHTML = '❌ 页面已经有啤酒了';
-                return;
-            }
-            const clear_node = node.querySelector('li.clear');
-            const beer = document.createElement('li');
-            beer.classList.add('torn-divider', 'divider-vertical');
-            beer.style.backgroundColor = '#c8c8c8';
-            beer.innerHTML = `<div class="acc-title">
+        // 加入啤酒
+        elementReady('ul.items-list').then(node => {
+            const add_btn_node = document.createElement('div');
+            add_btn_node.id = 'wh-gym-info-cont';
+            add_btn_node.innerHTML = `<button style="color:white;">👉添加啤酒商品</button><p>如果当前商店没有啤酒这个商品可以提前显示以省去刷新步骤，增加抢酒成功率。</p><p id="wh-msg"></p>`;
+            add_btn_node.querySelector('button').addEventListener('click', e => {
+                const msg_node = add_btn_node.querySelector('#wh-msg');
+                if (node.querySelector('span[id="180-name"]')) {
+                    msg_node.innerHTML = '❌ 页面已经有啤酒了';
+                    return;
+                }
+                const clear_node = node.querySelector('li.clear');
+                const beer = document.createElement('li');
+                beer.classList.add('torn-divider', 'divider-vertical');
+                beer.style.backgroundColor = '#c8c8c8';
+                beer.innerHTML = `<div class="acc-title">
 <span class="item-desc">
 <span tabindex="0" aria-labelledby="180-name 180-price 180-stock" class="item Alcohol" itemid="180" loaded="0">
 <img class="torn-item item-plate" data-size="large" src="/images/items/180/large.png" alt="Bottle of Beer" style="opacity: 0;" id="item-1bea9f66-a6c4-475c-accb-41dcb67af64f" data-converted="1" aria-hidden="true">
@@ -5083,13 +5101,23 @@ $<span class="total">1,000</span>
 </div>
 </div>
 </div>`;
-            if (clear_node) clear_node.before(beer);
-            else node.append(beer);
-            e.target.remove();
-            msg_node.innerHTML = '添加成功';
+                if (clear_node) clear_node.before(beer);
+                else node.append(beer);
+                e.target.remove();
+                msg_node.innerHTML = '添加成功';
+            });
+            document.querySelector('.content-wrapper').prepend(add_btn_node);
         });
-        const node = await elementReady('ul.items-list');
-        document.querySelector('.content-wrapper').prepend(add_btn_node);
+        // 监听啤酒购买
+        $(document).ajaxComplete((_, xhr, settings) => {
+            log({ xhr, settings });
+            let { data } = settings, { responseText } = xhr;
+            let response = JSON.parse(responseText);
+            if (data.includes('step=buyShopItem') && data.includes('ID=180') && response['success']) {
+                WHNotify('已检测成功购买啤酒')
+                beer.skip_today();
+            }
+        });
     }
 
     // 快速crime
@@ -5123,43 +5151,43 @@ $<span class="total">1,000</span>
         const trans = () => {
             const dom = `<div class="wh-translate"><div class="title-black" style="border-radius: 5px 5px 0 0;"><span>常用犯罪</span></div><div class="cont-gray" style="padding: 6px 0;border-radius: 0 0 5px 5px;">
 <!--18-1-->
-<form id="wh-translate-quick" action="crimes.php?step=docrime4" method="post" style="display: inline-block;margin: 0 5px">
+<form action="crimes.php?step=docrime4" method="post" style="display: inline-block;margin: 0 5px">
 <input name="nervetake" type="hidden" value="18">
 <input name="crime" type="hidden" value="hackbank">
 <input style="-webkit-appearance:none;padding: 4px;background: #e91e63;border-radius: 5px;color: white;" type="submit" value="18-1" />
 </form>
 <!--15-3-->
-<form id="wh-translate-quick" action="crimes.php?step=docrime4" method="post" style="display: inline-block;margin: 0 5px">
+<form action="crimes.php?step=docrime4" method="post" style="display: inline-block;margin: 0 5px">
 <input name="nervetake" type="hidden" value="15">
 <input name="crime" type="hidden" value="napcop">
 <input style="-webkit-appearance:none;padding: 4px;background: #e91e63;border-radius: 5px;color: white;" type="submit" value="15-3(慎)" />
 </form>
 <!--仓库-->
-<form id="wh-translate-quick" action="crimes.php?step=docrime4" method="post" style="display: inline-block;margin: 0 5px">
+<form action="crimes.php?step=docrime4" method="post" style="display: inline-block;margin: 0 5px">
 <input name="nervetake" type="hidden" value="11">
 <input name="crime" type="hidden" value="warehouse">
 <input style="-webkit-appearance:none;padding: 4px;background: #2196f3;border-radius: 5px;color: white;" type="submit" value="烧仓库" />
 </form>
 <!--7-2-->
-<form id="wh-translate-quick" action="crimes.php?step=docrime4" method="post" style="display: inline-block;margin: 0 5px">
+<form action="crimes.php?step=docrime4" method="post" style="display: inline-block;margin: 0 5px">
 <input name="nervetake" type="hidden" value="7">
 <input name="crime" type="hidden" value="thoroughrobbery">
 <input style="-webkit-appearance:none;padding: 4px;background: #2196f3;border-radius: 5px;color: white;" type="submit" value="7-2(仅过渡用)" />
 </form>
 <!--偷夹克-->
-<form id="wh-translate-quick" action="crimes.php?step=docrime4" method="post" style="display: inline-block;margin: 0 5px">
+<form action="crimes.php?step=docrime4" method="post" style="display: inline-block;margin: 0 5px">
 <input name="nervetake" type="hidden" value="4">
 <input name="crime" type="hidden" value="jacket">
 <input style="-webkit-appearance:none;padding: 4px;background: #009688;border-radius: 5px;color: white;" type="submit" value="偷夹克" />
 </form>
 <!--卖碟3-1-->
-<form id="wh-translate-quick" action="crimes.php?step=docrime2" method="post" style="display: inline-block;margin: 0 5px">
+<form action="crimes.php?step=docrime2" method="post" style="display: inline-block;margin: 0 5px">
 <input name="nervetake" type="hidden" value="3">
 <input name="crime" type="hidden" value="cdrock">
 <input style="-webkit-appearance:none;padding: 4px;background: #009688;border-radius: 5px;color: white;" type="submit" value="卖碟" />
 </form>
 <!--捡钱-->
-<form id="wh-translate-quick" action="crimes.php?step=docrime2" method="post" style="display: inline-block;margin: 0 5px">
+<form action="crimes.php?step=docrime2" method="post" style="display: inline-block;margin: 0 5px">
 <input name="nervetake" type="hidden" value="2">
 <input name="crime" type="hidden" value="searchtrainstation">
 <input style="-webkit-appearance:none;padding: 4px;background: #009688;border-radius: 5px;color: white;" type="submit" value="捡钱" />
@@ -10162,7 +10190,6 @@ z-index:100001;
         stop.innerHTML = '关闭';
         stop.disabled = true;
         self_target.innerHTML = '填入自己';
-        // p.innerHTML = '状态：已关';
         // 弹出窗口关闭时结束
         let popup_close = popup.close;
         popup.close = () => {
@@ -10228,7 +10255,7 @@ z-index:100001;
                     };
                     updateRecordsDOM();
                 });
-            }, 500);
+            }, 900);
         });
 
         stop.addEventListener('click', () => {
@@ -10273,6 +10300,11 @@ z-index:100001;
         } else {
             WHNotify('出错了');
         }
+    }
+
+    // 边栏信息
+    function getSidebarData() {
+        return JSON.parse(document.querySelector('#sidebar_data').innerHTML)
     }
 
     $zhongNode.initTimer.innerHTML = `助手加载时间 ${Date.now() - start_timestamp}ms`;
