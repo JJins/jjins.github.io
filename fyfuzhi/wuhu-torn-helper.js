@@ -2884,6 +2884,8 @@
     { key: 'abroadWarning', val: true },
     // 落地转跳
     { key: 'landedRedirect', val: '' },
+    // 任何位置一键存钱
+    { key: 'companyDepositAnywhere', val: false },
 
     // 危险行为⚠️
     { key: 'dangerZone', val: false },
@@ -3089,6 +3091,14 @@
     domText: ' 收起公司冰蛙效率表',
     dictName: 'companyBWCollapse',
     tip: '开启后可手动显示隐藏冰蛙公司表格',
+  });
+  // 任何位置一键存钱
+  setting_list.push({
+    domType: 'checkbox',
+    domId: '',
+    domText: ' 任何位置一键存钱',
+    dictName: 'companyDepositAnywhere',
+    tip: '在所有页面显示一键存钱按钮，Torn OK状态下可用，此功能未完全测试无害，使用请慎重',
   });
 
   // 啤酒
@@ -4223,7 +4233,7 @@ cursor:pointer;
     (gonline) && (gonline.remove());
   }
 
-  // region 存钱CSS 不终止
+  // region 存钱 不终止
   let depo_channel;
   const depo_selector = { CMPY: "div#funds div.deposit", FAC: "div#armoury-donate div.cash" };
   // 公司
@@ -4257,6 +4267,8 @@ cursor:pointer;
   // 帮派
   if (href.includes('factions.php')) {
     depo_channel = "FAC";
+    // 一键存钱按钮
+    addActionBtn('一键存钱', factionDeposit, $zhongNode);
   }
   if (getWhSettingObj()['floatDepo'] && depo_channel) {
     document.body.classList.add('wh-depo-helper');
@@ -4279,6 +4291,75 @@ z-index: 999999;}`);
     });
   }
   // endregion
+
+  // GT交易存钱
+  if (location.pathname.startsWith('/trade.php')) {
+    let getTraceMoney = async () => {
+      if (typeof addRFC !== 'function') return;
+      let traceId = location.hash.split('addmoney')[1];
+      let url = addRFC('/trade.php?step=getFullMoney' + traceId);
+      return await jQueryAjax(url, 'POST');
+    };
+    let handle = () => {
+      let inputView, inputHidden;
+      let form;
+      elementReady('#trade-container form').then(fm => {
+        form = fm;
+        [inputView, inputHidden] = fm.querySelectorAll('input');
+        document.querySelector('#skip-to-content').before(node);
+      });
+      let node = document.createElement('div');
+      let nodeTitle = document.createElement('div');
+      let nodeCont = document.createElement('div');
+      let inputMoney = document.createElement('input');
+      let buttonDepositAll = document.createElement('button');
+      let buttonWithdraw = document.createElement('button');
+
+      inputMoney.placeholder = '定额取钱';
+      inputMoney.type = 'number';
+      inputMoney.style.padding = '7px';
+      inputMoney.style.paddingLeft = '14px';
+      inputMoney.classList.add('m-right10');
+      buttonDepositAll.innerHTML = '全存';
+      buttonWithdraw.innerHTML = '取出';
+      nodeTitle.innerHTML = 'GT助手';
+      nodeTitle.classList.add('title-black', 'top-round');
+      nodeCont.append(inputMoney, buttonDepositAll, buttonWithdraw);
+      nodeCont.classList.add('cont-gray', 'bottom-round');
+      nodeCont.style.padding = '10px';
+      node.classList.add('m-bottom10');
+      node.append(nodeTitle, nodeCont);
+
+      // 定取
+      buttonWithdraw.addEventListener('click', async () => {
+        if ((inputMoney.value | 0) < 1) return;
+        let money = await getTraceMoney();
+        let int = { 'input': inputMoney.value | 0, 'all': money | 0 };
+        let diff = int.all - int.input;
+        if (diff < 1) {
+          WHNotify('无法取钱：数不对');
+          return;
+        }
+        inputView.value = diff.toString();
+        inputHidden.value = diff.toString();
+        $(form).trigger('submit');
+        WHNotify(`已取 ${int.input}`);
+      });
+      // 全存
+      buttonDepositAll.addEventListener('click', async () => {
+        let money = await getTraceMoney();
+        if (money === '0') return;
+        inputView.value = money;
+        inputHidden.value = money;
+        $(form).trigger('submit');
+        WHNotify('已全存');
+      });
+    };
+    if (location.hash.includes('#step=addmoney')) handle();
+    window.addEventListener('hashchange', () => {
+      if (location.hash.includes('#step=addmoney')) handle();
+    });
+  }
 
   // 飞行页面
   if (href.includes('index.php') && getSidebarData()['traveling']) {
@@ -4810,22 +4891,6 @@ display:none;
           btn.click();
         }
       }
-      // });
-      // const CUR_DISABLED = true;
-      // if (!CUR_DISABLED) {
-      //     const original_fetch = window.fetch;
-      //     window.fetch = async (url, init) => {
-      //         let response = await original_fetch(url, init)
-      //         let res = response.clone();
-      //         res.json().then((data) => {
-      //             if (isDev()) {
-      //                 log('[url]', url)
-      //                 log('[返回数据]', data)
-      //             }
-      //         });
-      //         return response;
-      //     }
-      // }
     }
     // 光速跑路
     if (quickFinishAtt !== 3) {
@@ -5884,6 +5949,11 @@ margin: 0 0 3px;
     addEventListener('hashchange', rw_raider);
 
     await rw_raider();
+  }
+
+  // 任何位置公司一键存钱
+  if (getWhSettingObj()['companyDepositAnywhere']) {
+    addActionBtn('公司存钱', companyDepositAnywhere, $zhongNode);
   }
 
   // 通知翻译
@@ -10123,7 +10193,7 @@ z-index:100001;
     popup.appendChild(paste_button);
   }
 
-  // 一键存钱
+  // 公司一键存钱
   async function companyDeposit() {
     if (!location.href.contains('option=funds')) {
       WHNotify('请先打开公司金库');
@@ -10131,7 +10201,7 @@ z-index:100001;
     }
     if (typeof addRFC !== 'function') return;
     let url = addRFC('https://www.torn.com/inputMoneyAction.php?step=generalAction');
-    let money = await jQueryAjax(url, 'POST');
+    let money = await jQueryAjax(url, 'GET');
     if (money === '0') return;
     let form = document.querySelector('#funds .deposit form');
     let funds_input = form.querySelectorAll('input.input-money');
@@ -10143,7 +10213,55 @@ z-index:100001;
     WHNotify('存钱成功');
   }
 
-  // 包装jquery ajax异步
+  // 帮派一键存钱
+  async function factionDeposit() {
+    let form = document.querySelector('#armoury-donate form');
+    if (!location.hash.includes('tab=armoury') || !form) {
+      WHNotify('请先打开金库');
+      return;
+    }
+    if (typeof addRFC !== 'function') return;
+    let url = addRFC('https://www.torn.com/inputMoneyAction.php?step=generalAction');
+    let money = await jQueryAjax(url, 'POST');
+    if (money === '0') return;
+    let funds_input = form.querySelectorAll('input.input-money');
+    funds_input.forEach(input => {
+      input.value = money;
+      input.attributes['data-money'].value = money;
+    });
+    $(form).trigger('submit');
+    let dataStr = `ajax=true&step=armouryDonate&type=cash&amount=${money}`;
+    let res = await (await fetch(addRFC('https://www.torn.com/factions.php'), {
+      method: 'POST',
+      body: dataStr,
+      headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/x-www-form-urlencoded' }
+    })).json();
+    if (res.success === true) {
+      WHNotify('存钱成功');
+      WHNotify(`${res.text}`);
+    }
+  }
+
+  // 任何位置公司一键存钱
+  async function companyDepositAnywhere() {
+    if (typeof addRFC !== 'function') return;
+    let url = addRFC('https://www.torn.com/inputMoneyAction.php?step=generalAction');
+    let money = await jQueryAjax(url, 'GET');
+    if (money === '0') return;
+    let res = await (await fetch(addRFC('https://www.torn.com/companies.php?step=funds'), {
+      method: 'POST',
+      referrer: 'companies.php',
+      body: 'deposit=' + money,
+      headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/x-www-form-urlencoded' }
+    })).text();
+    log(res);
+    let node = document.createElement('div');
+    node.innerHTML = res;
+    let success = node.querySelector('.success-message');
+    if (success) WHNotify(success.innerHTML);
+  }
+
+  // 包装jquery ajax异步 返回string
   function jQueryAjax(url, method) {
     return new Promise((res, rej) => {
       $.ajax({
@@ -10163,8 +10281,8 @@ z-index:100001;
   function addActionBtn(txt, func, mainBtnNode) {
     if (mainBtnNode.querySelector('#wh-trans-icon-btn').nextSibling !== null) return;
     let btn = document.createElement('button');
-    btn.style.padding = '6px 13px 0 0';
-    btn.style.verticalAlign = 'middle';
+    btn.style.padding = '8px 13px 8px 0';
+    btn.style.verticalAlign = 'bottom';
     btn.style.color = '#4CAF50';
     btn.innerHTML = txt;
     btn.addEventListener('click', func);
