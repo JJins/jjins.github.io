@@ -2880,7 +2880,7 @@
     { key: 'companyBWCollapse', val: true },
     // 清除多余的脚本
     { key: 'removeScripts', val: true },
-    // 外海警告
+    // 海外警告
     { key: 'abroadWarning', val: true },
     // 落地转跳
     { key: 'landedRedirect', val: '' },
@@ -3050,11 +3050,11 @@
     tip: '(仅PC) 飞行页面将显示一个内建的闹钟，落地前声音提醒，需要打开浏览器声音权限',
     isHide: true,
   });
-  // 外海警告
+  // 海外警告
   setting_list.push({
     domType: 'checkbox',
     domId: '',
-    domText: ' 外海警告',
+    domText: ' 海外警告',
     dictName: 'abroadWarning',
     tip: '海外落地后每30秒通知警告',
   });
@@ -10480,7 +10480,7 @@ z-index:100001;
     buttonTest.innerHTML = '测试链接';
 
     buttonSave.addEventListener('click', () => setWhSetting('landedRedirect', input.value));
-    buttonCmp.addEventListener('click', () => input.value = 'https://www.torn.com/companies.php#/option=applications');
+    buttonCmp.addEventListener('click', () => input.value = 'https://www.torn.com/companies.php#/option=funds');
     buttonFct.addEventListener('click', () => input.value = 'https://www.torn.com/factions.php?step=your#/tab=armoury');
     buttonTest.addEventListener('click', () => window.open(input.value));
 
