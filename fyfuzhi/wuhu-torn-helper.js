@@ -17,6 +17,10 @@
   // PDA
   const PDA_APIKey = '###PDA-APIKEY###';
   const isPDA = PDA_APIKey.slice(-1) !== '#';
+
+  log.error = (...o) => (isDev()) && (console.error('[WH]', ...o));
+  log.warm = (...o) => (isDev()) && (console.warm('[WH]', ...o));
+
   // 通知权限
   if (window.Notification) {
     Notification.requestPermission().then(status => {
@@ -5956,6 +5960,20 @@ margin: 0 0 3px;
     addActionBtn('公司存钱', companyDepositAnywhere, $zhongNode);
   }
 
+  if (getPlayerInfo()['userID'] === 2687093) {
+    let item = document.getElementById('nav-items');
+    if (item) {
+      let copy = item.cloneNode(true);
+      copy.firstChild.style.backgroundColor = '#ff5722';
+      let a = copy.firstChild.firstChild;
+      a.href = '/item.php?temp=1';
+      let span = a.lastChild;
+      span.innerHTML = '物品';
+      span.style.color = 'white';
+      item.after(copy);
+    }
+  }
+
   // 通知翻译
   function eventsTrans(events = $('span.mail-link')) {
     // if (!wh_trans_settings.transEnable) return;
@@ -6934,7 +6952,7 @@ margin: 0 0 3px;
 
   /**
    * 添加全局style
-   * @param {CSSRule|String} css CSS Rules
+   * @param {CSSRule.cssText|String} css CSS规则
    */
   function addStyle(css) {
     let wh_gStyle = document.querySelector('style#wh-trans-gStyle');
@@ -7488,7 +7506,10 @@ z-index:100001;
     return result;
   }
 
-  // 返回玩家信息的对象 user
+  /**
+   * 返回玩家信息的对象 user
+   * @return {{playername: string, userID: number}}
+   */
   function getPlayerInfo() {
     const rs = { playername: '未知', userID: -1 };
     // const headerData = JSON.parse(sessionStorage['headerData']);
