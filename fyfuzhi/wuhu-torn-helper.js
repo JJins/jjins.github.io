@@ -2,7 +2,6 @@
   'use strict';
   const start_timestamp = Date.now();
   if (document.title.toLowerCase().includes('just a moment')) return;
-  // unsafewindow副本
   const UWCopy = window.unsafeWindow;
   try {
     window = UWCopy || window;
@@ -2781,9 +2780,8 @@
     }
   };
 
-  // 原始fetch
+  // region 监听fetch
   const ori_fetch = window.fetch;
-  // 监听fetch
   window.fetch = async (url, init) => {
     if (url.contains('newsTickers')) {
       // 阻止获取新闻横幅
@@ -2799,6 +2797,7 @@
     log({ url, init, text });
     return clone;
   };
+  // endregion
 
   const date = new Date();
   // 伪enum 设备类型 PC MOBILE TABLET
@@ -2830,6 +2829,20 @@
   // 抢啤酒
   let beer = buyBeer();
   let popup_node = null;
+  // 当窗口关闭时关闭所有还存在的通知
+  let notifies = { count: 0 };
+  window.addEventListener(
+    'beforeunload',
+    () => {
+      if (notifies.count !== 0) {
+        for (let i = 0; i < notifies.count; i++) {
+          (notifies[i] !== null) && (notifies[i].close())
+        }
+      }
+    }
+  );
+  // 引入rfc方法
+  let addRFC = window['addRFC'];
 
   // 记录当前窗口唯一id
   const isWindowActive = getWindowActiveState();
@@ -4016,7 +4029,7 @@ color:black;
     domId: '',
     domText: '📐️ 测试',
     clickFunc: function () {
-      WHNotify('芜湖助手', { sysNotify: true, timeout: 1 })
+      WHNotify('芜湖助手', { sysNotify: true, timeout: 15 })
     },
   });
   // endregion
@@ -4248,7 +4261,7 @@ cursor:pointer;
       const btn = document.getElementById('ui-id-9');
       if (btn) {
         btn.click();
-        WHNotify('已自动打开存钱页面');
+        log('已自动打开存钱页面');
       }
     }
     // 收起冰蛙表格
@@ -4298,26 +4311,44 @@ z-index: 999999;}`);
 
   // GT交易存钱
   if (location.pathname.startsWith('/trade.php')) {
-    let getTraceMoney = async () => {
-      if (typeof addRFC !== 'function') return;
-      let traceId = location.hash.split('addmoney')[1];
-      let url = addRFC('/trade.php?step=getFullMoney' + traceId);
-      return await jQueryAjax(url, 'POST');
-    };
+    // GT助手
+    let node_link = null;
     let handle = () => {
-      let inputView, inputHidden;
-      let form;
-      elementReady('#trade-container form').then(fm => {
-        form = fm;
-        [inputView, inputHidden] = fm.querySelectorAll('input');
-        document.querySelector('#skip-to-content').before(node);
-      });
+      // 不重复加载、已关闭的交易不加载
+      if (node_link !== null || location.hash.includes('logview')) return;
+      log('已添加GT助手');
+      // 获取交易id
+      let query_params = location.hash.slice(1);
+      let traceId;
+      query_params.split('&')
+        .forEach(param =>
+          (param.startsWith('ID=')) && (traceId = param.slice(3))
+        );
+      log('交易id为', traceId);
+
+      // 获取全部的钱数
+      let getTraceMoney = async () => {
+        if (typeof addRFC === 'function') {
+          let url = addRFC('/trade.php?step=getFullMoney&ID=' + traceId);
+          return (await ajaxFetch({ url: url, method: 'GET', referrer: 'trade.php' })).text();
+        }
+      };
+      // 监听jquery ajax请求
+      if (isDev()) $(document).ajaxComplete((_, xhr, settings) => log({ xhr, settings }));
+      // react 加载完成后将节点加入视图中
+      elementReady('#trade-container').then(() =>
+        document.querySelector('#trade-container').before(node)
+      );
+      // 构建dom节点
       let node = document.createElement('div');
+      node_link = node;
       let nodeTitle = document.createElement('div');
       let nodeCont = document.createElement('div');
       let inputMoney = document.createElement('input');
       let buttonDepositAll = document.createElement('button');
       let buttonWithdraw = document.createElement('button');
+      let buttonWithdrawAll = document.createElement('button');
+      let style = document.createElement('style');
 
       inputMoney.placeholder = '定额取钱';
       inputMoney.type = 'number';
@@ -4325,43 +4356,72 @@ z-index: 999999;}`);
       inputMoney.style.paddingLeft = '14px';
       inputMoney.classList.add('m-right10');
       buttonDepositAll.innerHTML = '全存';
-      buttonWithdraw.innerHTML = '取出';
+      buttonDepositAll.style.color = 'green';
+      buttonWithdraw.innerHTML = '定取';
+      buttonWithdrawAll.innerHTML = '全取';
+      buttonWithdrawAll.style.color = 'red';
       nodeTitle.innerHTML = 'GT助手';
       nodeTitle.classList.add('title-black', 'top-round');
-      nodeCont.append(inputMoney, buttonDepositAll, buttonWithdraw);
+      style.innerHTML = '#WHGTHelper button{cursor:pointer;}#WHGTHelper button:hover{opacity:0.5;}';
+      nodeCont.append(inputMoney, buttonWithdraw, buttonDepositAll, buttonWithdrawAll);
       nodeCont.classList.add('cont-gray', 'bottom-round');
       nodeCont.style.padding = '10px';
+      node.id = 'WHGTHelper';
       node.classList.add('m-bottom10');
-      node.append(nodeTitle, nodeCont);
+      node.append(nodeTitle, nodeCont, style);
 
       // 定取
       buttonWithdraw.addEventListener('click', async () => {
-        if ((inputMoney.value | 0) < 1) return;
+        if ((inputMoney.value | 0) < 1) {
+          WHNotify('无法定额取钱，原因：输入有误');
+          return;
+        }
         let money = await getTraceMoney();
         let int = { 'input': inputMoney.value | 0, 'all': money | 0 };
         let diff = int.all - int.input;
         if (diff < 1) {
-          WHNotify('无法取钱：数不对');
+          WHNotify('无法定额取钱，原因：数不对');
           return;
         }
-        inputView.value = diff.toString();
-        inputHidden.value = diff.toString();
-        $(form).trigger('submit');
+        await ajaxFetch({
+          url: addRFC('/trade.php'),
+          method: 'POST',
+          referrer: 'trade.php',
+          body: `step=view&sub_step=addmoney2&ID=${traceId}&amount=${diff}&ajax=true`,
+        });
         WHNotify(`已取 ${int.input}`);
       });
       // 全存
       buttonDepositAll.addEventListener('click', async () => {
         let money = await getTraceMoney();
         if (money === '0') return;
-        inputView.value = money;
-        inputHidden.value = money;
-        $(form).trigger('submit');
-        WHNotify('已全存');
+        await ajaxFetch({
+          url: addRFC('/trade.php'),
+          method: 'POST',
+          referrer: 'trade.php',
+          body: `step=view&sub_step=addmoney2&ID=${traceId}&amount=${money}&ajax=true`,
+        });
+        WHNotify(`$${money} 全部存入GT`);
+      });
+      // 全取
+      buttonWithdrawAll.addEventListener('click', async () => {
+        await ajaxFetch({
+          url: addRFC('/trade.php'),
+          method: 'POST',
+          referrer: 'trade.php',
+          body: `step=view&sub_step=addmoney2&ID=${traceId}&amount=0&ajax=true`,
+        });
+        WHNotify('已全取');
       });
     };
-    if (location.hash.includes('#step=addmoney')) handle();
-    window.addEventListener('hashchange', () => {
-      if (location.hash.includes('#step=addmoney')) handle();
+    if (location.hash.includes('ID=')) handle();
+    addEventListener('hashchange', () => {
+      if (location.hash.includes('ID=')) handle();
+      else {
+        node_link.remove();
+        node_link = null;
+        log('已移除GT助手');
+      }
     });
   }
 
@@ -7362,6 +7422,9 @@ cursor: pointer;
       });
       notify_obj.sys_notify.onclick = sysNotifyClick;
       notify_obj.sys_notify.onshow = () => setTimeout(() => notify_obj.sys_notify.close(), timeout * 1000);
+      notify_obj.sys_notify.id = notifies.count++;
+      notifies[notify_obj.sys_notify.id] = notify_obj.sys_notify;
+      notify_obj.sys_notify.addEventListener('close', () => notifies[notify_obj.sys_notify.id] = null);
     }
     return notify_obj;
   }
@@ -10507,6 +10570,29 @@ z-index:100001;
 
     let node = popupMsg('', '落地转跳');
     node.append(p, input, buttonSave, br, buttonCmp, buttonFct, buttonTest);
+  }
+
+  /**
+   * fetch ajax包装
+   * @param {Object} opt
+   * @param {String} opt.url
+   * @param {String} opt.referrer
+   * @param {String} opt.method
+   * @param {String} [opt.body]
+   * @returns {Promise<Response>}
+   */
+  function ajaxFetch(opt) {
+    let { url, referrer, method, body = null } = opt;
+    let req_params = {
+      headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      referrer,
+      method,
+    };
+    if (method === 'POST') {
+      req_params.headers['Content-Type'] = 'application/x-www-form-urlencoded; charset=UTF-8';
+      req_params.body = body;
+    }
+    return fetch(url, req_params);
   }
 
   $zhongNode.initTimer.innerHTML = `助手加载时间 ${Date.now() - start_timestamp}ms`;
