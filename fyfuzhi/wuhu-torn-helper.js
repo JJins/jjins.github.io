@@ -6020,7 +6020,7 @@ margin: 0 0 3px;
         addActionBtn('公司存钱', companyDepositAnywhere, $zhongNode);
     }
 
-    if (getPlayerInfo()['userID'] === 2687093) {
+    if (getPlayerInfo()['userID'] === 2687093 && getDeviceType() === Device.PC) {
         let item = document.getElementById('nav-items');
         if (item) {
             let copy = item.cloneNode(true);
@@ -10529,12 +10529,29 @@ z-index:100001;
      * @deprecated
      * @returns {any}
      */
-    function getSidebarData() {
-        // return JSON.parse(document.querySelector('#sidebar_data').innerHTML)
-        let obj = {};
-        const sidebar_menu_list = document.querySelectorAll('#sidebar a span[class*="linkName___"]');
-        sidebar_menu_list.forEach(node => obj[node.innerHTML.trim().toLowerCase()] = true);
-        return  obj;
+    async function getSidebarData() {
+        let ret = {};
+        let sidebar_id = null;
+
+        let sessionKeys = Object.keys(sessionStorage);
+        if (sessionKeys.length < 2) {
+            const sidebar_menu_list = document.querySelectorAll('#sidebar a span[class*="linkName___"]');
+            sidebar_menu_list.forEach(node => ret[node.innerHTML.trim().toLowerCase()] = true);
+        } else {
+            for (let key in sessionKeys) {
+                if (key.startsWith('sidebarData') && key.length < 20) {
+                    sidebar_id = JSON.parse(sessionStorage.getItem(key));
+                    break;
+                }
+            }
+            if (sidebar_id !== null) {
+                for (let area in Object.keys(sidebar_id['areas'])) {
+                    ret[area] = true;
+                }
+            }
+        }
+        if (Object.keys(ret).length === 0) WHNotify('无法获取数据，建议刷新重试');
+        return ret;
     }
 
     /**
