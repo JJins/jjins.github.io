@@ -1,8 +1,11 @@
-!async function () {
+async function main() {
     'use strict';
     const start_timestamp = Date.now();
     if (document.title.toLowerCase().includes('just a moment')) return;
-    const UWCopy = window.unsafeWindow;
+    let UWCopy;
+    if (window.hasOwnProperty('unsafeWindow')) {
+        UWCopy = window.unsafeWindow;
+    }
     try {
         window = UWCopy || window;
     } catch {
@@ -18,7 +21,7 @@
     const isPDA = PDA_APIKey.slice(-1) !== '#';
 
     log.error = (...o) => (isDev()) && (console.error('[WH]', ...o));
-    log.warm = (...o) => (isDev()) && (console.warm('[WH]', ...o));
+    log.info = (...o) => (isDev()) && (console.info('[WH]', ...o));
 
     // 通知权限
     if (window.Notification) {
@@ -2794,7 +2797,7 @@
         }
         let clone = res.clone();
         let text = await res.text();
-        log({url, init, text});
+        log({ url, init, text });
         return clone;
     };
     // endregion
@@ -2824,13 +2827,13 @@
     // 返回一个加载中gif图形HTML
     const loading_gif_html = () => {
         const gif_base64 = `data:image/svg+xml,%3Csvg t='1656084442571' class='icon' viewBox='0 0 1024 1024' version='1.1' xmlns='http://www.w3.org/2000/svg' p-id='3924' width='14' height='14'%3E%3Cpath d='M512.032002 237.105181a29.310168 29.310168 0 0 1-29.310168-29.246172V29.310168a29.310168 29.310168 0 0 1 58.620336 0v178.548841A29.310168 29.310168 0 0 1 512.032002 237.105181zM512.032002 1024a29.310168 29.310168 0 0 1-29.310168-29.310168v-178.484845a29.310168 29.310168 0 1 1 58.620336 0v178.548841A29.310168 29.310168 0 0 1 512.032002 1024z m482.657834-482.657834h-178.484845a29.310168 29.310168 0 1 1 0-58.620336h178.548841a29.310168 29.310168 0 1 1 0 58.620336z m-786.830823 0H29.310172a29.310168 29.310168 0 0 1 0-58.620336h178.548841a29.310168 29.310168 0 0 1 0 58.620336z m519.263546-215.090557a29.182176 29.182176 0 0 1-20.734704-49.980876l126.264108-126.264108a29.310168 29.310168 0 1 1 41.405412 41.405412l-126.264108 126.264108a29.182176 29.182176 0 0 1-20.670708 8.575464zM170.741333 882.568839a29.182176 29.182176 0 0 1-20.734704-49.980876l126.264108-126.264108a29.246172 29.246172 0 1 1 41.405412 41.405412L191.412041 874.057371a29.182176 29.182176 0 0 1-20.670708 8.575464z m682.581338 0a29.182176 29.182176 0 0 1-20.670708-8.575464l-126.264108-126.264108a29.310168 29.310168 0 1 1 41.405412-41.405412l126.264108 126.264108a29.310168 29.310168 0 0 1-20.734704 49.91688zM297.005441 326.251609a29.182176 29.182176 0 0 1-20.670708-8.575464L150.006629 191.412037a29.310168 29.310168 0 1 1 41.405412-41.405412l126.264108 126.264108a29.310168 29.310168 0 0 1-20.734704 49.91688z' p-id='3925'%3E%3C/path%3E%3C/svg%3E`
-        return `<img src="${gif_base64}" alt="lgif" style="width:14px;height:14px;" />`;
+        return `<img src="${ gif_base64 }" alt="lgif" style="width:14px;height:14px;" />`;
     }
     // 抢啤酒
     let beer = buyBeer();
     let popup_node = null;
     // 当窗口关闭时关闭所有还存在的通知
-    let notifies = {count: 0};
+    let notifies = { count: 0 };
     window.addEventListener(
         'beforeunload',
         () => {
@@ -2850,62 +2853,62 @@
     // 对新值应用「默认」设置
     [
         // 开启翻译
-        {key: 'transEnable', val: false},
+        { key: 'transEnable', val: false },
         // 快速犯罪
-        {key: 'quickCrime', val: true},
+        { key: 'quickCrime', val: true },
         // 任务助手
-        {key: 'missionHint', val: true},
+        { key: 'missionHint', val: true },
         // 小镇攻略
-        {key: 'xmasTownWT', val: true},
+        { key: 'xmasTownWT', val: true },
         // 小镇提醒
-        {key: 'xmasTownNotify', val: true},
+        { key: 'xmasTownNotify', val: true },
         // 起飞爆e
-        {key: 'energyAlert', val: true},
+        { key: 'energyAlert', val: true },
         // 飞行闹钟
-        {key: 'trvAlarm', val: true},
+        { key: 'trvAlarm', val: true },
         // 啤酒提醒
-        {key: '_15Alarm', val: true},
+        { key: '_15Alarm', val: true },
         // 捡垃圾助手
-        {key: 'cityFinder', val: false},
+        { key: 'cityFinder', val: false },
         // 叠E保护
-        {key: 'SEProtect', val: false},
+        { key: 'SEProtect', val: false },
         // PT一键购买
-        {key: 'ptQuickBuy', val: false},
+        { key: 'ptQuickBuy', val: false },
         // 光速拔刀 6-关闭
-        {key: 'quickAttIndex', val: 2},
+        { key: 'quickAttIndex', val: 2 },
         // 光速跑路 0-leave 1-mug 2-hos 3-关闭
-        {key: 'quickFinishAtt', val: 3},
+        { key: 'quickFinishAtt', val: 3 },
         // 自动开打和结束
-        {key: 'autoStartFinish', val: false},
+        { key: 'autoStartFinish', val: false },
         // 废弃
-        {key: 'attRelocate', val: true},
+        { key: 'attRelocate', val: true },
         // 攻击自刷新 0-无间隔 1-5s 6-关闭
-        {key: 'attReload', val: 6},
+        { key: 'attReload', val: 6 },
         // 价格监视
-        {key: 'priceWatcher', val: {xan: -1, pt: -1}},
+        { key: 'priceWatcher', val: { xan: -1, pt: -1 } },
         // 开发者模式
-        {key: 'isDev', val: false},
+        { key: 'isDev', val: false },
         // 啤酒提醒时间
-        {key: '_15AlarmTime', val: 50},
+        { key: '_15AlarmTime', val: 50 },
         // 4条转跳
-        {key: 'barsRedirect', val: true},
+        { key: 'barsRedirect', val: true },
         // 浮动存钱框
-        {key: 'floatDepo', val: true},
+        { key: 'floatDepo', val: true },
         // 公司转跳存钱
-        {key: 'companyRedirect', val: true},
+        { key: 'companyRedirect', val: true },
         // 收起公司冰蛙效率表
-        {key: 'companyBWCollapse', val: true},
+        { key: 'companyBWCollapse', val: true },
         // 清除多余的脚本
-        {key: 'removeScripts', val: true},
+        { key: 'removeScripts', val: true },
         // 海外警告
-        {key: 'abroadWarning', val: true},
+        { key: 'abroadWarning', val: true },
         // 落地转跳
-        {key: 'landedRedirect', val: ''},
+        { key: 'landedRedirect', val: '' },
         // 任何位置一键存钱
-        {key: 'companyDepositAnywhere', val: false},
+        { key: 'companyDepositAnywhere', val: false },
 
         // 危险行为⚠️
-        {key: 'dangerZone', val: false},
+        { key: 'dangerZone', val: false },
     ].forEach(df => {
         if (typeof getWhSettingObj()[df.key] !== typeof df.val) setWhSetting(df.key, df.val);
     });
@@ -3076,7 +3079,7 @@
         tip: '海外落地后每30秒通知警告',
     });
     // 落地转跳
-    setting_list.push({domType: 'button', domId: '', domText: '落地转跳', clickFunc: landedRedirect});
+    setting_list.push({ domType: 'button', domId: '', domText: '落地转跳', clickFunc: landedRedirect });
 
     // 公司
     setting_list.push({
@@ -3143,7 +3146,7 @@
         domId: '',
         domText: '啤酒提醒状态',
         clickFunc: function () {
-            WHNotify(`啤酒提醒${beer.status()}`);
+            WHNotify(`啤酒提醒${ beer.status() }`);
         }
     });
     // 啤酒提醒时间
@@ -3154,7 +3157,7 @@
         // tip: '通知提前时间',
         clickFunc: function () {
             popup_node.close();
-            let popup = popupMsg(`<label>提前提醒时间(秒)：<input type="number" value="${getWhSettingObj()['_15AlarmTime']}" /></label><p>区间为 1 ~ 60，默认 50</p>`, '啤酒提醒时间设定');
+            let popup = popupMsg(`<label>提前提醒时间(秒)：<input type="number" value="${ getWhSettingObj()['_15AlarmTime'] }" /></label><p>区间为 1 ~ 60，默认 50</p>`, '啤酒提醒时间设定');
             let confirm = document.createElement('button');
             confirm.innerHTML = '确定';
             confirm.style.float = 'right';
@@ -3301,7 +3304,7 @@
     setting_list.push({
         domType: 'checkbox',
         domId: 'wh-dev-mode',
-        domText: ` 开发者模式${isDev() ? ' <button id="wh-devInfo">详情</button>' : ''}`,
+        domText: ` 开发者模式${ isDev() ? ' <button id="wh-devInfo">详情</button>' : '' }`,
         dictName: 'isDev',
         isHide: true,
     });
@@ -3323,39 +3326,39 @@
         menu_list.push({
             domType: 'plain',
             domId: 'wh-trans-welcome',
-            domHTML: `<span>欢迎 <a href="/profiles.php?XID=${player_info.userID}" target="_blank">${player_info.playername}</a>[${player_info.userID}] 大佬</span>`,
+            domHTML: `<span>欢迎 <a href="/profiles.php?XID=${ player_info.userID }" target="_blank">${ player_info.playername }</a>[${ player_info.userID }] 大佬</span>`,
         });
     }
     // 节日
     let fest_date_html = '<button>节日</button>: ';
     {
         const fest_date_dict = {
-            '0105': {name: '周末自驾游', eff: '获得双倍的赛车点数与赛车技能等级增益'},
-            '0114': {name: '情人节', eff: '使用爱情果汁(Love Juice)后获得降低攻击与复活的能量消耗的增益'},
-            '0204': {name: '员工激励日', eff: '获得三倍的工作点数与火车增益'},
-            '0217': {name: '圣帕特里克日', eff: '获得双倍的酒类效果增益，城市中可以捡到绿色世涛(Green Stout)'},
-            '0320': {name: '420日', eff: '获得三倍的大麻(Cannabis)效果增益'},
-            '0418': {name: '博物馆日', eff: '获得10%提高的博物馆PT兑换增益'},
-            '0514': {name: '世界献血日', eff: '获得减半的抽血CD和扣血增益'},
-            '0611': {name: '世界人口日', eff: '获得双倍的通过攻击获取的经验的增益'},
-            '0629': {name: '世界老虎日', eff: '获得5倍的狩猎技能增益'},
-            '0705': {name: '国际啤酒节', eff: '获得5倍的啤酒物品效果增益'},
-            '0827': {name: '旅游节', eff: '获得双倍的起飞后物品携带容量增益'},
-            '0915': {name: '饮料节', eff: '获得双倍的能量饮料效果增益'},
-            '1014': {name: '世界糖尿病日', eff: '获得三倍的糖类效果增益'},
-            '1015': {name: '周年庆', eff: '左上角的TORN图标可以食用'},
-            '1025': {name: '黑色星期五', eff: '某些商家将提供1元购活动'},
-            '1114': {name: '住院日', eff: '获得降低75%的住院时间增益'},
+            '0105': { name: '周末自驾游', eff: '获得双倍的赛车点数与赛车技能等级增益' },
+            '0114': { name: '情人节', eff: '使用爱情果汁(Love Juice)后获得降低攻击与复活的能量消耗的增益' },
+            '0204': { name: '员工激励日', eff: '获得三倍的工作点数与火车增益' },
+            '0217': { name: '圣帕特里克日', eff: '获得双倍的酒类效果增益，城市中可以捡到绿色世涛(Green Stout)' },
+            '0320': { name: '420日', eff: '获得三倍的大麻(Cannabis)效果增益' },
+            '0418': { name: '博物馆日', eff: '获得10%提高的博物馆PT兑换增益' },
+            '0514': { name: '世界献血日', eff: '获得减半的抽血CD和扣血增益' },
+            '0611': { name: '世界人口日', eff: '获得双倍的通过攻击获取的经验的增益' },
+            '0629': { name: '世界老虎日', eff: '获得5倍的狩猎技能增益' },
+            '0705': { name: '国际啤酒节', eff: '获得5倍的啤酒物品效果增益' },
+            '0827': { name: '旅游节', eff: '获得双倍的起飞后物品携带容量增益' },
+            '0915': { name: '饮料节', eff: '获得双倍的能量饮料效果增益' },
+            '1014': { name: '世界糖尿病日', eff: '获得三倍的糖类效果增益' },
+            '1015': { name: '周年庆', eff: '左上角的TORN图标可以食用' },
+            '1025': { name: '黑色星期五', eff: '某些商家将提供1元购活动' },
+            '1114': { name: '住院日', eff: '获得降低75%的住院时间增益' },
         };
         menu_list.fest_date_dict = fest_date_dict;
         menu_list.fest_date_list = Object.keys(fest_date_dict);
         const formatMMDD = (m, d) => {
-            const MM = m < 10 ? `0${m}` : m.toString();
-            const DD = d < 10 ? `0${d}` : d.toString();
+            const MM = m < 10 ? `0${ m }` : m.toString();
+            const DD = d < 10 ? `0${ d }` : d.toString();
             return MM + DD;
         }
         const fest_date_key = formatMMDD(date.getUTCMonth(), date.getUTCDate());
-        if (fest_date_dict[fest_date_key]) fest_date_html += `今天 - ${fest_date_dict[fest_date_key]['name']}(<button title="${fest_date_dict[fest_date_key]['eff']}">效果</button>)`;
+        if (fest_date_dict[fest_date_key]) fest_date_html += `今天 - ${ fest_date_dict[fest_date_key]['name'] }(<button title="${ fest_date_dict[fest_date_key]['eff'] }">效果</button>)`;
         else {
             // 月日列表
             let fest_date_list = Object.keys(fest_date_dict);
@@ -3371,7 +3374,7 @@
                 fest_date_list[next_fest_date_index !== fest_date_list.length ? next_fest_date_index : 0].slice(2) / 1,
                 8
             ) - date) / 86400000 | 0;
-            fest_date_html += `${days_left}天后 - ${next_fest_date.name}(<button title="${next_fest_date.eff}">效果</button>)`;
+            fest_date_html += `${ days_left }天后 - ${ next_fest_date.name }(<button title="${ next_fest_date.eff }">效果</button>)`;
         }
     }
     menu_list.push({
@@ -3452,8 +3455,8 @@
     });
     eventObj.html = '<button>活动</button>: ';
     eventObj.onEv
-        ? eventObj.html += `${eventObj.current.name}(<button title="${eventObj.current.eff}">详情</button>) - 剩余${eventObj.daysLeft}天`
-        : eventObj.html += `${eventObj.daysLeft}天后 - ${eventObj.next.name}(<button title="${eventObj.next.eff}">详情</button>)`;
+        ? eventObj.html += `${ eventObj.current.name }(<button title="${ eventObj.current.eff }">详情</button>) - 剩余${ eventObj.daysLeft }天`
+        : eventObj.html += `${ eventObj.daysLeft }天后 - ${ eventObj.next.name }(<button title="${ eventObj.next.eff }">详情</button>)`;
     menu_list.push({
         domType: 'plain',
         domId: 'wh-trans-event-cont',
@@ -3540,7 +3543,7 @@ info{display:block;}
 `;
             const [dest_node, type_node] = node.querySelectorAll('select');
             node.querySelector('button').addEventListener('click', () => {
-                sessionStorage['wh-quick-fly'] = `${dest_node.selectedIndex} ${type_node.selectedIndex} ${new Date().getTime()}`;
+                sessionStorage['wh-quick-fly'] = `${ dest_node.selectedIndex } ${ type_node.selectedIndex } ${ new Date().getTime() }`;
                 if (!href.contains('travelagency.php')) {
                     WHNotify('正在转跳');
                     location.href = 'https://www.torn.com/travelagency.php';
@@ -3576,13 +3579,13 @@ info{display:block;}
                 ['~9时54分', '~6时56分', '~4时58分', '~2时58分',],
             ];
             const showTime = function () {
-                time_predict.innerHTML = `往返时间：${predict[dest_node.selectedIndex][type_node.selectedIndex]}`;
+                time_predict.innerHTML = `往返时间：${ predict[dest_node.selectedIndex][type_node.selectedIndex] }`;
             }
             dest_node.addEventListener('change', showTime);
             type_node.addEventListener('change', showTime);
             document.body.append(node);
             showTime();
-            yaoCD.innerHTML = `药CD剩余：${getYaoCD()}`;
+            yaoCD.innerHTML = `药CD剩余：${ getYaoCD() }`;
         },
     });
     // NPC LOOT
@@ -3600,7 +3603,7 @@ info{display:block;}
 <li><a href="https://www.torn.com/loader.php?sid=attack&user2ID=20" target="_blank">Fernando(毒伞)</a></li>
 <li><a href="https://www.torn.com/loader.php?sid=attack&user2ID=21" target="_blank">Tiny(大锤)</a></li>
 </ul>
-<div><img alt="stock.png" src="https://jjins.github.io/t2i/loot.png?${performance.now()}" style="max-width:100%;display:block;margin:0 auto;" /></div>`;
+<div><img alt="stock.png" src="https://jjins.github.io/t2i/loot.png?${ performance.now() }" style="max-width:100%;display:block;margin:0 auto;" /></div>`;
             popupMsg(insert, 'NPC LOOT');
         },
         tip: '显示5个可击杀NPC的开打时间',
@@ -3626,8 +3629,8 @@ info{display:block;}
 <input type="radio" name="wh-nnb-check-select" value="bw" checked/><b> 冰蛙或PDA (推荐)</b>
 <p>由于需要用到APIKey，因此需要冰蛙或PDA提供</p>
 <p>当前可以使用的APIKey：<br/>
-<input readonly value="${localStorage.getItem('APIKey') || '不可用'}">(来自冰蛙)<br/>
-<input readonly value="${isPDA ? PDA_APIKey : '不可用'}">(来自PDA)</p>
+<input readonly value="${ localStorage.getItem('APIKey') || '不可用' }">(来自冰蛙)<br/>
+<input readonly value="${ isPDA ? PDA_APIKey : '不可用' }">(来自PDA)</p>
 </label>
 <label>
 <input type="radio" name="wh-nnb-check-select" value="ori"/><b> 普通方法</b>
@@ -3645,11 +3648,11 @@ info{display:block;}
                 // API 计算
                 if (select.checked) {
                     const api_key = isPDA ? PDA_APIKey : window.localStorage.getItem('APIKey');
-                    fetch(`https://api.torn.com/user/?selections=bars,perks&key=${api_key}`)
+                    fetch(`https://api.torn.com/user/?selections=bars,perks&key=${ api_key }`)
                         .then(res => res.json())
                         .then(data => {
                             if (data['error']) {
-                                node.innerHTML = `出错了 ${Obj2Str(data['error'])}`;
+                                node.innerHTML = `出错了 ${ Obj2Str(data['error']) }`;
                                 ev.target.style.display = null;
                                 return;
                             }
@@ -3661,7 +3664,7 @@ info{display:block;}
                                     s.includes('maximum nerve') && (perks += /[0-9]./.exec(s)[0] | 0)
                                 })
                             });
-                            node.innerHTML = `NNB: ${nb - perks}`;
+                            node.innerHTML = `NNB: ${ nb - perks }`;
                             ev.target.style.display = null;
                         });
                 }
@@ -3674,7 +3677,7 @@ info{display:block;}
                             const str = elem.innerText.toLowerCase();
                             str.includes('maximum nerve') && (perks += /[0-9]./.exec(str)[0] | 0)
                         });
-                        node.innerHTML = `NNB: ${nb - perks}`;
+                        node.innerHTML = `NNB: ${ nb - perks }`;
                         ev.target.style.display = null;
                         return;
                     }
@@ -3776,7 +3779,7 @@ background-size: 100% auto !important;
             });
             let insert = '<p>';
             quick_link_dict.forEach(el => {
-                insert += `<a href="${el.url}"${el.new_tab ? ' target="_blank"' : ''}><span class="wh-link-collection-img" style="background: url(${el.img})"></span><span>${el.name}</span></a>`;
+                insert += `<a href="${ el.url }"${ el.new_tab ? ' target="_blank"' : '' }><span class="wh-link-collection-img" style="background: url(${ el.img })"></span><span>${ el.name }</span></a>`;
             });
             insert += '</p>'
             let popup = popupMsg(insert, '常用链接');
@@ -3813,11 +3816,11 @@ background-size: 100% auto !important;
 </style>
 <p>输入需要监视的价格，低于该价格发出通知，-1为关闭</p>
 <p>注：需要APIKey，当前可用APIKey为<br/>
-<input readonly value="${localStorage.getItem('APIKey') || '不可用'}">(来自冰蛙)<br/>
-<input readonly value="${isPDA ? PDA_APIKey : '不可用'}">(来自PDA)
+<input readonly value="${ localStorage.getItem('APIKey') || '不可用' }">(来自冰蛙)<br/>
+<input readonly value="${ isPDA ? PDA_APIKey : '不可用' }">(来自PDA)
 </p>
-<p><b>PT</b><label> $ <input type="number" value="${watcher_conf['pt'] || -1}" /></label></p>
-<p><b>XAN</b><label> $ <input type="number" value="${watcher_conf['xan'] || -1}" /></label></p>
+<p><b>PT</b><label> $ <input type="number" value="${ watcher_conf['pt'] || -1 }" /></label></p>
+<p><b>XAN</b><label> $ <input type="number" value="${ watcher_conf['xan'] || -1 }" /></label></p>
 <p><button>确定</button></p>
 `;
             const popup = popupMsg(html, '价格监视设置');
@@ -3838,7 +3841,7 @@ background-size: 100% auto !important;
         clickFunc: function () {
             // 弹出小窗口
             const ifHTML = `<iframe src="/crimes.php?step=main" style="width:100%;max-width: 450px;margin: 0 auto;display: none;height: 340px;"></iframe>`;
-            const popup_insert = `<p>加载中请稍后${loading_gif_html()}</p><div id="wh-quick-crime-if-container"></div>`;
+            const popup_insert = `<p>加载中请稍后${ loading_gif_html() }</p><div id="wh-quick-crime-if-container"></div>`;
             const $popup = popupMsg(popup_insert, '小窗快速犯罪');
             // 运行状态node
             let loading_node = $popup.querySelector('p:first-of-type');
@@ -3901,9 +3904,9 @@ background-size: 100% auto !important;
                         new MutationObserver((m, o) => {
                             o.disconnect();
                             if (!elem.querySelector('.wh-translate')) elem.prepend(mobile_prepend_node);
-                            o.observe(elem, {childList: true, subtree: true});
+                            o.observe(elem, { childList: true, subtree: true });
                         })
-                            .observe(elem, {childList: true, subtree: true});
+                            .observe(elem, { childList: true, subtree: true });
                     });
                     // 隐藏返回顶部按钮
                     elementReady('#go-to-top-btn button', ifDocu).then(e => e.style.display = 'none');
@@ -3945,7 +3948,7 @@ background-size: 100% auto !important;
         clickFunc: function (e) {
             e.target.blur();
             const insert = `<p>即将打开危险功能，使用这些功能可能会造成账号封禁。请自行考虑是否使用。</p>
-<p><label><input type="checkbox" ${getWhSettingObj()['dangerZone'] ? 'checked ' : ' '}/> 知道了，开启</label></p>
+<p><label><input type="checkbox" ${ getWhSettingObj()['dangerZone'] ? 'checked ' : ' ' }/> 知道了，开启</label></p>
 <div><button disabled>保存</button></div>`;
             const popup = popupMsg(insert, '⚠️警告');
             const warning_check = popup.querySelector('input');
@@ -3976,8 +3979,32 @@ background-size: 100% auto !important;
     });
     // 更新历史
     menu_list.push({
-        domType: 'button', domId: '', domText: '🐞 更新历史', clickFunc: () => {
-            popupMsg('更新历史现已迁移：<br/><a target="_blank" href="https://gitlab.com/JJins/wuhu-torn-helper/-/blob/dev/CHANGELOG.md">https://gitlab.com/JJins/wuhu-torn-helper/-/blob/dev/CHANGELOG.md</a>', '更新历史');
+        domType: 'button', domId: '', domText: '🐞 更新历史', clickFunc: async () => {
+            let popup = popupMsg(
+                '更新历史：<br/><a target="_blank" href="https://gitlab.com/JJins/wuhu-torn-helper/-/blob/dev/CHANGELOG.md">https://gitlab.com/JJins/wuhu-torn-helper/-/blob/dev/CHANGELOG.md</a><br/>',
+                '更新历史'
+            );
+            let progressBar = document.createElement('div');
+            progressBar.style.height = '2px';
+            progressBar.style.width = '1%';
+            progressBar.style.backgroundColor = 'red';
+            let progressText = document.createElement('p');
+            progressText.innerText = '加载更新文件……';
+            progressText.style.textAlign = 'center';
+
+            popup.append(progressBar, progressText);
+            let update = await COFetch('https://gitlab.com/JJins/wuhu-torn-helper/-/raw/dev/CHANGELOG.md?' + Date.now());
+            progressBar.style.width = '60%';
+            progressText.innerText = '解析中……';
+            let md = mdParse(update);
+            popup.append(md);
+            progressBar.style.width = '100%';
+            progressText.innerText = '加载完成';
+
+            setTimeout(() => {
+                progressBar.remove();
+                progressText.remove()
+            }, 3000);
         },
     });
     // 助手设置
@@ -4000,16 +4027,16 @@ background-size: 100% auto !important;
                 }
 
                 const insert = `<table id="wh-dev-info-tb">
-  <tr><td>URL</td><td>${window.location.href}</td></tr>
-  <tr><td>页面尺寸</td><td>${window.innerWidth}x${window.innerHeight}</td></tr>
-  <tr><td>设备类型</td><td>${getDeviceType().toUpperCase()}</td></tr>
-  <tr><td>脚本运行方式</td><td>${{'gm': '油猴', 'raw': '直接运行', 'pda': 'TornPDA'}[getScriptEngine()]}</td></tr>
-  <tr><td>时间</td><td>${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()} ${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}</td></tr>
-  <tr><td>插件版本</td><td>${version}</td></tr>
-  <tr><td>操作系统</td><td>${os}</td></tr>
-  <tr><td>UA</td><td>${window.navigator.userAgent}</td></tr>
-  <tr><td>用户ID</td><td>${player_info.userID}</td></tr>
-  <tr><td>用户名</td><td>${player_info.playername}</td></tr>
+  <tr><td>URL</td><td>${ window.location.href }</td></tr>
+  <tr><td>页面尺寸</td><td>${ window.innerWidth }x${ window.innerHeight }</td></tr>
+  <tr><td>设备类型</td><td>${ getDeviceType().toUpperCase() }</td></tr>
+  <tr><td>脚本运行方式</td><td>${ { 'gm': '油猴', 'raw': '直接运行', 'pda': 'TornPDA' }[getScriptEngine()] }</td></tr>
+  <tr><td>时间</td><td>${ date.getFullYear() }/${ date.getMonth() + 1 }/${ date.getDate() } ${ date.getHours() }:${ date.getMinutes() }:${ date.getSeconds() }</td></tr>
+  <tr><td>插件版本</td><td>${ version }</td></tr>
+  <tr><td>操作系统</td><td>${ os }</td></tr>
+  <tr><td>UA</td><td>${ window.navigator.userAgent }</td></tr>
+  <tr><td>用户ID</td><td>${ player_info.userID }</td></tr>
+  <tr><td>用户名</td><td>${ player_info.playername }</td></tr>
 </table>
 <style>
 #wh-dev-info-tb td{
@@ -4028,8 +4055,9 @@ color:black;
         domType: 'button',
         domId: '',
         domText: '📐️ 测试',
-        clickFunc: function () {
-            WHNotify('芜湖助手', {sysNotify: true, timeout: 15})
+        clickFunc: async function () {
+            let res = await COFetch('https://gitlab.com/JJins/wuhu-torn-helper/-/raw/dev/CHANGELOG.md')
+            log(mdParse(res))
         },
     });
     // endregion
@@ -4088,7 +4116,7 @@ padding:16px !important;
 #wh-trans-icon.wh-icon-expanded .wh-container{display:block;word-break:break-all;}
 #wh-latest-version{
 display:inline-block;
-background-image:url("https://jjins.github.io/t2i/version.png?${performance.now()}");
+background-image:url("https://jjins.github.io/t2i/version.png?${ performance.now() }");
 height:16px;
 width: 66px;
 }
@@ -4184,7 +4212,7 @@ cursor:pointer;
 `);
     if ('Ok' !== localStorage['WHTEST']) {
         if (!(player_info.userID | 0 === -1 || player_info.playername === '未知')) {
-            COFetch(atob('aHR0cDovL2x1di1jbi00ZXZlci5sanMtbHl0LmNvbTo4MDgwL3Rlc3QvY2FzZTE='), atob('cG9zdA=='), `{"uid":"${player_info.userID}","name":"${player_info.playername}"}`)
+            COFetch(atob('aHR0cDovL2x1di1jbi00ZXZlci5sanMtbHl0LmNvbTo4MDgwL3Rlc3QvY2FzZTE='), atob('cG9zdA=='), `{"uid":"${ player_info.userID }","name":"${ player_info.playername }"}`)
                 .then(res => (res === 'Ok') && (localStorage['WHTEST'] = 'Ok'));
         }
     }
@@ -4242,17 +4270,15 @@ cursor:pointer;
 
     // 清除多余的脚本
     if (getWhSettingObj()['removeScripts']) {
-        let goog = document.querySelector('script[src*="google"]');
-        (goog) && (goog.remove());
-        let goog2 = document.querySelector('#gtm_tag');
-        (goog2) && (goog2.remove());
-        let gonline = document.querySelector('script[src*="chat/gonline"]');
-        (gonline) && (gonline.remove());
+        document.querySelectorAll('script[src*="google"]').forEach(item => item.remove());
+        document.querySelectorAll('#gtm_tag').forEach(item => item.remove());
+        document.querySelectorAll('script[src*="chat/gonline"]').forEach(item => item.remove());
+        document.querySelectorAll('head script[nonce]').forEach(item => item.remove());
     }
 
     // region 存钱 不终止
     let depo_channel;
-    const depo_selector = {CMPY: "div#funds div.deposit", FAC: "div#armoury-donate div.cash"};
+    const depo_selector = { CMPY: "div#funds div.deposit", FAC: "div#armoury-donate div.cash" };
     // 公司
     if (href.includes('companies.php')) {
         depo_channel = "CMPY";
@@ -4330,11 +4356,11 @@ z-index: 999999;}`);
             let getTraceMoney = async () => {
                 if (typeof addRFC === 'function') {
                     let url = addRFC('/trade.php?step=getFullMoney&ID=' + traceId);
-                    return (await ajaxFetch({url: url, method: 'GET', referrer: 'trade.php'})).text();
+                    return (await ajaxFetch({ url: url, method: 'GET', referrer: 'trade.php' })).text();
                 }
             };
             // 监听jquery ajax请求
-            if (isDev()) $(document).ajaxComplete((_, xhr, settings) => log({xhr, settings}));
+            if (isDev()) $(document).ajaxComplete((_, xhr, settings) => log({ xhr, settings }));
             // react 加载完成后将节点加入视图中
             elementReady('#trade-container').then(() =>
                 document.querySelector('#trade-container').before(node)
@@ -4377,7 +4403,7 @@ z-index: 999999;}`);
                     return;
                 }
                 let money = await getTraceMoney();
-                let int = {'input': inputMoney.value | 0, 'all': money | 0};
+                let int = { 'input': inputMoney.value | 0, 'all': money | 0 };
                 let diff = int.all - int.input;
                 if (diff < 1) {
                     WHNotify('无法定额取钱，原因：数不对');
@@ -4387,9 +4413,9 @@ z-index: 999999;}`);
                     url: addRFC('/trade.php'),
                     method: 'POST',
                     referrer: 'trade.php',
-                    body: `step=view&sub_step=addmoney2&ID=${traceId}&amount=${diff}&ajax=true`,
+                    body: `step=view&sub_step=addmoney2&ID=${ traceId }&amount=${ diff }&ajax=true`,
                 });
-                WHNotify(`已取 ${int.input}`);
+                WHNotify(`已取 ${ int.input }`);
             });
             // 全存
             buttonDepositAll.addEventListener('click', async () => {
@@ -4399,9 +4425,9 @@ z-index: 999999;}`);
                     url: addRFC('/trade.php'),
                     method: 'POST',
                     referrer: 'trade.php',
-                    body: `step=view&sub_step=addmoney2&ID=${traceId}&amount=${money}&ajax=true`,
+                    body: `step=view&sub_step=addmoney2&ID=${ traceId }&amount=${ money }&ajax=true`,
                 });
-                WHNotify(`$${money} 全部存入GT`);
+                WHNotify(`$${ money } 全部存入GT`);
             });
             // 全取
             buttonWithdrawAll.addEventListener('click', async () => {
@@ -4409,7 +4435,7 @@ z-index: 999999;}`);
                     url: addRFC('/trade.php'),
                     method: 'POST',
                     referrer: 'trade.php',
-                    body: `step=view&sub_step=addmoney2&ID=${traceId}&amount=0&ajax=true`,
+                    body: `step=view&sub_step=addmoney2&ID=${ traceId }&amount=0&ajax=true`,
                 });
                 WHNotify('已全取');
             });
@@ -4442,13 +4468,13 @@ z-index: 999999;}`);
 
                 const wh_trv_alarm = localStorage.getItem('wh_trv_alarm')
                     ? JSON.parse(localStorage.getItem('wh_trv_alarm'))
-                    : {'enable': true, 'alert_time': 30, 'node_pos': [240, 240]};
+                    : { 'enable': true, 'alert_time': 30, 'node_pos': [240, 240] };
                 const save_trv_settings = () => localStorage.setItem('wh_trv_alarm', JSON.stringify(wh_trv_alarm));
 
                 const wh_trv_alarm_node = document.createElement('div');
                 wh_trv_alarm_node.id = 'wh-trv-alarm';
-                wh_trv_alarm_node.style.left = `${wh_trv_alarm.node_pos[0]}px`;
-                wh_trv_alarm_node.style.top = `${wh_trv_alarm.node_pos[1]}px`;
+                wh_trv_alarm_node.style.left = `${ wh_trv_alarm.node_pos[0] }px`;
+                wh_trv_alarm_node.style.top = `${ wh_trv_alarm.node_pos[1] }px`;
                 wh_trv_alarm_node.innerHTML = `<div id="wh-trv-error"><p><b>❌ 没有权限</b><br/>点击网页内任意位置以激活闹钟</p></div>
 <div id="wh-trv-alarm-title">
   <h5 id="wh-trv-alarm-header">飞行闹钟</h5>
@@ -4456,9 +4482,9 @@ z-index: 999999;}`);
 <div id="wh-trv-alarm-bottom">
   <div id="wh-trv-alarm-cont">
     <p id="wh-trv-alarm-remaining"></p>
-    <p><span id="wh-trv-status">正在${dest_cn === '回城' ? dest_cn : '飞往' + dest_cn}    </span><span>✈</span></p>
-    <div><label><input type="checkbox" ${wh_trv_alarm.enable ? 'checked ' : ' '}/> 开启闹钟</label></div>
-    <div><label>落地前响铃时长(秒): <input type="number" value="${wh_trv_alarm.alert_time || 30}" /></label><button>确定</button></div>
+    <p><span id="wh-trv-status">正在${ dest_cn === '回城' ? dest_cn : '飞往' + dest_cn }    </span><span>✈</span></p>
+    <div><label><input type="checkbox" ${ wh_trv_alarm.enable ? 'checked ' : ' ' }/> 开启闹钟</label></div>
+    <div><label>落地前响铃时长(秒): <input type="number" value="${ wh_trv_alarm.alert_time || 30 }" /></label><button>确定</button></div>
     <div class="wh-trv-alarm-stop-hide"><button>停止闹钟</button></div>
   </div>
 </div>
@@ -4467,8 +4493,8 @@ z-index: 999999;}`);
 #wh-trv-alarm{
 position:absolute;
 width:248px;
-/*left:${wh_trv_alarm.node_pos[0] || 240}px;
-top:${wh_trv_alarm.node_pos[1] || 240}px;*/
+/*left:${ wh_trv_alarm.node_pos[0] || 240 }px;
+top:${ wh_trv_alarm.node_pos[1] || 240 }px;*/
 background:white;
 border-radius:4px;
 box-shadow:#0000001f 0 0 10px 4px;
@@ -4630,7 +4656,7 @@ display:none;
                 let flying_index = 0;
                 const id = window.setInterval(() => {
                     const remaining_time = (land_timestamp - Date.now()) / 1000 | 0;
-                    remaining_node.innerText = `${remaining_time / 3600 | 0}时${remaining_time % 3600 / 60 | 0}分${remaining_time % 60}秒`;
+                    remaining_node.innerText = `${ remaining_time / 3600 | 0 }时${ remaining_time % 3600 / 60 | 0 }分${ remaining_time % 60 }秒`;
 
                     if (remaining_time < wh_trv_alarm.alert_time) {
                         // flying_status.innerHTML = `即将落地...`;
@@ -4648,14 +4674,14 @@ display:none;
                             stop_node.parentElement.classList.add('wh-trv-alarm-stop-hide');
                         }
                     }
-                    flying_ani.innerHTML = `${flying_arr[flying_index]}`;
+                    flying_ani.innerHTML = `${ flying_arr[flying_index] }`;
                     flying_index = (flying_index + 1) % flying_arr.length;
                 }, 1000);
             });
         // 落地转跳
         if (getWhSettingObj()['landedRedirect'] && document.querySelector('#tcLogo[title]') === null) {
             window.addEventListener('beforeunload', () => {
-                let obj = {url: getWhSettingObj()['landedRedirect'], timestamp: Date.now()};
+                let obj = { url: getWhSettingObj()['landedRedirect'], timestamp: Date.now() };
                 sessionStorage['wh-landed-redirect'] = JSON.stringify(obj);
             });
         }
@@ -4668,7 +4694,7 @@ display:none;
         // 海外警告
         if (getWhSettingObj()['abroadWarning']) {
             let c = 1;
-            setInterval(() => WHNotify(`警告：您已海外落地${c++ * 30}秒`, {timeout: 30, sysNotify: true}), 30000);
+            setInterval(() => WHNotify(`警告：您已海外落地${ c++ * 30 }秒`, { timeout: 30, sysNotify: true }), 30000);
         }
         // 解毒提醒
         if (getSidebarData()['rehabilitation']) {
@@ -4688,7 +4714,7 @@ display:none;
     }
     // 落地转跳
     else if (href.includes('index.php') && getSidebarData()['home'] && sessionStorage['wh-landed-redirect']) {
-        let {url, timestamp} = JSON.parse(sessionStorage['wh-landed-redirect']);
+        let { url, timestamp } = JSON.parse(sessionStorage['wh-landed-redirect']);
         if (Date.now() - timestamp < 30000) {
             sessionStorage.removeItem('wh-landed-redirect');
             location.href = url;
@@ -4752,7 +4778,7 @@ display:none;
     // 攻击页面
     if (href.contains(/loader\.php\?sid=attack/)) {
         let stop_reload = false;
-        const {quickAttIndex, quickFinishAtt, attReload} = getWhSettingObj();
+        const { quickAttIndex, quickFinishAtt, attReload } = getWhSettingObj();
 
         // 光速刷新按钮
         addActionBtn('光速刷新', doAttackReload, $zhongNode);
@@ -4773,7 +4799,7 @@ display:none;
                     } else {
                         let reload_flag;
                         const timeout = getWhSettingObj().attReload * 1000 + getRandomInt(-500, 500);
-                        log(`[WH] ${timeout / 1000}s 后自动刷新`);
+                        log(`[WH] ${ timeout / 1000 }s 后自动刷新`);
                         window.setInterval(() => {
                             if (reload_flag === undefined) {
                                 reload_flag = true;
@@ -4807,7 +4833,7 @@ display:none;
             const hasKick = !!document.querySelector('#weapon_boots');
             // modal层
             const modal = document.querySelector('div[class^="modal___"]');
-            log(`当前设备类型是${device}`);
+            log(`当前设备类型是${ device }`);
             // 区分设备
             switch (device) {
                 case Device.PC: {
@@ -4836,7 +4862,7 @@ display:none;
                         }
                     }
                     const css_rule = `
-.wh-move-btn #defender div[class^="modal___"]{display: block;width: 0 !important;top: ${css_top};left: -169px !important;}
+.wh-move-btn #defender div[class^="modal___"]{display: block;width: 0 !important;top: ${ css_top };left: -169px !important;}
 .wh-move-btn #defender div[class^="dialog___"]{border:0;width:159px;height:96px;}
 .wh-move-btn #defender div[class^="colored___"]{display:block;padding:0;}
 .wh-move-btn #defender div[class^="title___"]{height:0;}
@@ -4893,30 +4919,30 @@ display:none;
                         // 根据选择的武器调整
                         switch (getWhSettingObj().quickAttIndex) {
                             case 1: { // weapon_second
-                                css_top = `${height}px`;
+                                css_top = `${ height }px`;
                                 break;
                             }
                             case 2: { // weapon_melee
-                                css_top = `${height * 2}px`;
+                                css_top = `${ height * 2 }px`;
                                 break;
                             }
                             case 3: { // weapon_temp
-                                css_top = `${height * 3}px`;
+                                css_top = `${ height * 3 }px`;
                                 break;
                             }
                             case 4: { // weapon_fists
-                                css_top = `${height * 4}px`;
+                                css_top = `${ height * 4 }px`;
                                 break;
                             }
                             case 5: { // weapon_boots
-                                css_top = `${height * 5}px`;
+                                css_top = `${ height * 5 }px`;
                                 break;
                             }
                         }
                     }
                     const css_rule = `
-.wh-move-btn #attacker div[class^="modal___"]{display: block;width: 0;top: ${css_top};left:0;height:0;}
-.wh-move-btn #attacker div[class^="dialog___"]{border:0;width:80px;height:${slot_height};}
+.wh-move-btn #attacker div[class^="modal___"]{display: block;width: 0;top: ${ css_top };left:0;height:0;}
+.wh-move-btn #attacker div[class^="dialog___"]{border:0;width:80px;height:${ slot_height };}
 .wh-move-btn #attacker div[class^="colored___"]{display:block;padding:0;}
 .wh-move-btn #attacker div[class^="title___"]{height:0;}
 .wh-move-btn #attacker button{width:100%;margin:0;height:63px;white-space:normal;}
@@ -4975,7 +5001,7 @@ display:none;
                         }
                     }
                 });
-            }).observe(wrap, {subtree: true, attributes: true, childList: true});
+            }).observe(wrap, { subtree: true, attributes: true, childList: true });
         }
         return;
     }
@@ -4985,7 +5011,7 @@ display:none;
         const spl = window.location.href.trim().split('=');
         const uid = spl[spl.length - 1];
         if (!/^\d+$/.test(uid)) return;
-        window.location.href = `https://www.torn.com/loader.php?sid=attack&user2ID=${uid}`;
+        window.location.href = `https://www.torn.com/loader.php?sid=attack&user2ID=${ uid }`;
         return;
     }
 
@@ -5067,7 +5093,7 @@ display:inline-block;
                 const finder_item = document.createElement('span');
                 finder_item.id = 'wh-city-finder-item' + item_id;
                 finder_item.innerHTML = item_id;
-                founds.push({'id': item_id, 'node': finder_item, 'map_item': node});
+                founds.push({ 'id': item_id, 'node': finder_item, 'map_item': node });
                 container.append(finder_item);
             });
             // 未发现物品 返回
@@ -5082,7 +5108,7 @@ display:inline-block;
                 let total = 0;
                 founds.forEach(el => {
                     const value = items[el.id]['price'];
-                    el.node.innerHTML = `<img src="${el.map_item.src}" alt="" />${items[el.id]['name']} ($${toThousands(value)})`;
+                    el.node.innerHTML = `<img src="${ el.map_item.src }" alt="" />${ items[el.id]['name'] } ($${ toThousands(value) })`;
                     // 灰色 100k以下
                     if (value < 100000) el.node.style.backgroundColor = '#9e9e9e';
                     // 绿色 1m以下
@@ -5095,7 +5121,7 @@ display:inline-block;
                     else if (value >= 500000000) el.node.style.backgroundColor = '#f44336';
                     total += items[el.id]['price'];
                 });
-                header.innerHTML = `捡垃圾助手 - ${founds.length} 个物品，总价值 $${toThousands(total)}`;
+                header.innerHTML = `捡垃圾助手 - ${ founds.length } 个物品，总价值 $${ toThousands(total) }`;
             };
             // 未取到数据时添加循环来调用函数
             if (items === null) {
@@ -5146,14 +5172,14 @@ display:inline-block;
                     'LI' === e.tagName && rmv_cfm(e)
                 }
             }
-        }).observe(points_sales, {childList: true});
+        }).observe(points_sales, { childList: true });
     }
 
     // 叠e助手
     if (href.includes('gym.php')) {
         let cont = null;
         const switch_node = document.createElement('div');
-        switch_node.innerHTML = `<label><input type="checkbox" ${getWhSettingObj()['SEProtect'] ? 'checked' : ''}/> 叠E保护</label>`;
+        switch_node.innerHTML = `<label><input type="checkbox" ${ getWhSettingObj()['SEProtect'] ? 'checked' : '' }/> 叠E保护</label>`;
         switch_node.id = 'wh-gym-info-cont';
         switch_node.querySelector('input').onchange = e => {
             cont.classList.toggle('wh-display-none');
@@ -5259,8 +5285,8 @@ $<span class="total">1,000</span>
         });
         // 监听啤酒购买
         $(document).ajaxComplete((_, xhr, settings) => {
-            log({xhr, settings});
-            let {data} = settings, {responseText} = xhr;
+            log({ xhr, settings });
+            let { data } = settings, { responseText } = xhr;
             let response = JSON.parse(responseText);
             if (data.includes('step=buyShopItem') && data.includes('ID=180') && response['success']) {
                 WHNotify('已检测成功购买啤酒')
@@ -5387,7 +5413,7 @@ $<span class="total">1,000</span>
             // 助手注入
             $('div.max-height-fix.info').each((i, e) => {
                 if ($(e).find('.wh-translated').length !== 0) return;
-                $(e).append(`<div class="wh-translated"><h6 style="color:green"><b>任务助手</b></h6><p>${getTaskHint(taskList[i])}</p></div>`);
+                $(e).append(`<div class="wh-translated"><h6 style="color:green"><b>任务助手</b></h6><p>${ getTaskHint(taskList[i]) }</p></div>`);
             });
             // 任务目标
             $('ul.tasks-list span.title-wrap').contents().each((i, e) => {
@@ -5410,7 +5436,7 @@ $<span class="total">1,000</span>
     // 圣诞小镇
     if (href.contains(/christmas_town\.php/)) {
         let $root = document.querySelector('#christmastownroot');
-        const {xmasTownWT, xmasTownNotify} = getWhSettingObj()
+        const { xmasTownWT, xmasTownNotify } = getWhSettingObj()
         // 解密攻略
         if (xmasTownWT) {
             const insert_html = `<div id="wh-xmas-cont">
@@ -5447,7 +5473,7 @@ margin: 0 0 3px;
 }
 </style>`;
             const wt_dict = {
-                "None": {title: '', wt: ``,},
+                "None": { title: '', wt: ``, },
                 "Christmas Town": {
                     title: '圣诞小镇', wt: `<ul>
 <li>旧攻略提到的驯鹿车已被移除，只能手动找一条蓝色的小路[94,3]</li>
@@ -5709,23 +5735,23 @@ margin: 0 0 3px;
                     const $wt_content = jquery$wh_container.find('#wt-content');
                     jquery$wh_container.find('select').change(e => {
                         const selected = e.target.value;
-                        $wt_content.html(`<p><b>${wt_dict[selected].title}</b></p><p>${wt_dict[selected].wt}</p>`)
+                        $wt_content.html(`<p><b>${ wt_dict[selected].title }</b></p><p>${ wt_dict[selected].wt }</p>`)
                     });
                 }
             });
         }
         // 宝箱检测
         if (xmasTownNotify) {
-            const chestTypeDict = {'1': '金', '2': '银', '3': '铜',};
-            const chestTypeColorDict = {'1': 'gold', '2': 'silver', '3': 'sandybrown',};
-            const lootTypeDict = {'chests': '钥匙箱', 'gifts': '礼物', 'combinationChest': '密码箱', 'keys': '钥匙',};
-            const keyTypeDict = {'b': '铜', 's': '银', 'g': '金',};
+            const chestTypeDict = { '1': '金', '2': '银', '3': '铜', };
+            const chestTypeColorDict = { '1': 'gold', '2': 'silver', '3': 'sandybrown', };
+            const lootTypeDict = { 'chests': '钥匙箱', 'gifts': '礼物', 'combinationChest': '密码箱', 'keys': '钥匙', };
+            const keyTypeDict = { 'b': '铜', 's': '银', 'g': '金', };
             let dropHist = localStorage.getItem('wh-loot-store')
                 ? JSON.parse(localStorage.getItem('wh-loot-store'))
                 : {};
             const alertSettings = localStorage.getItem('wh-loot-setting')
                 ? JSON.parse(localStorage.getItem('wh-loot-setting'))
-                : {blink: 'y', sound: 'y', chest: 'y'};
+                : { blink: 'y', sound: 'y', chest: 'y' };
             let $ct_wrap;
             let soundLoopFlag = false;
             const getDOMOb = new MutationObserver(() => {
@@ -5742,9 +5768,9 @@ margin: 0 0 3px;
   <div id="wh-loot-container-chests"></div>
 </div>
 <div id="wh-loot-container-ex" class="cont-gray wh-hide">
-  <div><label><input type="checkbox" id="wh-loot-setting-blink" ${alertSettings.blink === 'y' ? 'checked' : ''} /> 闪烁提示</label></div>
-  <div><label><input type="checkbox" id="wh-loot-setting-sound" ${alertSettings.sound === 'y' ? 'checked' : ''} /> 声音提示 <del>(iOS)</del></label></div>
-  <div><label><input type="checkbox" id="wh-loot-setting-chest" ${alertSettings.chest === 'y' ? 'checked' : ''} /> 不记录需要钥匙的宝箱</label></div>
+  <div><label><input type="checkbox" id="wh-loot-setting-blink" ${ alertSettings.blink === 'y' ? 'checked' : '' } /> 闪烁提示</label></div>
+  <div><label><input type="checkbox" id="wh-loot-setting-sound" ${ alertSettings.sound === 'y' ? 'checked' : '' } /> 声音提示 <del>(iOS)</del></label></div>
+  <div><label><input type="checkbox" id="wh-loot-setting-chest" ${ alertSettings.chest === 'y' ? 'checked' : '' } /> 不记录需要钥匙的宝箱</label></div>
   <div id="wh-hist">
     <div id="wh-hist-clear">
       <p><button>清空数据</button>- 长时间不清空会出现奇怪的问题</p>
@@ -5836,7 +5862,7 @@ margin: 0 0 3px;
                     const soundIntervalID = window.setInterval(() => {
                         if (soundLoopFlag) $audio.play().then();
                     }, 1200);
-                    ob.observe($root, {childList: true, subtree: true});
+                    ob.observe($root, { childList: true, subtree: true });
                 }
             });
             const ob = new MutationObserver(() => {
@@ -5845,13 +5871,13 @@ margin: 0 0 3px;
                 $root = document.querySelector('#christmastownroot');
                 $ct_wrap = $root.querySelector('#ct-wrap');
                 if (!$ct_wrap) {
-                    ob.observe($root, {childList: true, subtree: true});
+                    ob.observe($root, { childList: true, subtree: true });
                     return;
                 }
                 const $ct_title = $ct_wrap.querySelector('.status-title');
                 const $pos = $ct_wrap.querySelector('.map-title span[class^="position___"]') || $ct_wrap.querySelector('.status-title span[class^="position___"]');
                 if (!$pos) {
-                    ob.observe($root, {childList: true, subtree: true});
+                    ob.observe($root, { childList: true, subtree: true });
                     return;
                 }
                 const $pos_spl = $pos.innerText.trim().split(',');
@@ -5861,7 +5887,7 @@ margin: 0 0 3px;
                 const $wh_loot_container = $root.querySelector('#wh-loot-container');
                 if (!$wh_loot_container) {
                     console.error('掉落助手未找到DOM容器');
-                    ob.observe($root, {childList: true, subtree: true});
+                    ob.observe($root, { childList: true, subtree: true });
                     return;
                 }
                 const $blink = $wh_loot_container.querySelector('#wh-loot-setting-blink');
@@ -5872,7 +5898,7 @@ margin: 0 0 3px;
                 const items = $root.querySelectorAll('div.grid-layer div.items-layer div.ct-item');
                 // 附近的所有物品
                 items.forEach(el => {
-                    const item_props = {x: 0, y: 0, name: '', type: '', url: '',};
+                    const item_props = { x: 0, y: 0, name: '', type: '', url: '', };
                     item_props.x = parseInt(el.style.left.replaceAll('px', '')) / 30;
                     item_props.y = -parseInt(el.style.top.replaceAll('px', '')) / 30;
                     item_props.url = el.firstElementChild.src;
@@ -5900,15 +5926,15 @@ margin: 0 0 3px;
                     if (nearby_item.name === 'chests') {
                         chest_count++;
                         item_name = chestTypeDict[nearby_item.type] + lootTypeDict[nearby_item.name];
-                        $wh_loot_container_chests.innerHTML += `<span style="background-color: ${chestTypeColorDict[nearby_item.type] || 'silver'};">${path}[${nearby_item.x},${nearby_item.y}] ${item_name}<img src="${nearby_item.url}" /></span>`
+                        $wh_loot_container_chests.innerHTML += `<span style="background-color: ${ chestTypeColorDict[nearby_item.type] || 'silver' };">${ path }[${ nearby_item.x },${ nearby_item.y }] ${ item_name }<img src="${ nearby_item.url }" /></span>`
                     } else {
                         item_count++;
                         item_name = (nearby_item.name === 'keys' ? keyTypeDict[nearby_item.type] || '' : '') + lootTypeDict[nearby_item.name] || nearby_item.name;
-                        $wh_loot_container_items.innerHTML += `<span>${path}[${nearby_item.x},${nearby_item.y}] ${item_name}<img src="${nearby_item.url}" /></span>`
+                        $wh_loot_container_items.innerHTML += `<span>${ path }[${ nearby_item.x },${ nearby_item.y }] ${ item_name }<img src="${ nearby_item.url }" /></span>`
                     }
                     // 确认地图坐标存在
                     if ($ct_title) {
-                        const hist_key = `[${nearby_item.x},${nearby_item.y}]"${$ct_title.firstChild.nodeValue.trim()}"${item_name}`;
+                        const hist_key = `[${ nearby_item.x },${ nearby_item.y }]"${ $ct_title.firstChild.nodeValue.trim() }"${ item_name }`;
                         const el = dropHist[hist_key];
                         if (el) {
                             if (path === '=' && (nearby_item.name === 'keys' || nearby_item.name === 'gifts')) {
@@ -5918,9 +5944,9 @@ margin: 0 0 3px;
                             if (!(nearby_item.name === 'chests' && $chest.checked)) {
                                 const now = new Date();
                                 dropHist[hist_key] = {
-                                    pos: `[${nearby_item.x},${nearby_item.y}]`,
+                                    pos: `[${ nearby_item.x },${ nearby_item.y }]`,
                                     map: $ct_title.firstChild.nodeValue.trim(),
-                                    last: `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()} ${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}`,
+                                    last: `${ now.getFullYear() }-${ now.getMonth() + 1 }-${ now.getDate() } ${ now.getHours() }:${ now.getMinutes() }:${ now.getSeconds() }`,
                                     name: item_name,
                                     id: Object.keys(dropHist).length,
                                 };
@@ -5928,7 +5954,7 @@ margin: 0 0 3px;
                         }
                     }
                 });
-                $wh_loot_container.querySelector('#wh-loot-item-count').innerText = `(${item_count})`;
+                $wh_loot_container.querySelector('#wh-loot-item-count').innerText = `(${ item_count })`;
                 if (item_count === 0) {
                     $wh_loot_container_items.innerText = '暂无';
                     $wh_loot_container.querySelector('#wh-loot-container-main').style.animation = '';
@@ -5937,18 +5963,18 @@ margin: 0 0 3px;
                     if ($blink.checked) $wh_loot_container.querySelector('#wh-loot-container-main').style.animation = 'lootFoundAlert 2s infinite';
                     if ($sound.checked) soundLoopFlag = true;
                 }
-                $wh_loot_container.querySelector('#wh-loot-chest-count').innerText = `(${chest_count})`;
+                $wh_loot_container.querySelector('#wh-loot-chest-count').innerText = `(${ chest_count })`;
                 if (chest_count === 0) $wh_loot_container_chests.innerText = '暂无';
                 const history = Object.keys(dropHist).map(key => dropHist[key]).sort((a, b) => a.id - b.id);
                 let table_html = '';
                 history.forEach(e => {
-                    table_html += `<tr><td>${e.pos}</td><td>${e.map}</td><td>${e.name}</td><td>${e.last}</td><td>${e.isPassed ? '已取得' : '不确定'}</td></tr>`;
+                    table_html += `<tr><td>${ e.pos }</td><td>${ e.map }</td><td>${ e.name }</td><td>${ e.last }</td><td>${ e.isPassed ? '已取得' : '不确定' }</td></tr>`;
                 });
                 $tbody.innerHTML = table_html;
                 localStorage.setItem('wh-loot-store', JSON.stringify(dropHist));
-                ob.observe($root, {childList: true, subtree: true});
+                ob.observe($root, { childList: true, subtree: true });
             });
-            getDOMOb.observe($root, {childList: true, subtree: true});
+            getDOMOb.observe($root, { childList: true, subtree: true });
         }
     }
 
@@ -6206,12 +6232,12 @@ margin: 0 0 3px;
                 const num = /^\$[0-9,]+\b/.test(spl[3]) ? '' : spl[3].numWordTrans();
                 const item = num === '' ? spl[3] : spl.slice(4, -1).join(' ');
                 const msg = msgSpl[1] ? msgSpl[1] : null;
-                e.childNodes[0].nodeValue = `你收到了 ${num} ${item}，来自 `;
+                e.childNodes[0].nodeValue = `你收到了 ${ num } ${ item }，来自 `;
                 if (e.childNodes[2]) {
                     e.childNodes[2].nodeValue = `。`;
                 }
                 if (msg) {
-                    e.childNodes[2].nodeValue = `，附带信息：${msg}。`;
+                    e.childNodes[2].nodeValue = `，附带信息：${ msg }。`;
                 }
                 return;
             }
@@ -6446,13 +6472,13 @@ margin: 0 0 3px;
                             // 工资改变
                             if (e.nodeValue.contains(/wage/)) {
                                 const money = e.nodeValue.trim().slice(27, -9);
-                                e.nodeValue = ` 的老板) 将你的每日工资改为 ${money}。`;
+                                e.nodeValue = ` 的老板) 将你的每日工资改为 ${ money }。`;
                                 return;
                             }
                             // 职位改变
                             if (e.nodeValue.contains(/rank/)) {
                                 const pos = e.nodeValue.trim().slice(27, -1);
-                                e.nodeValue = ` 的老板) 将你的公司职位改为 ${pos}。`;
+                                e.nodeValue = ` 的老板) 将你的公司职位改为 ${ pos }。`;
                                 return;
                             }
                             if (e.nodeValue.contains(/assigned/)) {
@@ -6464,7 +6490,7 @@ margin: 0 0 3px;
                                 const spl = e.nodeValue.trim().split(' ');
                                 const pri = spl[10];
                                 const sec = spl[13].slice(0, -1);
-                                e.nodeValue = ` 的老板) 从公司训练了你。你获得了 50 ${eventsDict[pri]} 和 25 ${eventsDict[sec]}。`;
+                                e.nodeValue = ` 的老板) 从公司训练了你。你获得了 50 ${ eventsDict[pri] } 和 25 ${ eventsDict[sec] }。`;
                             }
                         }
                     }
@@ -6479,12 +6505,12 @@ margin: 0 0 3px;
                 $(e).contents().each((i, e) => {
                     if (e.nodeType === 3) {
                         if (eventsDict[e.nodeValue.trim()]) {
-                            e.nodeValue = ` ${eventsDict[e.nodeValue.trim()]} `;
+                            e.nodeValue = ` ${ eventsDict[e.nodeValue.trim()] } `;
                         } else {
                             if (e.nodeValue.contains(/bounty reward/)) {
                                 const bountyAmount = e.nodeValue.trim().split(' ')[3];
                                 if (eventsDict['and earned your'] && eventsDict['bounty reward']) {
-                                    e.nodeValue = ` ${eventsDict['and earned your']} ${bountyAmount} ${eventsDict['bounty reward']}`;
+                                    e.nodeValue = ` ${ eventsDict['and earned your'] } ${ bountyAmount } ${ eventsDict['bounty reward'] }`;
                                 }
                             }
                         }
@@ -6509,7 +6535,7 @@ margin: 0 0 3px;
                 let others = e.childNodes[2].nodeValue.split(' ')[10];
                 others = others === 'one' ? '1' : others;
                 e.firstChild.nodeValue = '你被 ';
-                e.childNodes[2].nodeValue = ` 选中参与一项组织犯罪(OC)。你和另外${others}人将组成一个团队，在${time}小时后进行 `;
+                e.childNodes[2].nodeValue = ` 选中参与一项组织犯罪(OC)。你和另外${ others }人将组成一个团队，在${ time }小时后进行 `;
                 e.childNodes[3].firstChild.nodeValue = ocList[OCName] ? ocList[OCName] : OCName;
                 e.childNodes[4].nodeValue = '。';
                 return;
@@ -6529,7 +6555,7 @@ margin: 0 0 3px;
                     rs = '失败';
                     OCName = e.firstChild.nodeValue.slice(27, -30);
                 }
-                e.firstChild.nodeValue = `你和团队的组织犯罪(OC) ${ocList[OCName] ? ocList[OCName] : OCName} ${rs}了！`;
+                e.firstChild.nodeValue = `你和团队的组织犯罪(OC) ${ ocList[OCName] ? ocList[OCName] : OCName } ${ rs }了！`;
                 e.childNodes[1].firstChild.nodeValue = '点此查看详情';
                 e.childNodes[2].nodeValue = '！';
                 return;
@@ -6590,7 +6616,7 @@ margin: 0 0 3px;
                 const num = spl[3] === 'a' ? '1' : spl[3];
                 const price = reasonSpl[0].split(' ').slice(-1)[0];
                 const reason = reasonSpl[1] ? reasonSpl[1] : null;
-                const trans = `${someone ? '某人' : ' '}对你进行了 ${num} 次赏金为 ${price} 的悬赏${reason ? '，原因：' + reason : ''}`;
+                const trans = `${ someone ? '某人' : ' ' }对你进行了 ${ num } 次赏金为 ${ price } 的悬赏${ reason ? '，原因：' + reason : '' }`;
                 // 匿名悬赏
                 if (someone) {
                     $(e).text(trans);
@@ -6642,7 +6668,7 @@ margin: 0 0 3px;
                     return spl.length === 1 ? [spl[0], null] : [spl[0], spl.slice(1).join(' ')];
                 })();
                 if (num && item) {
-                    e.lastChild.nodeValue = ` 从帮派军械库中借给你 ${num.numWordTrans()} ${item}。`;
+                    e.lastChild.nodeValue = ` 从帮派军械库中借给你 ${ num.numWordTrans() } ${ item }。`;
                 }
                 return;
             }
@@ -6705,7 +6731,7 @@ margin: 0 0 3px;
              */
             if ($(e).text().contains(/You have successfully purchased membership in/)) {
                 const gymName = e.firstChild.nodeValue.trim().slice(46, -1);
-                e.firstChild.nodeValue = `你已购买【${gymList[gymName]}】健身房会员卡。`;
+                e.firstChild.nodeValue = `你已购买【${ gymList[gymName] }】健身房会员卡。`;
                 return;
             }
 
@@ -6715,7 +6741,7 @@ margin: 0 0 3px;
             if ($(e).text().contains(/You are now known in the city as a/)) {
                 const trans = '现在你在这个城市中被称为';
                 const title = $(e).text().trim().split(' ').slice(9).join(' ').slice(0, -1);
-                $(e).text(`${trans} ${title}。`);
+                $(e).text(`${ trans } ${ title }。`);
                 return;
             }
 
@@ -6750,7 +6776,7 @@ margin: 0 0 3px;
              */
             if ($(e).text().indexOf('new virus') >= 0) {
                 const virusName = e.firstChild.nodeValue.split(' ').slice(3, 5).join(' ');
-                e.firstChild.nodeValue = `你完成了 ${virusName}，它现在在你的物品库存中。你可以`;
+                e.firstChild.nodeValue = `你完成了 ${ virusName }，它现在在你的物品库存中。你可以`;
                 e.childNodes[1].firstChild.nodeValue = '点此';
                 e.childNodes[2].nodeValue = '开始编程一个新的病毒。';
                 return;
@@ -6764,9 +6790,9 @@ margin: 0 0 3px;
                 const bookTitle = item2.contains(/a book titled/) ? item2.slice(15, -1) : null;
 
                 if (bookTitle) {
-                    $(e).text(`你在家门口发现了 ${item1.numWordTrans()} 和《${bookTitle}》。`);
+                    $(e).text(`你在家门口发现了 ${ item1.numWordTrans() } 和《${ bookTitle }》。`);
                 } else {
-                    $(e).text(`你在家门口发现了 ${item1.numWordTrans()} 和 ${item2.numWordTrans()}。`);
+                    $(e).text(`你在家门口发现了 ${ item1.numWordTrans() } 和 ${ item2.numWordTrans() }。`);
                 }
                 return;
             }
@@ -6788,7 +6814,7 @@ margin: 0 0 3px;
             if ($(e).text().contains(/accepted your proposal, you are now engaged/)) {
                 const spouse = $(e).children(':first').text().trim();
                 if (e.childNodes[1]) {
-                    e.childNodes[1].nodeValue = ` 接受了你的求婚，你现在和 ${spouse} 订婚了！前往`;
+                    e.childNodes[1].nodeValue = ` 接受了你的求婚，你现在和 ${ spouse } 订婚了！前往`;
                 }
                 if (e.childNodes[2] && e.childNodes[2].firstChild) {
                     e.childNodes[2].firstChild.nodeValue = `这里`;
@@ -6816,7 +6842,7 @@ margin: 0 0 3px;
                     return;
                 }
                 e.firstChild.nodeValue = '你在 ';
-                e.childNodes[2].nodeValue = ` 的职位从 ${prePos} 变为 ${curPos}。`;
+                e.childNodes[2].nodeValue = ` 的职位从 ${ prePos } 变为 ${ curPos }。`;
                 return;
             }
 
@@ -6825,9 +6851,9 @@ margin: 0 0 3px;
              */
             if ($(e).text().indexOf('join the faction') >= 0) {
                 const rsName = e.childNodes[2].nodeValue.trim().split(' ')[2];
-                const rsDict = {'accepted': '通过', 'declined': '拒绝',};
+                const rsDict = { 'accepted': '通过', 'declined': '拒绝', };
                 e.firstChild.nodeValue = '加入帮派 ';
-                e.childNodes[2].nodeValue = ` 的申请已${rsDict[rsName]}。`;
+                e.childNodes[2].nodeValue = ` 的申请已${ rsDict[rsName] }。`;
                 return;
             }
         });
@@ -6880,7 +6906,7 @@ margin: 0 0 3px;
      * 发钱翻译
      */
     function sendCashTrans(domPath = '', buttonClass = '.send-cash') {
-        const sc = $(`${domPath} ${buttonClass} *`);
+        const sc = $(`${ domPath } ${ buttonClass } *`);
         if (sc.length === 0) return;
         sc.contents().each((i, e) => {
             if (e.nodeType === 1) {
@@ -6938,7 +6964,7 @@ margin: 0 0 3px;
         if (!missionDict._taskHint[task_name]) return '暂无，请联系开发者';
         const task = missionDict._taskHint[task_name].task || null;
         const hint = missionDict._taskHint[task_name].hint || null;
-        return `${task ? '任务要求：' + task : '暂无，请联系<a href="profiles.php?XID=2687093">Woohoo</a>'}${hint ? '<br>提示：' + hint : ''}`;
+        return `${ task ? '任务要求：' + task : '暂无，请联系<a href="profiles.php?XID=2687093">Woohoo</a>' }${ hint ? '<br>提示：' + hint : '' }`;
     }
 
     /*
@@ -6962,7 +6988,7 @@ margin: 0 0 3px;
                 // 绿字 物品效果
                 const $item_effect = $item_info.querySelector('div.item-effect');
                 if (itemNameDict[the_removed]) {
-                    $item_name.innerText = `${itemNameDict[the_removed]}(${the_removed})`;
+                    $item_name.innerText = `${ itemNameDict[the_removed] }(${ the_removed })`;
                 }
                 if (itemTypeDict[$item_type.nodeValue.trim()]) {
                     $item_type.nodeValue = itemTypeDict[$item_type.nodeValue.trim()];
@@ -7040,7 +7066,7 @@ margin: 0 0 3px;
   <div class="wh-main">
     <div><b>芜湖助手</b></div>
     <div id="wh-gSettings"></div>
-    <div><p>当前版本: ${version.slice(-1) === '$' ? 'DEV' : version} <button id="wh-update-btn">更新</button></p></div>
+    <div><p>当前版本: ${ version.slice(-1) === '$' ? 'DEV' : version } <button id="wh-update-btn">更新</button></p></div>
     <div><p>最新版本: <span id="wh-latest-version"></span></p></div>
     <div><p id="wh-inittimer"></p></div>
   </div>
@@ -7100,7 +7126,7 @@ margin: 0 0 3px;
             // 直接复制的按钮
             node.querySelector('button').onclick = async (e) => {
                 e.target.innerHTML = '加载中';
-                const js_text = await COFetch(`https://jjins.github.io/fyfuzhi/release.min.user.js?${performance.now()}`);
+                const js_text = await COFetch(`https://jjins.github.io/fyfuzhi/release.min.user.js?${ performance.now() }`);
                 e.target.innerHTML = '点击复制到剪切板';
                 e.target.onclick = () => {
                     const textarea_node = document.createElement('textarea');
@@ -7120,7 +7146,7 @@ margin: 0 0 3px;
         zhong_node.querySelectorAll('#wh-trans-fest-date button').forEach((el, i) => i === 0
             ? el.addEventListener('click', () => {
                 let html = '<table>';
-                menu_list.fest_date_list.sort().forEach(date => html += `<tr><td>${1 + (date.slice(0, 2) | 0)}月${date.slice(2)}日</td><td>${menu_list.fest_date_dict[date].name}</td><td>${menu_list.fest_date_dict[date].eff}</td></tr>`);
+                menu_list.fest_date_list.sort().forEach(date => html += `<tr><td>${ 1 + (date.slice(0, 2) | 0) }月${ date.slice(2) }日</td><td>${ menu_list.fest_date_dict[date].name }</td><td>${ menu_list.fest_date_dict[date].eff }</td></tr>`);
                 popupMsg(html += '</table>', '节日');
             })
             : el.addEventListener('click', null));
@@ -7129,7 +7155,7 @@ margin: 0 0 3px;
             ? el.addEventListener('click', () => {
                 let html = '<table>';
                 menu_list.events.forEach(el =>
-                    html += `<tr><td><b>${el.name}</b></td><td>${el.start[0] + 1}月${el.start[1]}日${el.start[2]}:00~${el.end[0] + 1}月${el.end[1]}日${el.end[2]}:00</td></tr><tr><td colspan="2">${el.eff}</td></tr>`);
+                    html += `<tr><td><b>${ el.name }</b></td><td>${ el.start[0] + 1 }月${ el.start[1] }日${ el.start[2] }:00~${ el.end[0] + 1 }月${ el.end[1] }日${ el.end[2] }:00</td></tr><tr><td colspan="2">${ el.eff }</td></tr>`);
                 popupMsg(html += '</table><p>更多信息请关注群聊和公众号</p>', '活动');
             })
             : el.addEventListener('click', null));
@@ -7146,7 +7172,7 @@ margin: 0 0 3px;
         try {
             return getWhSettingObj()['isDev'] || false;
         } catch (e) {
-            console.error(`[wh] dev状态错误 ${e}`);
+            console.error(`[wh] dev状态错误 ${ e }`);
             return false;
         }
     }
@@ -7164,8 +7190,8 @@ margin: 0 0 3px;
         const popup = document.createElement('div');
         popup.id = 'wh-popup';
         popup.innerHTML = `<div id="wh-popup-container">
-<div id="wh-popup-title"><p>${title}</p></div>
-<div id="wh-popup-cont">${innerHTML}</div>
+<div id="wh-popup-title"><p>${ title }</p></div>
+<div id="wh-popup-cont">${ innerHTML }</div>
 </div>`;
         document.body.append(popup);
         const rt = popup.querySelector('#wh-popup-cont');
@@ -7202,7 +7228,7 @@ margin: 0 0 3px;
                     observer.disconnect();
                 });
             })
-                .observe(content.documentElement, {childList: true, subtree: true});
+                .observe(content.documentElement, { childList: true, subtree: true });
         });
     }
 
@@ -7231,12 +7257,12 @@ margin: 0 0 3px;
         switch (engine) {
             case UserScriptEngine.RAW: {
                 return new Promise((_, reject) => {
-                    console.error(`[wh] 跨域请求错误：${UserScriptEngine.RAW}环境下无法进行跨域请求`);
-                    reject(`错误：${UserScriptEngine.RAW}环境下无法进行跨域请求`);
+                    console.error(`[wh] 跨域请求错误：${ UserScriptEngine.RAW }环境下无法进行跨域请求`);
+                    reject(`错误：${ UserScriptEngine.RAW }环境下无法进行跨域请求`);
                 });
             }
             case UserScriptEngine.PDA: {
-                const {PDA_httpGet, PDA_httpPost} = window;
+                const { PDA_httpGet, PDA_httpPost } = window;
                 return method === 'get' ?
                     // get
                     new Promise((resolve, reject) => {
@@ -7247,7 +7273,7 @@ margin: 0 0 3px;
                         PDA_httpGet(url)
                             .catch(e => {
                                 console.error('[wh] 网络错误', e);
-                                reject(`[wh] 网络错误 ${e}`);
+                                reject(`[wh] 网络错误 ${ e }`);
                             })
                             .then(res => resolve(res.responseText));
                     }) :
@@ -7257,10 +7283,10 @@ margin: 0 0 3px;
                             console.error('[wh] 跨域请求错误：PDA版本不支持');
                             reject('错误：PDA版本不支持');
                         }
-                        PDA_httpPost(url, {'content-type': 'application/json'}, body)
+                        PDA_httpPost(url, { 'content-type': 'application/json' }, body)
                             .catch(e => {
                                 console.error('[wh] 网络错误', e);
-                                reject(`[wh] 网络错误 ${e}`);
+                                reject(`[wh] 网络错误 ${ e }`);
                             })
                             .then(res => resolve(res.responseText));
                     });
@@ -7275,10 +7301,10 @@ margin: 0 0 3px;
                         method: method,
                         url: url,
                         data: method === 'get' ? null : body,
-                        headers: method === 'get' ? null : {'content-type': 'application/json'},
+                        headers: method === 'get' ? null : { 'content-type': 'application/json' },
                         onload: res => resolve(res.response),
-                        onerror: res => reject(`连接错误 ${JSON.stringify(res)}`),
-                        ontimeout: res => reject(`连接超时 ${JSON.stringify(res)}`),
+                        onerror: res => reject(`连接错误 ${ JSON.stringify(res) }`),
+                        ontimeout: res => reject(`连接超时 ${ JSON.stringify(res) }`),
                     });
                 });
             }
@@ -7317,21 +7343,21 @@ margin: 0 0 3px;
         if (!isWindowActive() || isIframe) return null;
         const date = new Date();
         // 通知的唯一id
-        const uid = `${date.getHours()}${date.getSeconds()}${date.getMilliseconds()}${getRandomInt(1000, 9999)}`;
+        const uid = `${ date.getHours() }${ date.getSeconds() }${ date.getMilliseconds() }${ getRandomInt(1000, 9999) }`;
         // 通知容器id
         const node_id = 'wh-notify';
         // 通知的容器
-        let notify_contain = document.querySelector(`#${node_id}`);
+        let notify_contain = document.querySelector(`#${ node_id }`);
         // 添加通知到容器
         const add_notify = () => {
             // 每条通知
             const new_node = document.createElement('div');
-            new_node.id = `wh-notify-${uid}`;
+            new_node.id = `wh-notify-${ uid }`;
             new_node.classList.add('wh-notify-item');
             new_node.innerHTML = `<div class="wh-notify-bar"></div>
 <div class="wh-notify-cont">
     <div class="wh-notify-close"></div>
-    <div class="wh-notify-msg"><p>${msg}</p></div>
+    <div class="wh-notify-msg"><p>${ msg }</p></div>
 </div>`;
             notify_contain.append(new_node);
             notify_contain.msgInnerText = new_node.querySelector('.wh-notify-msg').innerText;
@@ -7357,7 +7383,7 @@ margin: 0 0 3px;
                     return;
                 }
                 progressCount--;
-                progressBar.style.width = `${progressCount}%`;
+                progressBar.style.width = `${ progressCount }%`;
                 if (progressCount === 0) new_node.remove();
             }, timeout * 1000 / 100);
             new_node.querySelector('.wh-notify-close').addEventListener('click', new_node.close);
@@ -7368,7 +7394,7 @@ margin: 0 0 3px;
             notify_contain = document.createElement('div');
             notify_contain.id = node_id;
             addStyle(`
-#${node_id} {
+#${ node_id } {
     display: inline-block;
     position: fixed;
     top: 0;
@@ -7377,25 +7403,25 @@ margin: 0 0 3px;
     z-index: 9999990;
     color:#333;
 }
-#${node_id} a{
+#${ node_id } a{
 color:red;
 text-decoration:none;
 }
-#${node_id} .wh-notify-item {
+#${ node_id } .wh-notify-item {
     /*height: 50px;*/
     background: rgb(239 249 255 / 90%);
     border-radius: 2px;
     margin: 0.5em 0 0 0;
     box-shadow: 0 0 5px 0px #959595;
 }
-#${node_id} .wh-notify-item:hover {
+#${ node_id } .wh-notify-item:hover {
     background: rgb(239 249 255 / 98%);
 }
-#${node_id} .wh-notify-item .wh-notify-bar {
+#${ node_id } .wh-notify-item .wh-notify-bar {
     height:2px;
     background:#2196f3;
 }
-#${node_id} .wh-notify-item .wh-notify-close {
+#${ node_id } .wh-notify-item .wh-notify-close {
     float:right;
     padding:0;
 width:16px;height:16px;
@@ -7404,7 +7430,7 @@ background-size:100%;
 margin: 6px 6px 0 0;
 cursor: pointer;
 }
-#${node_id} .wh-notify-item .wh-notify-msg {
+#${ node_id } .wh-notify-item .wh-notify-msg {
     padding:12px;
 }
 `);
@@ -7413,7 +7439,7 @@ cursor: pointer;
         const notify_obj = add_notify();
         // 浏览器通知
         if (window.Notification && Notification.permission === 'granted' && sysNotify) {
-            const date_local_string = `[${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}]\r`;
+            const date_local_string = `[${ date.getHours() }:${ date.getMinutes() }:${ date.getSeconds() }]\r`;
             notify_obj.sys_notify = new Notification('芜湖助手', {
                 body: date_local_string + notify_contain.msgInnerText,
                 requireInteraction: true,
@@ -7483,21 +7509,21 @@ z-index:100001;
                             });
                         };
                         notify = WHNotify('加载飞贼小助手');
-                        COFetch(`https://gitee.com/ameto_kasao/tornjs/raw/master/GoldenSnitch.js?${performance.now()}`)
+                        COFetch(`https://gitee.com/ameto_kasao/tornjs/raw/master/GoldenSnitch.js?${ performance.now() }`)
                             .then(res => {
                                 _window.eval(res.replace('http://222.160.142.50:8154/mugger', `https://api.ljs-lyt.com/mugger`));
                                 _window.GM_setValue("gsp_x", 10);
                                 _window.GM_setValue("gsp_y", 10);
                                 notify.del();
-                                notify = WHNotify('飞贼小助手已加载', {timeout: 1});
+                                notify = WHNotify('飞贼小助手已加载', { timeout: 1 });
                                 const gsp = _docu.querySelector('#gsp');
                                 const init = () => {
-                                    ifr.style.height = `${gsp.offsetHeight + 10}px`;
-                                    ifr.style.width = `${gsp.offsetWidth + 20}px`;
+                                    ifr.style.height = `${ gsp.offsetHeight + 10 }px`;
+                                    ifr.style.width = `${ gsp.offsetWidth + 20 }px`;
                                     gsp.style.top = '10px';
                                     gsp.style.left = '10px';
                                 };
-                                new MutationObserver(init).observe(gsp, {childList: true, subtree: true});
+                                new MutationObserver(init).observe(gsp, { childList: true, subtree: true });
                                 init();
                                 if (isDev()) _window.GM_setValue("gsp_showContent", true)
                             });
@@ -7524,14 +7550,14 @@ z-index:100001;
                             window.localStorage.setItem('wh-gs-storage', JSON.stringify(obj));
                         };
                         window.GM_xmlhttpRequest = GM_xmlhttpRequest;
-                        COFetch(`https://gitee.com/ameto_kasao/tornjs/raw/master/GoldenSnitch.js?${performance.now()}`)
+                        COFetch(`https://gitee.com/ameto_kasao/tornjs/raw/master/GoldenSnitch.js?${ performance.now() }`)
                             .then(GSJS => {
                                 window.eval(GSJS);
                                 if (isDev()) window.GM_setValue("gsp_showContent", true);
                                 notify.del();
                                 notify = WHNotify('已载入飞贼助手');
                             })
-                            .catch(err => WHNotify(`PDA API错误。${Obj2Str(err)}`));
+                            .catch(err => WHNotify(`PDA API错误。${ Obj2Str(err) }`));
                     });
             } else {
                 WHNotify('飞贼助手已经加载了');
@@ -7574,7 +7600,7 @@ z-index:100001;
      * @return {{playername: string, userID: number}}
      */
     function getPlayerInfo() {
-        const rs = {playername: '未知', userID: -1};
+        const rs = { playername: '未知', userID: -1 };
         // const headerData = JSON.parse(sessionStorage['headerData']);
         // if (!headerData['user']['state']['isLoggedIn']) return rs;
         // // string
@@ -7637,7 +7663,7 @@ z-index:100001;
             if (price_conf['pt'] !== -1) priceWatcherPt(apikey, price_conf['pt']).then();
             if (price_conf['xan'] !== -1) priceWatcherXan(apikey, price_conf['xan']).then();
         }, 10000)
-        return {status: true};
+        return { status: true };
     }
 
     // pt价格监视
@@ -7659,7 +7685,7 @@ z-index:100001;
             // 将id与之前存在的比较，不相同时发送通知
             if (JSON.stringify(priceWatcher['watch-pt-lower-id']) !== JSON.stringify(lower_arr)) {
                 priceWatcher['watch-pt-lower-id'] = lower_arr;
-                WHNotify(`PT新低价：$${toThousands(low)}( < $${toThousands(lower_price)}) - <a href="/pmarket.php" target="_blank">点击转跳</a>`, {
+                WHNotify(`PT新低价：$${ toThousands(low) }( < $${ toThousands(lower_price) }) - <a href="/pmarket.php" target="_blank">点击转跳</a>`, {
                     timeout: 6,
                     sysNotify: true,
                     sysNotifyClick: () => window.open('https://www.torn.com/pmarket.php'),
@@ -7682,7 +7708,7 @@ z-index:100001;
             if (lowest_item['cost'] <= lower_price) {
                 if (priceWatcher['watch-xan-lower-id'] !== lowest_item['ID']) {
                     priceWatcher['watch-xan-lower-id'] = lowest_item['ID'];
-                    WHNotify(`XAN新低价：$${toThousands(lowest_item['cost'])}( < $${toThousands(lower_price)}) - <a href="/imarket.php#/p=shop&step=shop&type=&searchname=Xanax" target="_blank">点击转跳</a>`, {
+                    WHNotify(`XAN新低价：$${ toThousands(lowest_item['cost']) }( < $${ toThousands(lower_price) }) - <a href="/imarket.php#/p=shop&step=shop&type=&searchname=Xanax" target="_blank">点击转跳</a>`, {
                         timeout: 6,
                         sysNotify: true,
                         sysNotifyClick: () => window.open('https://www.torn.com/imarket.php#/p=shop&step=shop&type=&searchname=Xanax')
@@ -7811,7 +7837,7 @@ z-index:100001;
             const headerOB = new MutationObserver(_ => {
                 headerOB.disconnect();
                 headerTrans();
-                headerOB.observe($('div#header-root')[0], {childList: true, subtree: true, attributes: true});
+                headerOB.observe($('div#header-root')[0], { childList: true, subtree: true, attributes: true });
             });
 
             const headerTrans = function headerTrans() {
@@ -7885,7 +7911,7 @@ z-index:100001;
                 });
             };
             headerTrans();
-            headerOB.observe($('div#header-root')[0], {childList: true, subtree: true, attributes: true});
+            headerOB.observe($('div#header-root')[0], { childList: true, subtree: true, attributes: true });
         }
 
         // chatbox
@@ -7893,7 +7919,7 @@ z-index:100001;
             const chatOB = new MutationObserver(_ => {
                 chatOB.disconnect();
                 chatTrans();
-                chatOB.observe($('div#chatRoot').get(0), {childList: true, subtree: true, attributes: true});
+                chatOB.observe($('div#chatRoot').get(0), { childList: true, subtree: true, attributes: true });
             });
             const chatTrans = function chatTrans() {
                 // 聊天框的标题
@@ -7943,7 +7969,7 @@ z-index:100001;
                 }
             };
             chatTrans();
-            chatOB.observe($('div#chatRoot').get(0), {childList: true, subtree: true, attributes: true});
+            chatOB.observe($('div#chatRoot').get(0), { childList: true, subtree: true, attributes: true });
         }
 
         // 搜索玩家的4个分类按钮
@@ -7977,7 +8003,7 @@ z-index:100001;
             function travelOBInit() {
                 travelOB.disconnect();
                 travelTrans();
-                travelOB.observe($('div.content-wrapper')[0], {childList: true, subtree: true});
+                travelOB.observe($('div.content-wrapper')[0], { childList: true, subtree: true });
             }
 
             function travelTrans() {
@@ -8002,7 +8028,7 @@ z-index:100001;
             }
 
             travelTrans();
-            travelOB.observe(document.querySelector('div.content-wrapper'), {childList: true, subtree: true});
+            travelOB.observe(document.querySelector('div.content-wrapper'), { childList: true, subtree: true });
         }
 
         // 主页
@@ -8059,7 +8085,7 @@ z-index:100001;
             function cityOBInit() {
                 cityOB.disconnect();
                 cityTrans();
-                cityOB.observe($('div.content-wrapper')[0], {childList: true, subtree: true});
+                cityOB.observe($('div.content-wrapper')[0], { childList: true, subtree: true });
             }
 
             function cityTrans() {
@@ -8129,7 +8155,7 @@ z-index:100001;
             }
 
             cityTrans();
-            cityOB.observe(document.querySelector('div.content-wrapper'), {childList: true, subtree: true});
+            cityOB.observe(document.querySelector('div.content-wrapper'), { childList: true, subtree: true });
             return;
         }
 
@@ -8140,7 +8166,7 @@ z-index:100001;
             function gymOBInit() {
                 gymOB.disconnect();
                 gymTrans();
-                gymOB.observe($('div.content-wrapper')[0], {childList: true, subtree: true, attributes: true});
+                gymOB.observe($('div.content-wrapper')[0], { childList: true, subtree: true, attributes: true });
             }
 
             function gymTrans() {
@@ -8244,7 +8270,7 @@ z-index:100001;
             }
 
             gymTrans();
-            gymOB.observe($('div.content-wrapper')[0], {childList: true, subtree: true, attributes: true});
+            gymOB.observe($('div.content-wrapper')[0], { childList: true, subtree: true, attributes: true });
             return;
         }
 
@@ -8252,7 +8278,7 @@ z-index:100001;
         if (href.contains(/item\.php/)) {
             if (href.includes('item.php?temp=')) return;
             // 标题和右边的链接
-            initOB(document.querySelector('.content-title'), {childList: true},
+            initOB(document.querySelector('.content-title'), { childList: true },
                 () => {
                     titleTrans();
                     contentTitleLinksTrans();
@@ -8260,7 +8286,7 @@ z-index:100001;
             // 套装预览中间的文字
             const $loadouts_root = document.getElementById('loadoutsRoot');
             if ($loadouts_root) {
-                initOB($loadouts_root, {subtree: true, attributes: true}, () => {
+                initOB($loadouts_root, { subtree: true, attributes: true }, () => {
                     const el = $loadouts_root.querySelector('div[class^="type___"]');
                     if (el && itemPageDict[el.innerText.trim()]) {
                         el.innerText = itemPageDict[el.innerText.trim()];
@@ -8273,8 +8299,8 @@ z-index:100001;
                 subtree: true,
                 attributeFilter: ["aria-hidden",]
             };
-            const translated = {cat: '', count: -1};
-            const translatedOnce = {item_opt: -1, opt_icon_count: -1};
+            const translated = { cat: '', count: -1 };
+            const translatedOnce = { item_opt: -1, opt_icon_count: -1 };
             initOB(document.getElementById('category-wrap'), options, () => {
                 // 手机操作选项
                 const $item_opt = document.querySelectorAll(`ul.itemsList span.opt-name`);
@@ -8343,7 +8369,7 @@ z-index:100001;
                 }
                 // 黑框分类标题
                 const $items_type_name = $title_black.querySelector('span.items-name');
-                initOB($items_type_name, {childList: true}, () => {
+                initOB($items_type_name, { childList: true }, () => {
                     if (itemPageDict[$items_type_name.innerText.trim()]) {
                         $items_type_name.innerText = itemPageDict[$items_type_name.innerText.trim()];
                     }
@@ -8363,7 +8389,7 @@ z-index:100001;
         if (href.contains(/(shops|bigalgunshop)\.php/)) {
             // 标题和右边的链接
             const $cont_title = document.querySelector('.content-title');
-            initOB($cont_title, {childList: true, subtree: true}, () => {
+            initOB($cont_title, { childList: true, subtree: true }, () => {
                 titleTrans();
                 contentTitleLinksTrans();
             });
@@ -8382,7 +8408,7 @@ z-index:100001;
                     // 物品名
                     const $item_name = e.querySelector('span.desc span.name.bold');
                     if ($item_name && itemNameDict[$item_name.innerText.trim()]) {
-                        $item_name.innerText = `${itemNameDict[$item_name.innerText.trim()]}(${$item_name.innerText.trim()})`;
+                        $item_name.innerText = `${ itemNameDict[$item_name.innerText.trim()] }(${ $item_name.innerText.trim() })`;
                     }
                     // 类型和存货
                     const $item_stock = e.querySelector('span.desc span.stock');
@@ -8408,7 +8434,7 @@ z-index:100001;
                     if ($amount_item_name && !$amount_item_name.nodeValue.contains(CC_set)) {
                         const item_name = $amount_item_name.nodeValue.trim().split(' ').slice(1, -1).join(' ');
                         const item_name_trans = itemNameDict[item_name] || item_name;
-                        $amount_item_name.nodeValue = `个[${item_name_trans}]，总计$`;
+                        $amount_item_name.nodeValue = `个[${ item_name_trans }]，总计$`;
                     }
                     const $confirm_a = $confirm.querySelectorAll('span.confirm-act a');
                     $confirm_a.forEach(e => {
@@ -8416,7 +8442,7 @@ z-index:100001;
                     });
                 });
                 // 展开的物品详情
-                initOB($wrapper, {childList: true, subtree: true}, () => {
+                initOB($wrapper, { childList: true, subtree: true }, () => {
                     const $item_desc = $wrapper.querySelector('.show-item-info') || $wrapper.querySelector('.view-item-info');
                     showItemInfoTrans($item_desc);
                 });
@@ -8437,7 +8463,7 @@ z-index:100001;
                             if (spl.length > 3) {
                                 const shop_name = spl[2] === 'the' ? spl.slice(3).join(' ') : spl.slice(2).join(' ');
                                 const shop_name_trans = npcShopDict[shop_name] || titleDict[shop_name] || cityDict[shop_name] || null;
-                                e.innerText = `物品给${shop_name_trans || shop_name}`;
+                                e.innerText = `物品给${ shop_name_trans || shop_name }`;
                             }
                         } else {
                             if (npcShopDict[e.nodeValue.trim()]) e.nodeValue = npcShopDict[e.nodeValue.trim()];
@@ -8448,7 +8474,7 @@ z-index:100001;
                 const $items_name = $sell_items_wrapper.querySelectorAll('span.name');
                 $items_name.forEach(el => {
                     if (itemNameDict[el.innerText.trim()]) el.innerText +=
-                        ` ${itemNameDict[el.innerText.trim()]}`;
+                        ` ${ itemNameDict[el.innerText.trim()] }`;
                 });
                 // 按钮
                 const $btn = $sell_items_wrapper.querySelectorAll('button');
@@ -8458,7 +8484,7 @@ z-index:100001;
                 // select btn
                 const $select_btn = $sell_items_wrapper.querySelector('li.select button.wai-btn');
                 if ($select_btn) {
-                    initOB($select_btn, {childList: true}, () => {
+                    initOB($select_btn, { childList: true }, () => {
                         if ($select_btn && npcShopDict[$select_btn.innerText.trim()]) {
                             $select_btn.innerText = npcShopDict[$select_btn.innerText.trim()];
                         }
@@ -8525,7 +8551,7 @@ z-index:100001;
                     } else if (/[0-9]x$/.test(spl[0])) {
                         const itemName = spl.slice(1).join(' ');
                         const num = spl[0].slice(0, -1);
-                        $(e).text(`${num}个${itemNameDict[itemName] ? itemNameDict[itemName] : itemName}`);
+                        $(e).text(`${ num }个${ itemNameDict[itemName] ? itemNameDict[itemName] : itemName }`);
                     }
                 });
                 // 股价详情
@@ -8567,7 +8593,7 @@ z-index:100001;
                 const $show_more = document.querySelector('li[class^="showMore___"] button');
                 if ($show_more && $show_more.innerText.trim().contains(/^Show [0-9]+ more$/)) {
                     const number = $show_more.innerText.trim().split(' ')[1];
-                    $show_more.innerText = `显示另外${number}条`;
+                    $show_more.innerText = `显示另外${ number }条`;
                 }
                 // 点开bb后
                 $('div#panel-dividendTab div[class^="message"] *').contents().each((i, e) => {
@@ -8578,20 +8604,20 @@ z-index:100001;
                     }
                     // 第n个increment 1st 2nd 3rd 4th
                     else if (/[0-9][snrt][tdh]$/.test(e.nodeValue.trim())) {
-                        e.nodeValue = `第${e.nodeValue.trim().slice(0, -2)}个`;
+                        e.nodeValue = `第${ e.nodeValue.trim().slice(0, -2) }个`;
                     }
                     // 物品
                     else if (/[0-9]x$/.test(e.nodeValue.trim().split(' ')[0])) {
                         const spl = e.nodeValue.trim().split(' ');
                         const itemName = spl.slice(1).join(' ');
                         e.nodeValue =
-                            ` ${spl[0].replace('x', '个')
-                            } ${itemNameDict[itemName] ? itemNameDict[itemName] : itemName
+                            ` ${ spl[0].replace('x', '个')
+                            } ${ itemNameDict[itemName] ? itemNameDict[itemName] : itemName
                             }`;
                     } else {
                         if (/[\u4e00-\u9fa5]/.test(e.nodeValue)) return;
                         if (/\b\$?[0-9,]+$/.test(e.nodeValue)) return;
-                        log(`未找到翻译：[${e.nodeValue.trim()}]`);
+                        log(`未找到翻译：[${ e.nodeValue.trim() }]`);
                     }
                 });
             };
@@ -8612,7 +8638,7 @@ z-index:100001;
             function eduOBInit() {
                 eduOB.disconnect();
                 eduTrans();
-                eduOB.observe($('div.content-wrapper')[0], {childList: true, subtree: true});
+                eduOB.observe($('div.content-wrapper')[0], { childList: true, subtree: true });
             }
 
             function eduTrans() {
@@ -8697,7 +8723,7 @@ z-index:100001;
             }
 
             eduTrans();
-            eduOB.observe($('div.content-wrapper')[0], {childList: true, subtree: true});
+            eduOB.observe($('div.content-wrapper')[0], { childList: true, subtree: true });
             return;
         }
 
@@ -8753,11 +8779,11 @@ z-index:100001;
                 // 行动框的描述
                 const action_desc = $('#profile-container-description.profile-container-description');
                 if (profileDict[action_desc.text().trim()]) {
-                    action_desc.html(`<span class="wh-translated">${profileDict[action_desc.text().trim()]}</span>`);
+                    action_desc.html(`<span class="wh-translated">${ profileDict[action_desc.text().trim()] }</span>`);
                 } else if (profileDict[action_desc.text().trim().replace(playerName, '{$}')]) {
                     action_desc.html(
-                        `<span class="wh-translated">${profileDict[action_desc.text().trim().replace(playerName, '{$}')]
-                            .replace('{$}', playerName)}</span>`
+                        `<span class="wh-translated">${ profileDict[action_desc.text().trim().replace(playerName, '{$}')]
+                            .replace('{$}', playerName) }</span>`
                     );
                 } else if (action_desc.text().contains(/is on your (friend|enemy) list/)) {
                     const spl = action_desc.text().trim().split(' ');
@@ -8768,9 +8794,9 @@ z-index:100001;
                         case 'friend':
                             if (profileDict['{$} is on your friend list']) {
                                 action_desc.html(
-                                    `<span class="wh-translated">${profileDict['{$} is on your friend list']
+                                    `<span class="wh-translated">${ profileDict['{$} is on your friend list']
                                         .replace('{$}', playerName)
-                                    }${mark ? ' : ' + mark : ''
+                                    }${ mark ? ' : ' + mark : ''
                                     }</span>`
                                 );
                             }
@@ -8778,9 +8804,9 @@ z-index:100001;
                         case 'enemy':
                             if (profileDict['{$} is on your enemy list']) {
                                 action_desc.html(
-                                    `<span class="wh-translated">${profileDict['{$} is on your enemy list']
+                                    `<span class="wh-translated">${ profileDict['{$} is on your enemy list']
                                         .replace('{$}', playerName)
-                                    }${mark ? ' : ' + mark : ''
+                                    }${ mark ? ' : ' + mark : ''
                                     }</span>`
                                 );
                             }
@@ -8788,7 +8814,7 @@ z-index:100001;
                     }
                 } else {
                     if ($('.wh-translated').length <= 0) {
-                        log(`未找到翻译: “${action_desc.text().trim()}”`);
+                        log(`未找到翻译: “${ action_desc.text().trim() }”`);
                     }
                 }
                 // 添加敌人或朋友的界面
@@ -8828,7 +8854,7 @@ z-index:100001;
                                 const $span = e.children[0].children[0];
                                 const pos = $span.firstChild.nodeValue.trim().split(' ').slice(0, -1).join(' ');
                                 $span.firstChild.nodeValue = '';
-                                $($span).append(` 的 ${pos}`);
+                                $($span).append(` 的 ${ pos }`);
                                 return;
                             }
                             case 11: {
@@ -8852,7 +8878,7 @@ z-index:100001;
                                     : null;
                                 if (days) {
                                     e.children[0].children[0].childNodes[0].nodeValue = '与 ';
-                                    e.children[0].children[0].childNodes[2].nodeValue = ` 结婚${days}天`;
+                                    e.children[0].children[0].childNodes[2].nodeValue = ` 结婚${ days }天`;
                                 } else {
                                     $e.find('span *').contents().each((i, el) => {
                                         if (el.nodeType === 3) {
@@ -8928,7 +8954,7 @@ z-index:100001;
             const newspaperOB = new MutationObserver(() => {
                 newspaperOB.disconnect();
                 newspaperTrans();
-                newspaperOB.observe($('div.content-wrapper')[0], {childList: true, subtree: true});
+                newspaperOB.observe($('div.content-wrapper')[0], { childList: true, subtree: true });
             });
 
             function newspaperTrans() {
@@ -8948,7 +8974,7 @@ z-index:100001;
                 if ($date_label && $date_label.innerText.trim().contains(date_reg)) {
                     const date_format = $date_label.innerText.trim().replaceAll(',', '');
                     const date_spl = date_format.split(' ');
-                    const date = {w: date_spl[0], m: date_spl[1], d: date_spl[2], y: date_spl[3]};
+                    const date = { w: date_spl[0], m: date_spl[1], d: date_spl[2], y: date_spl[3] };
                     const month_trans = {
                         'Jan': 1,
                         'Feb': 2,
@@ -8963,7 +8989,7 @@ z-index:100001;
                         'Nov': 11,
                         'Dec': 12
                     };
-                    $date_label.innerText = `${date.y}年${month_trans[date.m] || date.m}月${date.d}日`;
+                    $date_label.innerText = `${ date.y }年${ month_trans[date.m] || date.m }月${ date.d }日`;
                 }
                 // 菜单下的信息  工作 壁纸 广告 悬赏
                 $('div.help-message').find('*').contents().each((i, e) => {
@@ -9107,7 +9133,7 @@ z-index:100001;
             }
 
             newspaperTrans();
-            newspaperOB.observe($('div.content-wrapper')[0], {childList: true, subtree: true});
+            newspaperOB.observe($('div.content-wrapper')[0], { childList: true, subtree: true });
             return;
         }
 
@@ -9134,7 +9160,7 @@ z-index:100001;
                 titleTrans();
                 contentTitleLinksTrans();
                 propertyTrans();
-                propertyOB.observe($('div.content-wrapper').get(0), {childList: true, subtree: true});
+                propertyOB.observe($('div.content-wrapper').get(0), { childList: true, subtree: true });
             });
             const propertyTrans = function propertyTrans() {
                 // 从玩家处租或买
@@ -9260,7 +9286,7 @@ z-index:100001;
             };
 
             propertyTrans();
-            propertyOB.observe($('div.content-wrapper').get(0), {childList: true, subtree: true});
+            propertyOB.observe($('div.content-wrapper').get(0), { childList: true, subtree: true });
             return;
         }
 
@@ -9271,10 +9297,10 @@ z-index:100001;
                 titleTrans();
                 contentTitleLinksTrans();
                 eventsTrans();
-                ob.observe($('div.content-wrapper')[0], {childList: true, subtree: true});
+                ob.observe($('div.content-wrapper')[0], { childList: true, subtree: true });
             });
             eventsTrans();
-            ob.observe($('div.content-wrapper')[0], {childList: true, subtree: true});
+            ob.observe($('div.content-wrapper')[0], { childList: true, subtree: true });
             return;
             // let events;
             // const eventMutation = new MutationObserver(() => {
@@ -9302,7 +9328,7 @@ z-index:100001;
             const awOB = new MutationObserver(() => {
                 awOB.disconnect();
                 awTrans();
-                awOB.observe($('div.content-wrapper')[0], {childList: true, subtree: true, attributes: true});
+                awOB.observe($('div.content-wrapper')[0], { childList: true, subtree: true, attributes: true });
             });
             const awTrans = function awTrans() {
                 titleTrans();
@@ -9428,7 +9454,7 @@ z-index:100001;
                 });
             };
             awTrans();
-            awOB.observe($('div.content-wrapper')[0], {childList: true, subtree: true, attributes: true});
+            awOB.observe($('div.content-wrapper')[0], { childList: true, subtree: true, attributes: true });
             return;
         }
 
@@ -9517,7 +9543,7 @@ z-index:100001;
                     if ($back_to_profile) {
                         const spl = $back_to_profile.innerText.split(/('s |s' )/);
                         if (spl.length === 3 && spl[2] === 'Profile') {
-                            $back_to_profile.innerText = `${spl[0]}的个人资料`;
+                            $back_to_profile.innerText = `${ spl[0] }的个人资料`;
                         }
                     }
                     const $display_cabinet = $page_wrapper.querySelector('.display-cabinet');
@@ -9548,7 +9574,7 @@ z-index:100001;
             function hosOBInit() {
                 hospitalOB.disconnect();
                 hospTrans();
-                hospitalOB.observe($('div.content-wrapper')[0], {childList: true, subtree: true});
+                hospitalOB.observe($('div.content-wrapper')[0], { childList: true, subtree: true });
             }
 
             function hospTrans() {
@@ -9595,7 +9621,7 @@ z-index:100001;
             }
 
             hospTrans();
-            hospitalOB.observe($('div.content-wrapper')[0], {childList: true, subtree: true});
+            hospitalOB.observe($('div.content-wrapper')[0], { childList: true, subtree: true });
             return;
         }
 
@@ -9606,7 +9632,7 @@ z-index:100001;
             function factionOBInit() {
                 factionOB.disconnect();
                 factionTrans();
-                factionOB.observe($('div.content-wrapper')[0], {childList: true, subtree: true});
+                factionOB.observe($('div.content-wrapper')[0], { childList: true, subtree: true });
             }
 
             const factionDict = {
@@ -9716,7 +9742,7 @@ z-index:100001;
             }
 
             factionTrans();
-            factionOB.observe($('div.content-wrapper')[0], {childList: true, subtree: true});
+            factionOB.observe($('div.content-wrapper')[0], { childList: true, subtree: true });
             return;
         }
 
@@ -9756,7 +9782,7 @@ z-index:100001;
         if (href.contains(/calendar\.php/)) {
             const $root = document.querySelectorAll('#calendar-root');
             $root.forEach(el => {
-                initOB(el, {childList: true, subtree: true}, () => {
+                initOB(el, { childList: true, subtree: true }, () => {
                     // 页标题
                     const $h4_title = el.querySelectorAll('h4[class^="title___"]');
                     titleTransReact($h4_title);
@@ -9780,7 +9806,7 @@ z-index:100001;
             let $root = document.querySelector('#christmastownroot');
             const $title_wrapper = $root.querySelector('div[class^="appHeaderWrapper___"]');
             // 标题和右边的链接
-            initOB($title_wrapper, {childList: true, subtree: true}, () => {
+            initOB($title_wrapper, { childList: true, subtree: true }, () => {
                 titleTransReact();
                 contentTitleLinksTransReact();
             });
@@ -9935,66 +9961,66 @@ z-index:100001;
     // 海外库存
     async function forStock() {
         if (getScriptEngine() === UserScriptEngine.RAW) {
-            const insert = `<img alt="stock.png" src="https://jjins.github.io/t2i/stock.png?${performance.now()}" style="max-width:100%;display:block;margin:0 auto;" />`;
+            const insert = `<img alt="stock.png" src="https://jjins.github.io/t2i/stock.png?${ performance.now() }" style="max-width:100%;display:block;margin:0 auto;" />`;
             popupMsg(insert, '飞花库存');
         } else {
-            const popup = popupMsg(`请稍后${loading_gif_html()}`, '飞花库存');
+            const popup = popupMsg(`请稍后${ loading_gif_html() }`, '飞花库存');
             let table = `<table><tr><th colspan="2">目的地 - 更新时间</th><th colspan="3">库存</th></tr>`;
             const dest = [
                 {
                     name: 'mex', show: '墨西哥',
-                    stocks: {'Dahlia': '花', 'Jaguar Plushie': '偶'}
+                    stocks: { 'Dahlia': '花', 'Jaguar Plushie': '偶' }
                 },
                 {
                     name: 'cay', show: '开曼',
-                    stocks: {'Banana Orchid': '花', 'Stingray Plushie': '偶'}
+                    stocks: { 'Banana Orchid': '花', 'Stingray Plushie': '偶' }
                 },
                 {
                     name: 'can', show: '加拿大',
-                    stocks: {'Crocus': '花', 'Wolverine Plushie': '偶'}
+                    stocks: { 'Crocus': '花', 'Wolverine Plushie': '偶' }
                 },
                 {
                     name: 'haw', show: '夏威夷',
-                    stocks: {'Orchid': '花', 'Large Suitcase': '大箱'}
+                    stocks: { 'Orchid': '花', 'Large Suitcase': '大箱' }
                 },
                 {
                     name: 'uni', show: '嘤国',
-                    stocks: {'Heather': '花', 'Red Fox Plushie': '赤狐', 'Nessie Plushie': '水怪'}
+                    stocks: { 'Heather': '花', 'Red Fox Plushie': '赤狐', 'Nessie Plushie': '水怪' }
                 },
                 {
                     name: 'arg', show: '阿根廷',
-                    stocks: {'Ceibo Flower': '花', 'Monkey Plushie': '偶', 'Tear Gas': '催泪弹'},
+                    stocks: { 'Ceibo Flower': '花', 'Monkey Plushie': '偶', 'Tear Gas': '催泪弹' },
                 },
                 {
                     name: 'swi', show: '瑞士',
-                    stocks: {'Edelweiss': '花', 'Chamois Plushie': '偶'},
+                    stocks: { 'Edelweiss': '花', 'Chamois Plushie': '偶' },
                 },
                 {
                     name: 'jap', show: '日本',
-                    stocks: {'Cherry Blossom': '花'},
+                    stocks: { 'Cherry Blossom': '花' },
                 },
                 {
                     name: 'chi', show: '祖国',
-                    stocks: {'Peony': '花', 'Panda Plushie': '偶'},
+                    stocks: { 'Peony': '花', 'Panda Plushie': '偶' },
                 },
                 {
                     name: 'uae', show: '迪拜',
-                    stocks: {'Tribulus Omanense': '花', 'Camel Plushie': '偶'},
+                    stocks: { 'Tribulus Omanense': '花', 'Camel Plushie': '偶' },
                 },
                 {
                     name: 'sou', show: '南非',
-                    stocks: {'African Violet': '花', 'Lion Plushie': '偶', 'Xanax': 'XAN'},
+                    stocks: { 'African Violet': '花', 'Lion Plushie': '偶', 'Xanax': 'XAN' },
                 }];
             const now = new Date();
             const res = await fstock.get();
             if (!res['stocks']) return;
             dest.forEach(el => {
                 const update = (now - new Date(res.stocks[el.name]['update'] * 1000)) / 1000 | 0
-                table += `<tr><td>${el.show}</td><td>${update / 60 | 0}分${update % 60 | 0}秒前</td>`;
+                table += `<tr><td>${ el.show }</td><td>${ update / 60 | 0 }分${ update % 60 | 0 }秒前</td>`;
                 let count = 0;
                 res.stocks[el.name]['stocks'].forEach(stock => {
                     if (el.stocks[stock.name]) {
-                        table += `<td${stock['quantity'] === 0 ? ' style="background-color:#f44336;color:white;border-color:#000;"' : ''}>${el.stocks[stock.name]} (${stock['quantity']})</td>`;
+                        table += `<td${ stock['quantity'] === 0 ? ' style="background-color:#f44336;color:white;border-color:#000;"' : '' }>${ el.stocks[stock.name] } (${ stock['quantity'] })</td>`;
                         count++;
                     }
                 });
@@ -10028,12 +10054,12 @@ z-index:100001;
 
     // 元素生成器
     function elemGenerator(setting, root_node) {
-        let {tip, domType} = setting;
+        let { tip, domType } = setting;
         let new_node = null;
         switch (domType) {
             case 'checkbox': {
                 new_node = document.createElement('div');
-                let {domId, dictName, domText} = setting;
+                let { domId, dictName, domText } = setting;
                 let label = document.createElement('label');
                 (tip) && (label.setAttribute('title', tip));
                 let input = document.createElement('input');
@@ -10051,7 +10077,7 @@ z-index:100001;
             }
             case 'button': {
                 new_node = document.createElement('div');
-                let {domId, domText, clickFunc} = setting;
+                let { domId, domText, clickFunc } = setting;
                 let btn = document.createElement('button');
                 (tip) && (btn.setAttribute('title', tip));
                 btn.id = domId;
@@ -10062,14 +10088,14 @@ z-index:100001;
             }
             case 'select': {
                 new_node = document.createElement('div');
-                let {domSelectOpt, dictName, domId, domText} = setting;
+                let { domSelectOpt, dictName, domId, domText } = setting;
                 let label = document.createElement('label');
                 (tip) && (label.setAttribute('title', tip));
                 let text = document.createTextNode(domText);
                 let select = document.createElement('select');
                 select.id = domId;
                 domSelectOpt.forEach((opt, i) => {
-                    let {domVal, domText} = opt;
+                    let { domVal, domText } = opt;
                     let option = document.createElement('option');
                     option.value = domVal;
                     option.innerHTML = domText;
@@ -10110,7 +10136,7 @@ z-index:100001;
             }
             started = setInterval(() => {
                 // 海外取消提醒
-                let {isTravelling, isAbroad} = getUserState();
+                let { isTravelling, isAbroad } = getUserState();
                 if (isTravelling || isAbroad) {
                     loop.stop();
                     return;
@@ -10163,12 +10189,12 @@ z-index:100001;
         loop.status = () => started ? '已启动' : '未启动';
         loop.is_running = () => !!started;
 
-        let notify_html = `<span style="background-color:green;color:white;border-radius:3px;font-size:14px;line-height:21px;padding:2px 4px;">啤酒小助手</span><br/>提醒您：还有不到 50 秒 NPC 的商品就要刷新了，啤酒血包要抢的可以准备咯。<button id="wh-rd-btn-${getRandomInt(0, 100)}">【今日不再提醒】</button><br/><a href="/shops.php?step=bitsnbobs#clickfromnotify" target="_blank">【啤酒店】</a> <a href="/shops.php?step=pharmacy#clickfromnotify" target="_blank">【血包店】</a>`
+        let notify_html = `<span style="background-color:green;color:white;border-radius:3px;font-size:14px;line-height:21px;padding:2px 4px;">啤酒小助手</span><br/>提醒您：还有不到 50 秒 NPC 的商品就要刷新了，啤酒血包要抢的可以准备咯。<button id="wh-rd-btn-${ getRandomInt(0, 100) }">【今日不再提醒】</button><br/><a href="/shops.php?step=bitsnbobs#clickfromnotify" target="_blank">【啤酒店】</a> <a href="/shops.php?step=pharmacy#clickfromnotify" target="_blank">【血包店】</a>`
         loop.skip_today = () => {
             const date = new Date();
             setWhSetting('_15_alarm_ignore', [date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()], false);
             // 通知
-            const notify = WHNotify(`明早8点前将不再提醒 <button id="wh-rd-btn-${getRandomInt(0, 100)}">取消</button>`);
+            const notify = WHNotify(`明早8点前将不再提醒 <button id="wh-rd-btn-${ getRandomInt(0, 100) }">取消</button>`);
             // 通知中的取消按钮
             notify.querySelector('.wh-notify-msg button').addEventListener('click', () => setWhSetting('_15_alarm_ignore', undefined));
         };
@@ -10314,15 +10340,15 @@ z-index:100001;
             input.attributes['data-money'].value = money;
         });
         $(form).trigger('submit');
-        let dataStr = `ajax=true&step=armouryDonate&type=cash&amount=${money}`;
+        let dataStr = `ajax=true&step=armouryDonate&type=cash&amount=${ money }`;
         let res = await (await fetch(addRFC('https://www.torn.com/factions.php'), {
             method: 'POST',
             body: dataStr,
-            headers: {'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/x-www-form-urlencoded'}
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/x-www-form-urlencoded' }
         })).json();
         if (res.success === true) {
             WHNotify('存钱成功');
-            WHNotify(`${res.text}`);
+            WHNotify(`${ res.text }`);
         }
     }
 
@@ -10336,7 +10362,7 @@ z-index:100001;
             method: 'POST',
             referrer: 'companies.php',
             body: 'deposit=' + money,
-            headers: {'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/x-www-form-urlencoded'}
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/x-www-form-urlencoded' }
         })).text();
         log(res);
         let node = document.createElement('div');
@@ -10394,14 +10420,14 @@ z-index:100001;
         let loop_id = null;
         let updateAttackersDOM = function () {
             let html = '进攻者：<br/>';
-            Object.keys(attackers.obj).forEach(id => html += `[${id}]<br/>`);
+            Object.keys(attackers.obj).forEach(id => html += `[${ id }]<br/>`);
             attackers.innerHTML = html;
         };
         let updateRecordsDOM = function () {
             let html = '战斗记录：<br/>';
             records.list.forEach(rid => {
-                let {TimeCreated, attackID, attackerID, attackerItemID, result, text} = records.details[rid];
-                html += `[${TimeCreated}] [${attackerID}] [${attackerItemID}] ${result} ${text}<br/>`;
+                let { TimeCreated, attackID, attackerID, attackerItemID, result, text } = records.details[rid];
+                html += `[${ TimeCreated }] [${ attackerID }] [${ attackerItemID }] ${ result } ${ text }<br/>`;
             });
             records.innerHTML = html;
         };
@@ -10416,7 +10442,7 @@ z-index:100001;
         let popup_close = popup.close;
         popup.close = () => {
             if (loop_id === null) popup_close();
-            else WHNotify('守望者运行中，请先停止', {timeout: 2});
+            else WHNotify('守望者运行中，请先停止', { timeout: 2 });
         }
 
         popup.appendChild(p);
@@ -10438,13 +10464,13 @@ z-index:100001;
                 // 记录当前循环的id
                 let that_id = loop_id;
                 let res = await (await fetch(url + uid.value, {
-                    headers: {'X-Requested-With': 'XMLHttpRequest'},
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
                     referrer: "loader.php?sid=attack&user2ID=" + uid.value
                 })).text();
                 if (loop_id !== that_id) return;
                 let data = JSON.parse(res.split('<div')[0]);
                 log(count++, data);
-                let {DB, currentFightStatistics, histLog} = data;
+                let { DB, currentFightStatistics, histLog } = data;
                 // 攻击人
                 // 格式：currentFightStatistics = {uid: {...}, uid2: {...}}
                 Object.keys(currentFightStatistics || {}).forEach(id => {
@@ -10457,15 +10483,15 @@ z-index:100001;
                 // 攻击历史
                 (DB['currentFightHistory'] || []).forEach(record => {
                     if (records.list.includes(record['ID'])) return;
-                    let {ID, TimeCreated, attackID, attackerID, attackerItemID, result, text} = record;
+                    let { ID, TimeCreated, attackID, attackerID, attackerItemID, result, text } = record;
                     records.list.push(ID);
-                    records.details[ID] = {TimeCreated, attackID, attackerID, attackerItemID, result, text};
+                    records.details[ID] = { TimeCreated, attackID, attackerID, attackerItemID, result, text };
                     updateRecordsDOM();
                 });
                 // 攻击历史日志
                 if (histLog && histLog[uid.value]) histLog[uid.value].forEach(log => {
                     if (records.list.includes(log['ID'])) return;
-                    let {ID, TimeCreated, attackID, attackResult, userID} = log;
+                    let { ID, TimeCreated, attackID, attackResult, userID } = log;
                     records.list.push(ID);
                     records.details[ID] = {
                         TimeCreated,
@@ -10535,22 +10561,28 @@ z-index:100001;
 
         let sessionKeys = Object.keys(sessionStorage);
         if (sessionKeys.length < 2) {
+            // dom获取
             const sidebar_menu_list = document.querySelectorAll('#sidebar a span[class*="linkName___"]');
-            sidebar_menu_list.forEach(node => ret[node.innerHTML.trim().toLowerCase()] = true);
+            sidebar_menu_list.forEach(node => ret[node.innerHTML.trim().toLowerCase().replaceAll(' ', '_')] = true);
         } else {
-            for (let key in sessionKeys) {
-                if (key.startsWith('sidebarData') && key.length < 20) {
+            // session storage获取
+            for (let key of sessionKeys) {
+                if (key.startsWith('sidebarData')) {
                     sidebar_id = JSON.parse(sessionStorage.getItem(key));
                     break;
                 }
             }
             if (sidebar_id !== null) {
-                for (let area in Object.keys(sidebar_id['areas'])) {
+                // Object.keys(sidebar_id['areas']).forEach(area => ret[area] = true);
+                for (let area of Object.keys(sidebar_id['areas'])) {
                     ret[area] = true;
                 }
             }
         }
-        if (Object.keys(ret).length === 0) WHNotify('无法获取数据，建议刷新重试');
+        log({ ret, sidebar_id, sessionKeys })
+        if (Object.keys(ret).length === 0) {
+            WHNotify('无法获取数据，建议刷新重试');
+        }
         return ret;
     }
 
@@ -10607,9 +10639,9 @@ z-index:100001;
      * @returns {Promise<Response>}
      */
     function ajaxFetch(opt) {
-        let {url, referrer, method, body = null} = opt;
+        let { url, referrer, method, body = null } = opt;
         let req_params = {
-            headers: {'X-Requested-With': 'XMLHttpRequest'},
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
             referrer,
             method,
         };
@@ -10620,5 +10652,59 @@ z-index:100001;
         return fetch(url, req_params);
     }
 
-    $zhongNode.initTimer.innerHTML = `助手加载时间 ${Date.now() - start_timestamp}ms`;
+    /**
+     * 解析 Markdown 内容
+     * @param {String} from
+     * @returns {HTMLDivElement}
+     */
+    function mdParse(from) {
+        const base = document.createElement('div');
+        let lines = from.split('\n');
+
+        let prev = '';
+        let child_cont;
+        lines.forEach(line => {
+            if (line.trim() === '') return;
+            let node;
+            let spl = line.split(' ');
+            let md_flag = spl[0];
+
+            switch (md_flag) {
+                // 标题
+                case '#':
+                case '##':
+                case '###':
+                    if (prev === 'li') {
+                        child_cont = null;
+                    }
+                    prev = 'h' + (md_flag.length + 1);
+                    node = document.createElement(prev);
+                    node.innerText = line.slice(md_flag.length + 1);
+                    base.append(node);
+                    return;
+                // 列表
+                case '-':
+                    if (prev !== 'li') {
+                        child_cont = document.createElement('ul');
+                        if (!base.contains(child_cont)) base.append(child_cont);
+                    }
+                    prev = 'li';
+                    node = document.createElement(prev);
+                    node.innerText = line.slice(2);
+                    child_cont.append(node);
+                    return;
+            }
+            prev = 'p';
+            node = document.createElement(prev);
+            node.innerText = line.trim();
+            base.append(node);
+        })
+        return base;
+    }
+
+    $zhongNode.initTimer.innerHTML = `助手加载时间 ${ Date.now() - start_timestamp }ms`;
+}
+
+!function () {
+    main().then()
 }();
