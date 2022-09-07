@@ -3984,6 +3984,7 @@ background-size: 100% auto !important;
                 '更新历史：<br/><a target="_blank" href="https://gitlab.com/JJins/wuhu-torn-helper/-/blob/dev/CHANGELOG.md">https://gitlab.com/JJins/wuhu-torn-helper/-/blob/dev/CHANGELOG.md</a><br/>',
                 '更新历史'
             );
+            popup.classList.add('wh-changelog');
             let progressBar = document.createElement('div');
             progressBar.style.height = '2px';
             progressBar.style.width = '1%';
@@ -3991,8 +3992,10 @@ background-size: 100% auto !important;
             let progressText = document.createElement('p');
             progressText.innerText = '加载更新文件……';
             progressText.style.textAlign = 'center';
+            let style = document.createElement('style');
+            style.innerHTML = `.wh-changelog h2,.wh-changelog h3,.wh-changelog h4 {margin-top:8px;}`;
 
-            popup.append(progressBar, progressText);
+            popup.append(progressBar, progressText, style);
             let update = await COFetch('https://gitlab.com/JJins/wuhu-torn-helper/-/raw/dev/CHANGELOG.md?' + Date.now());
             progressBar.style.width = '60%';
             progressText.innerText = '解析中……';
@@ -10581,7 +10584,7 @@ z-index:100001;
         }
         log({ ret, sidebar_id, sessionKeys })
         if (Object.keys(ret).length === 0) {
-            WHNotify('无法获取数据，建议刷新重试');
+            log.error('无法获取数据，建议刷新重试');
         }
         return ret;
     }
