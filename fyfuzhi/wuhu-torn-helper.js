@@ -12,8 +12,8 @@ async function main() {
         }
     }
     // 防止脚本重复运行
-    if (window.WHTRANS) return;
-    window.WHTRANS = true;
+    if (window.hasOwnProperty('WHTRANS')) return;
+    else window.WHTRANS = true;
     const version = '$$WUHU_DEV_VERSION$$';
     const isIframe = self !== top;
     const $ = window['jQuery'];
