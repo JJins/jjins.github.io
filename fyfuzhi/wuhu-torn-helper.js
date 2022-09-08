@@ -2,13 +2,14 @@ async function main() {
     'use strict';
     const start_timestamp = Date.now();
     if (document.title.toLowerCase().includes('just a moment')) return;
-    let UWCopy;
+    let UWCopy = null;
+    const WINDOW = window;
     if (window.hasOwnProperty('unsafeWindow')) {
         UWCopy = window.unsafeWindow;
-    }
-    try {
-        window = UWCopy || window;
-    } catch {
+        try {
+            window = UWCopy;
+        } catch {
+        }
     }
     // 防止脚本重复运行
     if (window.WHTRANS) return;
@@ -26,7 +27,6 @@ async function main() {
     // 通知权限
     if (window.Notification) {
         Notification.requestPermission().then(status => {
-            // 这将使我们能在 Chrome/Safari 中使用 Notification.permission
             if (Notification.permission !== status) {
                 Notification.permission = status;
             }
@@ -2773,7 +2773,10 @@ async function main() {
     // if (!localStorage.getItem('wh_trans_transDict')) localStorage.setItem('wh_trans_transDict', JSON.stringify(transDict))
     // endregion
 
-    // regexp test
+    /**
+     * 正则匹配
+     * @deprecated
+     */
     String.prototype.contains = function contains(keywords) {
         if ('string' === typeof keywords) {
             return new RegExp(keywords).test(this);
@@ -3993,7 +3996,7 @@ background-size: 100% auto !important;
             progressText.innerText = '加载更新文件……';
             progressText.style.textAlign = 'center';
             let style = document.createElement('style');
-            style.innerHTML = `.wh-changelog h2,.wh-changelog h3,.wh-changelog h4 {margin-top:8px;}`;
+            style.innerHTML = `.wh-changelog h2,.wh-changelog h3,.wh-changelog h4 {margin:8px 0;}.wh-changelog li{list-style: inside;}`;
 
             popup.append(progressBar, progressText, style);
             let update = await COFetch('https://gitlab.com/JJins/wuhu-torn-helper/-/raw/dev/CHANGELOG.md?' + Date.now());
@@ -4455,7 +4458,7 @@ z-index: 999999;}`);
     }
 
     // 飞行页面
-    if (href.includes('index.php') && getSidebarData()['traveling']) {
+    if (href.includes('index.php') && (await getSidebarData())['traveling']) {
         // 飞行闹钟
         if (device === Device.PC && getWhSettingObj()['trvAlarm'])
             elementReady('#countrTravel.hasCountdown').then(node => {
@@ -4700,7 +4703,7 @@ display:none;
             setInterval(() => WHNotify(`警告：您已海外落地${ c++ * 30 }秒`, { timeout: 30, sysNotify: true }), 30000);
         }
         // 解毒提醒
-        if (getSidebarData()['rehabilitation']) {
+        if (await getSidebarData()['rehabilitation']) {
             let page_title = document.querySelector('h4#skip-to-content');
             let msg = document.createElement('div');
             msg.innerHTML = `<div class="info-msg border-round">
@@ -4716,7 +4719,7 @@ display:none;
         }
     }
     // 落地转跳
-    else if (href.includes('index.php') && getSidebarData()['home'] && sessionStorage['wh-landed-redirect']) {
+    else if (href.includes('index.php') && (await getSidebarData())['home'] && sessionStorage['wh-landed-redirect']) {
         let { url, timestamp } = JSON.parse(sessionStorage['wh-landed-redirect']);
         if (Date.now() - timestamp < 30000) {
             sessionStorage.removeItem('wh-landed-redirect');
@@ -6050,6 +6053,7 @@ margin: 0 0 3px;
     }
 
     if (getPlayerInfo()['userID'] === 2687093 && getDeviceType() === Device.PC) {
+        await getSidebarData();
         let item = document.getElementById('nav-items');
         if (item) {
             let copy = item.cloneNode(true);
@@ -10565,7 +10569,13 @@ z-index:100001;
         let sessionKeys = Object.keys(sessionStorage);
         if (sessionKeys.length < 2) {
             // dom获取
-            const sidebar_menu_list = document.querySelectorAll('#sidebar a span[class*="linkName___"]');
+            let sidebar_menu_list = document.querySelectorAll('#sidebar a span[class*="linkName___"]');
+            log.info({ sidebar_menu_list })
+            if (sidebar_menu_list.length === 0) {
+                // TODO 当前根据侧边栏等待 sessionData
+                await elementReady('#sidebar a span[class*="linkName___"]');
+                sidebar_menu_list = document.querySelectorAll('#sidebar a span[class*="linkName___"]');
+            }
             sidebar_menu_list.forEach(node => ret[node.innerHTML.trim().toLowerCase().replaceAll(' ', '_')] = true);
         } else {
             // session storage获取
@@ -10576,13 +10586,12 @@ z-index:100001;
                 }
             }
             if (sidebar_id !== null) {
-                // Object.keys(sidebar_id['areas']).forEach(area => ret[area] = true);
                 for (let area of Object.keys(sidebar_id['areas'])) {
                     ret[area] = true;
                 }
             }
         }
-        log({ ret, sidebar_id, sessionKeys })
+        log.info({ ret, sidebar_id, sessionKeys })
         if (Object.keys(ret).length === 0) {
             log.error('无法获取数据，建议刷新重试');
         }
@@ -10658,11 +10667,17 @@ z-index:100001;
     /**
      * 解析 Markdown 内容
      * @param {String} from
+     * @param {Number} max_line 最大行数，默认500
      * @returns {HTMLDivElement}
      */
-    function mdParse(from) {
+    function mdParse(from, max_line) {
+        max_line = max_line || 500;
         const base = document.createElement('div');
         let lines = from.split('\n');
+        if (lines.length > max_line) {
+            lines = lines.slice(0, max_line);
+            lines.push("...");
+        }
 
         let prev = '';
         let child_cont;
@@ -10703,6 +10718,15 @@ z-index:100001;
             base.append(node);
         })
         return base;
+    }
+
+    /**
+     * 等待毫秒数
+     * @param {Number} ms 毫秒
+     * @returns {Promise<unknown>}
+     */
+    function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
     }
 
     $zhongNode.initTimer.innerHTML = `助手加载时间 ${ Date.now() - start_timestamp }ms`;
