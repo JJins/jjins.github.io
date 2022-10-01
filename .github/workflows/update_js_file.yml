@@ -18,7 +18,7 @@ jobs:
         cd fyfuzhi
         rm -f wuhu-torn-helper.js
         rm -f release.min.user.js
-        wget https://gitlab.com/JJins/wuhu-torn-helper/-/raw/dev/wuhu-torn-helper.js
+        #wget https://gitlab.com/JJins/wuhu-torn-helper/-/raw/dev/wuhu-torn-helper.js
         wget https://gitlab.com/JJins/wuhu-torn-helper/-/raw/dev/release.min.user.js
     - name: Commit & Push
       uses: EndBug/add-and-commit@v7
